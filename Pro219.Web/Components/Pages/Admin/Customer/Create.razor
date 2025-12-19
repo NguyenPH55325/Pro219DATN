@@ -7,44 +7,109 @@
     <h1 class="leading-[3rem] h-12 text-3xl font-bold text-admin-default">Tạo khách hàng</h1>
 
     <div class="mx-auto mt-6 w-full rounded-lg bg-white p-8 shadow-sm">
-        <EditForm Model="_model" OnValidSubmit="OnSubmit" class="mx-auto flex w-full flex-col gap-4">
+        <EditForm Model="_model" OnValidSubmit="OnSubmit" class="w-full">
             <DataAnnotationsValidator />
+            <div class="flex w-full gap-2">
+                <div class="w-[calc(50%-9px)] flex flex-col gap-4">
+                    <h2 class="mb-2 text-xl font-medium">Thông tin cá nhân</h2>
 
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Họ tên</span>
-                <MudTextField @bind-Value="@_model.FullName" For="@(() => _model.FullName)" Placeholder="Nguyễn Văn A" Variant="Variant.Outlined" FullWidth Style="background-color: white" />
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Họ tên</span>
+                        <MudTextField @bind-Value="@_model.CustomerName" For="@(() => _model.CustomerName)" Placeholder="Nguyễn Văn A" Variant="Variant.Outlined" FullWidth Style="background-color: white" />
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Ngày sinh</span>
+                        <MudDatePicker @bind-Date="@_model.DateOfBirth" For="@(() => _model.DateOfBirth)" Placeholder="01/01/2000" Variant="Variant.Outlined" Style="background-color: white" ShowToolbar="false" />
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Email</span>
+                        <MudTextField @bind-Value="@_model.CustomerEmail" For="@(() => _model.CustomerEmail)" Placeholder="example@gmail.com" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Số điện thoại</span>
+                        <MudTextField @bind-Value="@_model.CustomerPhone" For="@(() => _model.CustomerPhone)" Placeholder="0xxxxxxxxx" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Mật khẩu</span>
+                        <MudTextField @bind-Value="@_model.Password" For="@(() => _model.Password)" Placeholder="********" Variant="Variant.Outlined" Style="background-color: white" InputType="@PasswordInputCurrent" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIconCurrent" OnAdornmentClick="ShowHidePasswordCurrent" AdornmentAriaLabel="Show Password" FullWidth="true" />
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Mật khẩu</span>
+                        <MudTextField @bind-Value="@_confirmPassword" For="@(() => _confirmPassword)" Placeholder="********" Variant="Variant.Outlined" Style="background-color: white" InputType="@PasswordInputNew" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIconNew" OnAdornmentClick="ShowHidePasswordNew" AdornmentAriaLabel="Show Password" FullWidth="true" />
+                    </div>
+                </div>
+
+                <MudDivider Class="min-h-full !w-1" />
+
+                <div class="w-[calc(50%-9px)] flex flex-col gap-4">
+                    <h2 class="mb-2 text-xl font-medium">Thông tin địa chỉ</h2>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Tên người nhận</span>
+                        <MudTextField @bind-Value="@_model.CustomerAddressName" For="@(() => _model.CustomerAddressName)" Placeholder="Nguyễn Văn A" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Số điện thoại người nhận</span>
+                        <MudTextField @bind-Value="@_model.CustomerAddressPhone" For="@(() => _model.CustomerAddressPhone)" Placeholder="0xxxxxxxxx" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Tỉnh / Thành Phố</span>
+                        <MudSelect T="int" Value="@_selectedProvince" ValueChanged="OnProvinceChanged" Variant="Variant.Outlined">
+                            <MudSelectItem Value="0">Vui lòng chọn</MudSelectItem>
+                            @if (_provinces.Any())
+                            {
+
+                                @foreach (var city in _provinces)
+                                {
+                                    <MudSelectItem Value="@city.ProvinceID">@city.ProvinceName</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Quận / Huyện</span>
+                        <MudSelect T="int" Value="@_selectedDistrict" ValueChanged="OnDistrictChanged" Variant="Variant.Outlined" Disabled="@(!_districts.Any())">
+                            <MudSelectItem Value="0">Vui lòng chọn</MudSelectItem>
+                            @if (_districts.Any())
+                            {
+                                @foreach (var city in _districts)
+                                {
+                                    <MudSelectItem Value="@city.DistrictID">@city.DistrictName</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Phường / Xã</span>
+                        <MudSelect T="string" Value="@_selectedWard" ValueChanged="OnWardChanged" Variant="Variant.Outlined" Disabled="@(!_wards.Any())">
+                            <MudSelectItem T="string" Value="0.ToString()">Vui lòng chọn</MudSelectItem>
+                            @if (_wards.Any())
+                            {
+                                foreach (var city in _wards)
+                                {
+                                    <MudSelectItem T="string" Value="@(city.WardCode.ToString())">@city.WardName</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </div>
+
+                    <div class="flex w-full flex-col gap-2">
+                        <span Class="text-base font-medium text-gray-900">Chi tiết địa chỉ</span>
+                        <MudTextField @bind-Value="@_model.OtherAddressInfo" For="@(() => _model.OtherAddressInfo)" Placeholder="0xxxxxxxxx" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                    </div>
+                </div>
             </div>
 
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Ngày sinh</span>
-                <MudDatePicker @bind-Date="@_model.DateOfBirth" For="@(() => _model.DateOfBirth)" Placeholder="01/01/2000" Variant="Variant.Outlined" Style="background-color: white" ShowToolbar="false" />
-            </div>
-
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Email</span>
-                <MudTextField @bind-Value="@_model.Email" For="@(() => _model.Email)" Placeholder="example@gmail.com" Variant="Variant.Outlined" Style="background-color: white" FullWidth  />
-            </div>
-
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Số điện thoại</span>
-                <MudTextField @bind-Value="@_model.PhoneNumber" For="@(() => _model.PhoneNumber)" Placeholder="0xxxxxxxxx" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
-            </div>
-
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Mật khẩu</span>
-                <MudTextField @bind-Value="@_model.PasswordHash" For="@(() => _model.PasswordHash)" Placeholder="********" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
-            </div>
-
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Trạng thái</span>
-
-                <MudRadioGroup @bind-Value="@_isActive" For="@(() => _isActive)">
-                    <MudRadio Value="1" Color="Color.Primary">Hoạt động</MudRadio>
-                    <MudRadio Value="0" Color="Color.Primary">Ngừng Hoạt động</MudRadio>
-                </MudRadioGroup>
-            </div>
-
-            <div class="flex items-center justify-center gap-4">
+            <div class="mt-6 flex w-full items-center justify-center gap-4">
                 <MudButton Href="@RouterConst.Admin.Customer" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
                 <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Class="w-fit px-10">Tạo</MudButton>
             </div>
@@ -53,17 +118,129 @@
 </div>
 
 @code {
-    CustomerModel _model = new CustomerModel();
-    private int _isActive = 1;
+    CreateCustomerModel _model = new CreateCustomerModel();
+    List<ProvinceDTO> _provinces = [];
+    List<DistrictDTO> _districts = [];
+    List<WardDTO> _wards = [];
+
+    InputType PasswordInputCurrent => _isPasswordVisibleCurrent ? InputType.Text : InputType.Password;
+    InputType PasswordInputNew => _isPasswordVisibleNew ? InputType.Text : InputType.Password;
+
+    private int _selectedProvince = 0;
+    private int _selectedDistrict = 0;
+    private string _selectedWard = "0";
+    private string _confirmPassword = string.Empty;
+    private bool _isPasswordVisibleCurrent = false;
+    private bool _isPasswordVisibleNew = false;
+    string PasswordInputIconCurrent => _isPasswordVisibleCurrent ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    string PasswordInputIconNew => _isPasswordVisibleNew ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
 
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Khách Hàng", href: RouterConst.Admin.Customer),
-        new("Tạo Khách Hàng", href: "#", disabled: true),
+    new("Khách Hàng", href: RouterConst.Admin.Customer),
+    new("Tạo Khách Hàng", href: "#", disabled: true),
     ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var resProvince = await _addressService.GetAllProvince();
+
+        if (resProvince.IsSuccess && resProvince.Data != null)
+        {
+            _provinces = resProvince.Data;
+        }
+    }
+
+    private async Task OnProvinceChanged(int provinceId)
+    {
+        try
+        {
+            _selectedProvince = provinceId;
+            _model.CityName = _provinces.FirstOrDefault(x => x.ProvinceID == provinceId)?.ProvinceName ?? "";
+            _selectedDistrict = 0;
+            _model.DistrictName = string.Empty;
+            _selectedWard = string.Empty;
+            _model.WardName = string.Empty;
+            var resDistrict = await _addressService.GetAllDistrictByProvinceId(provinceId);
+
+            if (resDistrict.IsSuccess && resDistrict.Data != null)
+            {
+                _districts = resDistrict.Data;
+            }
+        }
+        catch (Exception e) { }
+    }
+
+    private async Task OnDistrictChanged(int districtId)
+    {
+        try
+        {
+            _selectedDistrict = districtId;
+            _model.DistrictName = _districts.FirstOrDefault(x => x.DistrictID == districtId)?.DistrictName ?? "";
+            _selectedWard = string.Empty;
+            _model.WardName = string.Empty;
+            var resWard = await _addressService.GetAllWardByDistrictCode(districtId);
+
+            if (resWard.IsSuccess && resWard.Data != null)
+            {
+                _wards = resWard.Data;
+            }
+        }
+        catch (Exception e) { }
+    }
+
+    private void OnWardChanged(string wardId)
+    {
+        _selectedWard = wardId;
+        _model.WardName = _wards.FirstOrDefault(x => x.WardCode == wardId)?.WardName ?? "";
+    }
 
     async Task OnSubmit()
     {
+        if (!_model.Password.Equals(_confirmPassword))
+        {
+            _snackbar.Add("Xác nhận mật khẩu không khớp", Severity.Warning);
+            return;
+        }
+
+        if (_selectedProvince == 0 || _selectedDistrict == 0 || string.IsNullOrEmpty(_selectedWard))
+        {
+            _snackbar.Add("Vui lòng nhập và chọn đầy đủ thông tin", Severity.Warning);
+            return;
+        }
+
+        _model.CityId = _selectedProvince.ToString();
+        _model.DistrictId = _selectedDistrict.ToString();
+        _model.WardId = _selectedWard;
+
+        var result = await _customerService.Create(_model);
+
+        if (result.IsSuccess)
+        {
+            _snackbar.Add("Tạo thành công", Severity.Success);
+            navigation.NavigateTo(RouterConst.Admin.Customer);
+        } else
+        {
+            var mess = string.IsNullOrEmpty(result.ErrorMessage) ? "Tạo thất bại" : result.ErrorMessage;
+            _snackbar.Add(mess, Severity.Warning);
+        }
+    }
+
+    void ShowHidePasswordCurrent()
+    {
+        _isPasswordVisibleCurrent = !_isPasswordVisibleCurrent;
+        StateHasChanged();
+    }
+
+    void ShowHidePasswordNew()
+    {
+        _isPasswordVisibleNew = !_isPasswordVisibleNew;
+        StateHasChanged();
     }
 }

@@ -1,0 +1,49 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Style="font-size: 18px; font-weight: bold; text-transform: uppercase">Xóa tài khoản khách hàng</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>Bạn chắc chắn muốn xóa không?</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="MudBlazor.Color.Surface" OnClick="Cancel">Đóng</MudButton>
+        <MudButton Color="MudBlazor.Color.Error"  OnClick="OnSubmit">Xóa</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    private string _token = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+        }
+    }
+
+    async Task OnSubmit()
+    {
+        var res = await _customerService.Delete(id, _token);   
+
+        if (res)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+            _snackbar.Add("Xóa thành công", Severity.Success);
+
+        }
+        else
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+            _snackbar.Add("Xóa thất bại", Severity.Error);
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

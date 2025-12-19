@@ -9,14 +9,106 @@
         <a href="@RouterConst.Admin.CreateCustomer" class="leading-[1.5rem] h-10 rounded-lg bg-admin-default px-6 py-2 text-white">Tạo mới</a>
     </div>
 
-    <div class="h-[calc(100lvh-9.25rem)] mt-6 w-full rounded-xl border border-slate-200 bg-white shadow-sm">
+
+    <div class="mt-6 w-full rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+        <MudTable Bordered Items="@_customers" Loading="@_loading" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true" Height="calc(100lvh - 16.5rem)">
+            <HeaderContent>
+                <MudTh hidden><MudTableSortLabel SortLabel="Id" T="string" hidden>STT</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Tên" T="string">Tên</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Email" T="string">Email</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Số điện thoại" T="string">Số điện thoại</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Ngày sinh" T="string">Ngày sinh</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Trạng thái" T="string">Trạng thái</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Thao tác" T="string">Thao tác</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id" hidden>@context.Id</MudTd>
+                <MudTd DataLabel="Tên">@context.FullName</MudTd>
+                <MudTd DataLabel="Tên">@context.Email</MudTd>
+                <MudTd DataLabel="Tên">@context.PhoneNumber</MudTd>
+                <MudTd DataLabel="Tên">@(context.DateOfBirth != null ? context.DateOfBirth?.ToString("dd/MM/yyyy") : "")</MudTd>
+                <MudTd DataLabel="Trạng thái">@(context.Status == Convert.ToByte(Constant.StatusDefault.Active) ? "Hoạt Động" : "Không Hoạt Động")</MudTd>
+                <MudTd DataLabel="Thao tác">
+                    <MudIconButton Icon="@Icons.Material.Filled.BorderColor" aria-label="update" OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.EditCustomer.Replace(":id", context.Id.ToString())))"></MudIconButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="@(() => OpenDialogDelete(context.Id))"></MudIconButton>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>Không có dữ liệu.</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <div class="flex w-full flex-col gap-3">
+                    @{
+                        for (var i = 0; i < 5; i++)
+                        {
+                            <div class="flex items-center justify-between gap-2">
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                            </div>
+                        }
+                    }
+                </div>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
     </div>
 </div>
 
 @code {
+    private List<DAL.Models.Customer> _customers = [];
+    private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Large, FullWidth = true };
+    private bool _loading = true;
+
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
         new("Khách Hàng", href: "#", disabled: true),
     ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadData();
+        }
+        catch (Exception e)
+        {
+            _loading = false;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    async Task LoadData()
+    {
+        var res = await _customerService.GetAll();
+        var data = res.Data;
+        if (res.IsSuccess && data != null)
+        {
+            _customers = data;
+        }
+        StateHasChanged();
+    }
+
+    async Task OpenDialogDelete(int id)
+    {
+        var deleteParaeters = new DialogParameters<Admin.Customer.ConfirmDeleteDialog>
+        {
+            {x => x.id, id}
+        };
+
+        var dialog = await _dialogService.ShowAsync<Admin.Customer.ConfirmDeleteDialog>("Options Dialog", deleteParaeters, _maxWidth);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            await LoadData();
+            StateHasChanged();
+        }
+    }
 }

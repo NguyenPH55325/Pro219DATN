@@ -34,13 +34,12 @@
                 <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Size))" Class="@IsActiveMenu(RouterConst.Admin.Size)" Icon="@Icons.Material.Filled.BorderColor">Kích cỡ</MudNavLink>
                 <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Color))" Class="@IsActiveMenu(RouterConst.Admin.Color)" Icon="@Icons.Material.Filled.Style">Màu</MudNavLink>
             </MudNavGroup>
-            <MudNavGroup Title="Tài khoản" Expanded="false">
-                <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.User))" Class="@IsActiveMenu(RouterConst.Admin.User)" Icon="@Icons.Material.Filled.SupervisedUserCircle">Tài quản trị</MudNavLink>
-                <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Customer))" Class="@IsActiveMenu(RouterConst.Admin.Customer)" Icon="@Icons.Material.Filled.Group">Tài khoản khách hàng</MudNavLink>
-            </MudNavGroup>
+            @*<MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.User))" Class="@IsActiveMenu(RouterConst.Admin.User)" Icon="@Icons.Material.Filled.SupervisedUserCircle">Tài quản trị</MudNavLink>*@
             <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Coupon))" Class="@IsActiveMenu(RouterConst.Admin.Coupon)" Icon="@Icons.Material.Filled.PanoramaHorizontalSelect">Mã giảm giá</MudNavLink>
             <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Bill))" Class="@IsActiveMenu(RouterConst.Admin.Bill)" Icon="@Icons.Material.Filled.Payments">Hóa đơn</MudNavLink>
             <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Statistical))" Class="@IsActiveMenu(RouterConst.Admin.Statistical)" Icon="@Icons.Material.Filled.SsidChart">Thống kê</MudNavLink>
+            <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Customer))" Class="@IsActiveMenu(RouterConst.Admin.Customer)" Icon="@Icons.Material.Filled.Group">Tài khoản khách hàng</MudNavLink>
+            @*<MudNavLink Icon="@Icons.Material.Filled.Group">Bán tại quầy</MudNavLink>*@
         </div>
     </MudNavMenu>
 

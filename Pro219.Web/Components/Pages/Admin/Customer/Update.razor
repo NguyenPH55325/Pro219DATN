@@ -1,17 +1,115 @@
-﻿@page "/admin/customers/edit"
+﻿@page "/admin/customers/{_customerId:int}/edit"
 @layout AdminLayout
 
 <div class="p-6">
     <MudBreadcrumbs Class="!p-0 !text-sm" Items="_items" Separator=">"></MudBreadcrumbs>
 
     <h1 class="leading-[3rem] h-12 text-3xl font-bold text-admin-default">Sửa khách hàng</h1>
+
+    <div class="mx-auto mt-6 w-full rounded-lg bg-white p-8 shadow-sm">
+        <EditForm Model="_model" OnValidSubmit="OnSubmit" class="mx-auto flex w-full flex-col gap-4">
+            <DataAnnotationsValidator />
+
+            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Họ tên</span>
+                <MudTextField @bind-Value="@_model.FullName" For="@(() => _model.FullName)" Placeholder="Nguyễn Văn A" Variant="Variant.Outlined" FullWidth Style="background-color: white" />
+            </div>
+
+            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Ngày sinh</span>
+                <MudDatePicker @bind-Date="@_model.DateOfBirth" For="@(() => _model.DateOfBirth)" Placeholder="01/01/2000" Variant="Variant.Outlined" Style="background-color: white" ShowToolbar="false" />
+            </div>
+
+            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Email</span>
+                <MudTextField @bind-Value="@_model.Email" For="@(() => _model.Email)" Placeholder="example@gmail.com" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+            </div>
+
+            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Số điện thoại</span>
+                <MudTextField @bind-Value="@_model.PhoneNumber" For="@(() => _model.PhoneNumber)" Placeholder="0xxxxxxxxx" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+            </div>
+
+            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Mật khẩu</span>
+                <MudTextField Disabled Value="@passswordDraft" Placeholder="********" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+            </div>
+
+            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Trạng thái</span>
+
+                <MudRadioGroup @bind-Value="@_isActive" For="@(() => _isActive)">
+                    <MudRadio Value="1" Color="Color.Primary">Hoạt động</MudRadio>
+                    <MudRadio Value="0" Color="Color.Primary">Ngừng Hoạt động</MudRadio>
+                </MudRadioGroup>
+            </div>
+
+            <div class="flex items-center justify-center gap-4">
+                <MudButton Href="@RouterConst.Admin.Customer" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Class="w-fit px-10">Sửa</MudButton>
+            </div>
+        </EditForm>
+    </div>
 </div>
 
 @code {
+    [Parameter]
+    public int _customerId { get; set; }
+
+    DAL.Models.Customer _model = new DAL.Models.Customer();
+
+    private int _isActive = -1;
+    private string _token = string.Empty;
+    private string passswordDraft = "*********";
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Khách Hàng", href: RouterConst.Admin.Customer),
-        new("Sửa Khách Hàng", href: "#", disabled: true),
+    new("Khách Hàng", href: RouterConst.Admin.Customer),
+    new("Sửa Khách Hàng", href: "#", disabled: true),
     ];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            await LoadDataAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+
+        var resCustomer = await _customerService.GetById(_customerId);
+
+        if(resCustomer.IsSuccess && resCustomer.Data != null)
+        {
+            _model = resCustomer.Data;
+            _isActive = resCustomer.Data.Status != null ? (int)resCustomer.Data.Status : -1;
+        }
+    }
+
+    private async Task OnSubmit()
+    {
+        if(_isActive <= -1)
+        {
+            _snackbar.Add("Vui lòng chọn trạng thái hoạt động", Severity.Warning);
+            return;
+        }
+
+        _model.Status = (byte)_isActive;
+        var result = await _customerService.Edit(_model, _token);
+
+        if (result.IsSuccess)
+        {
+            _snackbar.Add("Sửa thành công", Severity.Success);
+            navigation.NavigateTo(RouterConst.Admin.Customer);
+        }
+        else
+        {
+            var mess = string.IsNullOrEmpty(result.ErrorMessage) ? "Sửa thất bại" : result.ErrorMessage;
+            _snackbar.Add(mess, Severity.Warning);
+        }
+    }
 }

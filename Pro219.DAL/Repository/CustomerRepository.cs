@@ -3,6 +3,7 @@ using Pro219.DAL.Context;
 using Pro219.DAL.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,6 +69,23 @@ namespace Pro219.DAL.Repository
                 return null;
             }
         }
+
+        public async Task<Customer> CreateCustomer(Customer customer)
+        {
+            try
+            {
+                customer.CreateAt = DateTime.Now;
+                customer.Status = 1;
+                customer.Delete = false;
+                var addedCustomer = _context.Customers.Add(customer).Entity;
+                await _context.SaveChangesAsync();
+                return addedCustomer;
+            } catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public async Task<Customer> UpdateCustomer(Customer customer)
         {
             try

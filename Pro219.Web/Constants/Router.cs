@@ -101,7 +101,7 @@
             // Customer
             public const string Customer = "/admin/customers";
             public const string CreateCustomer = "/admin/customers/create";
-            public const string EditCustomer = "/admin/customers/edit";
+            public const string EditCustomer = "/admin/customers/:id/edit";
 
             // Bill
             public const string Bill = "/admin/orders";
