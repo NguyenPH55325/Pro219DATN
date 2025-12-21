@@ -28,4 +28,8 @@
     <Folder Include="wwwroot\Uploads\Images\Products\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Components\Pages\User\Statistical\Statistical.razor" />
+  </ItemGroup>
+
 </Project>

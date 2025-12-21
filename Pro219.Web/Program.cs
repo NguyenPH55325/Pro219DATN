@@ -42,7 +42,7 @@ builder.Services.AddScoped<CartStateService>();
 builder.Services.AddScoped<AddressSerivce>();
 builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ReviewService>();
-builder.Services.AddScoped<WishlistService>();
+builder.Services.AddScoped<StatisticalService>();
 
 builder.Services.AddScoped(http => new HttpClient
 {
