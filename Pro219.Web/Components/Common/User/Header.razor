@@ -55,8 +55,11 @@
                 </MudMenu>
             </MudButton>
             <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo($"{RouterConst.User.SearchAll}?page={Constant.Pagination.DefaultPage}"))">Tất Cả Sản Phẩm</MudButton>
-            <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo(RouterConst.User.Home))">Mã giảm giá</MudButton>
             <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo(RouterConst.User.Home))">Tra cứu đơn hàng</MudButton>
+            @if (!string.IsNullOrEmpty(_token))
+            {
+                <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo(RouterConst.User.CouponNow))">Mã giảm giá</MudButton>
+            }
         </div>
 
         <div class="max-w-[calc((100%-5rem)/2)] flex w-full items-center justify-end gap-3">
@@ -169,6 +172,24 @@
                 </MudList>
             </MudCollapse>
         </div>
+
+        <MudNavLink Href=@($"{RouterConst.User.SearchAll}?page={Constant.Pagination.DefaultPage}") Class="mt-2" Match="NavLinkMatch.All">
+            <div class="flex w-full items-center justify-between">
+                <MudText Typo="Typo.subtitle1" Class="!uppercase">Tất cả sản phẩm</MudText>
+            </div>
+        </MudNavLink>
+
+        <MudNavLink Href="#" Class="mt-2" Match="NavLinkMatch.All">
+            <div class="flex w-full items-center justify-between">
+                <MudText Typo="Typo.subtitle1" Class="!uppercase">Tra cứu đơn hàng</MudText>
+            </div>
+        </MudNavLink>
+
+        <MudNavLink Href="@RouterConst.User.CouponNow" Class="mt-2" Match="NavLinkMatch.All">
+            <div class="flex w-full items-center justify-between">
+                <MudText Typo="Typo.subtitle1" Class="!uppercase">Mã giảm giá</MudText>
+            </div>
+        </MudNavLink>
     </MudNavMenu>
 </MudDrawer>
 
@@ -189,10 +210,18 @@
 
     private string _searchValue = "";
     private int _countCart = 99;
-
+    private string _token = string.Empty;
     private bool _isShowMenuChild = false;
     private bool _drawerOpen = false; // Trạng thái mở/đóng Drawer
     private bool _isCategoryMenuOpen = true; // Trạng thái mở/đóng menu Danh mục trong Drawer
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

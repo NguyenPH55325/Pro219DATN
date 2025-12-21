@@ -39,6 +39,32 @@ namespace Pro219.API.Controllers
             }
         }
 
+        [HttpGet("GetAllNow")]
+        public async Task<ActionResult<List<DiscountCode>>> GetAllDiscountCodeNow()
+        {
+            try
+            {
+                var result = await discountCodeRepository.GetAllDiscountCodes();
+                if (result == null)
+                {
+                    return Ok(new List<DiscountCode>());
+                }
+
+                var filter = result.Where(x => x.EndDate >= DateTime.Now && x.StartDate <= DateTime.Now).ToList();
+
+                if (filter == null)
+                {
+                    return Ok(new List<DiscountCode>());
+                }
+
+                return Ok(filter);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+
         [HttpGet("ApplyDiscountCodeValue")]
         public async Task<ActionResult<ApplyDiscountCodeDTO>> ApplyDiscountCodeValue(string code, decimal totalAmount, decimal shippingFee)
         {
