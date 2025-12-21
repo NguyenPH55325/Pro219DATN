@@ -114,7 +114,6 @@ namespace Pro219.DAL.Repository
             {
                 discountCode.CreateAt = DateTime.Now;
                 discountCode.Delete = false;
-                discountCode.Status = 1;
                 var addedDiscountCode = _context.DiscountCodes.Add(discountCode).Entity;
                 await _context.SaveChangesAsync();
                 return addedDiscountCode;
@@ -144,6 +143,7 @@ namespace Pro219.DAL.Repository
                 existingDiscountCode.UpdateBy = discountCode.UpdateBy;
                 existingDiscountCode.UpdateBy = discountCode.UpdateBy;
                 existingDiscountCode.UpdateAt = DateTime.Now;
+                existingDiscountCode.Type = discountCode.Type;
 
                 var updatedDiscountCode = _context.DiscountCodes.Update(existingDiscountCode).Entity;
                 await _context.SaveChangesAsync();

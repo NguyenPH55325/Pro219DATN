@@ -37,6 +37,29 @@ namespace Pro219.Web.Services
             }
         }
 
+        public async Task<ServiceResult<List<DiscountCode>>> GetAllNow()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/DiscountCode/GetAllNow");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<List<DiscountCode>>();
+                return ServiceResult<List<DiscountCode>>.Success(result);
+            }
+            else
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var errorCode = result;
+
+                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                    ? Constant.Errors[errorCode ?? ""]
+                                    : result;
+                return ServiceResult<List<DiscountCode>>.Failure(result, errorMess, response.StatusCode.ToString());
+            }
+        }
+
         public async Task<ServiceResult<DiscountCodeModel>> GetById(int id)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"/DiscountCode/GetById/{id}");

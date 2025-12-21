@@ -15,6 +15,8 @@
             public const string ForgotPassword = "/forgot-password";
             public const string ChangePassword = "/change-password";
 
+            // Coupon Now
+            public const string CouponNow = "/coupon-now";
             // Profile
             public const string Profile = "/profile";
 
