@@ -1,4 +1,406 @@
 ﻿@page "/admin/statistical"
 @layout AdminLayout
 
-<section class="p-6">Statistical</section>
+<style>
+    .mud-charts-xaxis text, .mud-charts-yaxis text {
+        font-size: 0.5rem !important;
+        fill: #94a3b8 !important;
+    }
+
+    .mud-chart-legend-item text {
+        font-size: 0.5rem !important;
+    }
+</style>
+
+<div class="p-6">
+    <MudBreadcrumbs Class="!p-0 !text-sm" Items="_items" Separator=">"></MudBreadcrumbs>
+
+    <h1 class="h-12 text-3xl leading-[3rem] font-bold text-admin-default">Thống kê</h1>
+
+    <div class="mt-6 grid grid-cols-4 gap-4">
+        <MudDatePicker Label="Bắt đầu"
+                       Style="background-color: #FFFFFF"
+                       Date="@_startDate"
+                       DateChanged="OnChangeStartDate"
+                       Variant="Variant.Outlined"
+                       OpenTo="@_openTo"
+                       FixMonth="@_fixStartMonth"
+                       FixDay="@_fixStartDay"
+                       DateFormat="@_dateFormat"
+                       MinDate="@_minDateStart"
+                       MaxDate="@_maxDateStart" />
+
+        <MudDatePicker Label="Kết thúc"
+                       Style="background-color: #FFFFFF"
+                       Date="@_endDate"
+                       DateChanged="OnChangeEndDate"
+                       Variant="Variant.Outlined"
+                       OpenTo="@_openTo"
+                       FixMonth="@_fixEndMonth"
+                       FixDay="@_fixEndDay"
+                       DateFormat="@_dateFormat"
+                       MinDate="@_minDateEnd"
+                       MaxDate="@_maxDateEnd" />
+
+        <MudSelect T="string" Value="@_dateType" Style="background-color: #FFFFFF" ValueChanged="OnChangeDateType" Label="Lọc theo" Variant="Variant.Outlined">
+            <MudSelectItem T="string" Value="@("day")">Ngày</MudSelectItem>
+            <MudSelectItem T="string" Value="@("month")">Tháng</MudSelectItem>
+            <MudSelectItem T="string" Value="@("year")">Năm</MudSelectItem>
+        </MudSelect>
+
+        <MudSelect T="string" Value="@_chartTypeView" ValueChanged="OnChartTypeViewChanged" Style="background-color: #FFFFFF" Label="Hiển thị biểu đồ theo" Variant="Variant.Outlined">
+            <MudSelectItem T="string" Value="@("Revenue")">Doanh thu</MudSelectItem>
+            <MudSelectItem T="string" Value="@("Orders")">Đơn hàng (Tổng/Thành công/Hủy)</MudSelectItem>
+            <MudSelectItem T="string" Value="@("Units")">Sản phẩm bán ra</MudSelectItem>
+            <MudSelectItem T="string" Value="@("Customers")">Khách hàng (Mới)</MudSelectItem>
+        </MudSelect>
+    </div>
+
+    <div class="mt-6 grid grid-cols-4 gap-4">
+        <div class="flex w-full flex-col items-center gap-3 rounded-lg border border-solid border-slate-300 bg-white p-4">
+            <p class="font-mediun text-xl">Doanh thu</p>
+            <p class="text-2xl font-bold">@_data.TotalRevenue.ToString("C", vietnameseCulture)</p>
+        </div>
+
+        <div class="flex w-full flex-col items-center gap-3 rounded-lg border border-solid border-slate-300 bg-white p-4">
+            <p class="font-mediun text-xl">Sản phẩm bán ra</p>
+            <p class="text-2xl font-bold">@_data.TotalUnitSold</p>
+        </div>
+
+        <div class="flex w-full flex-col items-center gap-3 rounded-lg border border-solid border-slate-300 bg-white p-4">
+            <p class="font-mediun text-xl">Đơn hoàn thành / hủy</p>
+            <p class="text-2xl font-bold">@_data.OrderSuccess / @_data.OrderCanceled</p>
+        </div>
+
+        <div class="flex w-full flex-col items-center gap-3 rounded-lg border border-solid border-slate-300 bg-white p-4">
+            <p class="font-mediun text-xl">Khách hàng mới</p>
+            <p class="text-2xl font-bold">@_data.NewCustomerRegistered</p>
+        </div>
+    </div>
+
+    <div class="doc-section-component-container mt-6 w-full rounded-xl border border-slate-200 bg-white px-2 py-8 shadow-sm">
+        <h3 class="mb-4 text-center text-2xl font-semibold tracking-tight">@ChartTitle</h3>
+        @if (_dataCharts != null && _dataCharts.Any())
+        {
+            <MudChart ChartType="ChartType.Line" ChartSeries="@_dataCharts" XAxisLabels="@_xAxisLabels" Width="100%" Height="700px" ChartOptions="@_options" AxisChartOptions="@_axisChartOptions" />
+        }
+        else
+        {
+            <div class="flex justify-center rounded-lg border-2 border-dashed border-slate-200 p-10">
+                <p class="text-slate-400">Không có dữ liệu hiển thị cho khoảng thời gian này</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private ReportResponseDTO _data = new ReportResponseDTO();
+    public List<ChartSeries> _dataCharts = new List<ChartSeries>();
+    private ChartOptions _options = new ChartOptions();
+    private AxisChartOptions _axisChartOptions = new AxisChartOptions();
+    public string[] _xAxisLabels = [];
+    CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
+
+    private string _dateType = "month";
+    private string _chartTypeView = "Revenue";
+    private DateTime _dateNow = DateTime.Now;
+    private DateTime? _startDate = null;
+    private DateTime? _endDate = null;
+    private DateTime _minDateStart = new DateTime(DateTime.Now.Year - 4, 1, 1);
+    private DateTime _maxDateStart = DateTime.Now;
+    private DateTime _minDateEnd = new DateTime(DateTime.Now.Year - 4, 1, 1);
+    private DateTime _maxDateEnd = DateTime.Now;
+    private int? _fixStartDay = null;
+    private int? _fixEndDay = null;
+    private int? _fixStartMonth = null;
+    private int? _fixEndMonth = null;
+    private string _dateFormat = string.Empty;
+    private OpenTo _openTo = OpenTo.Month;
+
+    private List<BreadcrumbItem> _items =
+    [
+        new("Trang Chủ", href: RouterConst.Admin.Home),
+    new("Thống Kê", href: "#", disabled: true),
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFirstDate();
+        await LoadData();
+        StateHasChanged();
+    }
+
+    private async Task LoadFirstDate()
+    {
+        var sixMonthsAgo = _dateNow.AddMonths(-11);
+        _startDate = new DateTime(sixMonthsAgo.Year, sixMonthsAgo.Month, 1);
+
+        var firstDayOfThisMonth = new DateTime(_dateNow.Year, _dateNow.Month, 1);
+        _endDate = firstDayOfThisMonth.AddMonths(1).AddDays(-1);
+
+        // Chỉ fix day cho startDate (ngày 1), không fix cho endDate để có thể chọn ngày cuối của mọi tháng
+        _fixStartDay = 1;
+        _fixEndDay = 28;
+
+        _dateFormat = "MM/yyyy";
+        _axisChartOptions.XAxisLabelRotation = 30;
+        _options.LineStrokeWidth = 2;
+        UpdateDateBoundaries();
+    }
+
+    private async Task LoadData()
+    {
+        var resStatistic = await _statisticalService.GetStatistics(_startDate, _endDate, _dateType);
+
+        if (resStatistic.IsSuccess && resStatistic.Data != null)
+        {
+            _data = resStatistic.Data;
+
+            UpdateChartSeries();
+        }
+    }
+
+    private void UpdateChartSeries()
+    {
+        if (_data.DataMonth == null || !_data.DataMonth.Any())
+        {
+            _dataCharts.Clear();
+            _xAxisLabels = Array.Empty<string>();
+            return;
+        }
+
+        _xAxisLabels = _data.DataMonth.Select(x => x.Date).ToArray();
+        _dataCharts.Clear();
+
+        switch (_chartTypeView)
+        {
+            case "Revenue":
+                _dataCharts.Add(new ChartSeries()
+                    {
+                        Name = "Doanh thu (VNĐ)",
+                        Data = _data.DataMonth.Select(x => (double)x.TotalRevenue).ToArray()
+                    });
+                break;
+
+            case "Orders":
+                _dataCharts.Add(new ChartSeries()
+                    {
+                        Name = "Tổng đơn hàng",
+                        Data = _data.DataMonth.Select(x => (double)x.TotalOrder).ToArray()
+                    });
+                _dataCharts.Add(new ChartSeries()
+                    {
+                        Name = "Thành công",
+                        Data = _data.DataMonth.Select(x => (double)x.OrderSuccess).ToArray()
+                    });
+                _dataCharts.Add(new ChartSeries()
+                    {
+                        Name = "Đã hủy",
+                        Data = _data.DataMonth.Select(x => (double)x.OrderCanceled).ToArray()
+                    });
+                break;
+
+            case "Units":
+                _dataCharts.Add(new ChartSeries()
+                    {
+                        Name = "Sản phẩm bán ra",
+                        Data = _data.DataMonth.Select(x => (double)x.TotalUnitSold).ToArray()
+                    });
+                break;
+
+            case "Customers":
+                _dataCharts.Add(new ChartSeries()
+                    {
+                        Name = "Khách hàng mới",
+                        Data = _data.DataMonth.Select(x => (double)x.NewCustomerRegistered).ToArray()
+                    });
+                break;
+        }
+
+        StateHasChanged();
+    }
+
+    private void OnChartTypeViewChanged(string value)
+    {
+        _chartTypeView = value;
+        UpdateChartSeries();
+    }
+
+    private async Task OnChangeDateType(string value)
+    {
+        _dateType = value;
+
+        switch (value)
+        {
+            case "day":
+                _endDate = DateTime.Now;
+                _startDate = _endDate.Value.AddMonths(-1);
+
+                _fixStartDay = _fixEndDay = _fixStartMonth = _fixEndMonth = null;
+
+                _openTo = OpenTo.Date;
+                _dateFormat = "dd/MM/yyyy";
+                _axisChartOptions.XAxisLabelRotation = 20;
+                break;
+            case "month":
+                var sixMonthsAgo = _dateNow.AddMonths(-11);
+                _startDate = new DateTime(sixMonthsAgo.Year, sixMonthsAgo.Month, 1);
+
+                var firstDayOfThisMonth = new DateTime(_dateNow.Year, _dateNow.Month, 1);
+                _endDate = firstDayOfThisMonth.AddMonths(1).AddDays(-1);
+
+                _fixStartDay = 1;
+                _fixEndDay = 28;
+                _fixStartMonth = null;
+                _fixEndMonth = null;
+
+                _openTo = OpenTo.Month;
+                _dateFormat = "MM/yyyy";
+                _axisChartOptions.XAxisLabelRotation = 30;
+                break;
+            case "year":
+                var oneYearAgo = _dateNow.AddYears(-1);
+
+                _startDate = new DateTime(oneYearAgo.Year, 1, 1);
+                _endDate = new DateTime(_dateNow.Year, 12, 31);
+
+                _fixStartDay = _startDate.Value.Day;
+                _fixEndDay = _endDate.Value.Day;
+                _fixStartMonth = _startDate.Value.Month;
+                _fixEndMonth = _endDate.Value.Month;
+
+                _openTo = OpenTo.Year;
+                _dateFormat = "yyyy";
+                _axisChartOptions.XAxisLabelRotation = 0;
+                break;
+            default:
+                break;
+        }
+
+        UpdateDateBoundaries();
+        await LoadData();
+        StateHasChanged();
+    }
+
+    private async Task OnChangeEndDate(DateTime? date)
+    {
+        if (date == null) return;
+        _endDate = date;
+
+        if (_dateType == "month" && _endDate.HasValue)
+        {
+            var lastDayOfMonth = DateTime.DaysInMonth(_endDate.Value.Year, _endDate.Value.Month);
+            _endDate = new DateTime(_endDate.Value.Year, _endDate.Value.Month, lastDayOfMonth);
+        }
+
+        UpdateDateBoundaries();
+        await LoadData();
+    }
+
+    private async Task OnChangeStartDate(DateTime? date)
+    {
+        if (date == null) return;
+        _startDate = date;
+
+        if (_dateType == "month" && _startDate.HasValue)
+        {
+            _startDate = new DateTime(_startDate.Value.Year, _startDate.Value.Month, 1);
+        }
+
+        UpdateDateBoundaries();
+        await LoadData();
+    }
+
+    private void UpdateDateBoundaries()
+    {
+        if (_startDate == null || _endDate == null) return;
+
+        var now = DateTime.Now;
+
+        if (_dateType == "day")
+        {
+            _minDateStart = _endDate.Value.AddMonths(-1);
+            _maxDateStart = _endDate.Value > now ? now : _endDate.Value;
+        }
+        else if (_dateType == "month")
+        {
+            var endYear = _endDate.Value.Year;
+            var endMonth = _endDate.Value.Month;
+            var minYear = endYear - 1;
+            var minMonth = endMonth;
+
+            _minDateStart = new DateTime(minYear, minMonth, 1);
+
+            if (_endDate.Value > now)
+            {
+                var nowYear = now.Year;
+                var nowMonth = now.Month;
+                var nowLastDay = DateTime.DaysInMonth(nowYear, nowMonth);
+                _maxDateStart = new DateTime(nowYear, nowMonth, nowLastDay);
+            }
+            else
+            {
+                _maxDateStart = new DateTime(endYear, endMonth, DateTime.DaysInMonth(endYear, endMonth));
+            }
+        }
+        else if (_dateType == "year")
+        {
+            var endYear = _endDate.Value.Year;
+            var minYear = endYear - 4;
+            _minDateStart = new DateTime(minYear, 1, 1);
+
+            _maxDateStart = _endDate.Value > now ? now : _endDate.Value;
+        }
+
+        _minDateEnd = _startDate.Value;
+
+        DateTime calculatedMax;
+        if (_dateType == "day")
+        {
+            calculatedMax = _startDate.Value.AddMonths(1);
+            _maxDateEnd = calculatedMax > now ? now : calculatedMax;
+        }
+        else if (_dateType == "month")
+        {
+            var startYear = _startDate.Value.Year;
+            var startMonth = _startDate.Value.Month;
+            var maxYear = startYear + 1;
+            var maxMonth = startMonth;
+
+            var lastDay = DateTime.DaysInMonth(maxYear, maxMonth);
+            calculatedMax = new DateTime(maxYear, maxMonth, lastDay);
+
+            if (calculatedMax > now)
+            {
+                var nowYear = now.Year;
+                var nowMonth = now.Month;
+                var nowLastDay = DateTime.DaysInMonth(nowYear, nowMonth);
+                _maxDateEnd = new DateTime(nowYear, nowMonth, nowLastDay);
+            }
+            else
+            {
+                _maxDateEnd = calculatedMax;
+            }
+        }
+        else if (_dateType == "year")
+        {
+            var startYear = _startDate.Value.Year;
+            var maxYear = startYear + 4;
+            calculatedMax = new DateTime(maxYear, 12, 31);
+
+            _maxDateEnd = calculatedMax > now ? now : calculatedMax;
+        }
+
+
+        StateHasChanged();
+    }
+
+    private string ChartTitle => _chartTypeView switch
+    {
+        "Revenue" => "Doanh Thu",
+        "Orders" => "Thống Kê Đơn Hàng",
+        "Units" => "Số Lượng Sản Phẩm Bán Ra",
+        "Customers" => "Thống Kê Khách Hàng",
+        _ => "Biểu Đồ Thống Kê"
+    };
+}

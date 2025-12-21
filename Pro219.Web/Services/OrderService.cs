@@ -256,5 +256,33 @@ namespace Pro219.Web.Services
                 return ServiceResult<Order>.Failure(result, errorMess, response.StatusCode.ToString());
             }
         }
+
+        public async Task<ServiceResult<byte[]>> GetInvoicePdf(int id)
+        {
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/GetInvoicePdf/{id}");
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var pdfBytes = await response.Content.ReadAsByteArrayAsync();
+                    return ServiceResult<byte[]>.Success(pdfBytes);
+                }
+                else
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    var errorMess = Constant.Errors.ContainsKey(result ?? "")
+                                    ? Constant.Errors[result ?? ""]
+                                    : "Không thể tải hóa đơn PDF";
+                    return ServiceResult<byte[]>.Failure(result, errorMess, response.StatusCode.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<byte[]>.Failure("EXCEPTION", ex.Message, "500");
+            }
+        }
     }
 }
