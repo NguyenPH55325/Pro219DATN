@@ -19,7 +19,7 @@
                         <MudTh><MudTableSortLabel SortLabel="Phương thức thanh toán" T="string">Phương thức thanh toán</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="Trạng thái thanh toán" T="string">Trạng thái thanh toán</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="Trạng thái hóa đơn" T="string">Trạng thái hóa đơn</MudTableSortLabel></MudTh>
-                        <MudTh><MudTableSortLabel SortLabel="Chi tiết" T="string">Chi tiết</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Chi tiết" T="string">Thao tác</MudTableSortLabel></MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="OrderId" hidden>@context.OrderId</MudTd>
@@ -50,7 +50,10 @@
                                 @GetOrderStatusMessage(context.Status)
                             </span>
                         </MudTd>
-                        <MudTd DataLabel="Chi tiết"><MudIconButton OnClick=@(() => navigation.NavigateTo(RouterConst.User.OrderDetail.Replace(":id", context.OrderId.ToString()))) Icon="@Icons.Material.Filled.Menu" /></MudTd>
+                        <MudTd DataLabel="Chi tiết">
+                            <MudIconButton OnClick=@(() => navigation.NavigateTo(RouterConst.User.OrderDetail.Replace(":id", context.OrderId.ToString()))) Icon="@Icons.Material.Filled.Menu" />
+                            <MudIconButton OnClick=@(() => DowloadPDF(context.OrderId)) Icon="@Icons.Material.Filled.Download" Disabled="@(context.Status != Constant.OrderStatus.StatusDone)" />
+                        </MudTd>
                     </RowTemplate>
                     <NoRecordsContent>
                         <MudText>Không có dữ liệu.</MudText>
@@ -121,6 +124,32 @@
         {
             _addresses = resAsddress.Data;
         }
+    }
+
+    private async Task DowloadPDF(int id)
+    {
+        // Hiển thị loading nếu cần (tùy chọn)
+        _loading = true;
+
+        var result = await _orderService.GetInvoicePdf(id);
+
+        if (result.IsSuccess)
+        {
+            var base64 = Convert.ToBase64String(result.Data);
+            // Lấy mã đơn hàng để đặt tên file cho chuyên nghiệp
+            var orderCode = _orders.FirstOrDefault(o => o.OrderId == id)?.OrderCode ?? id.ToString();
+
+            await JS.InvokeVoidAsync("downloadFile", "application/pdf", base64, $"hoadon_{orderCode}.pdf");
+
+            _snackbar.Add("Tải hóa đơn thành công!", Severity.Success);
+        }
+        else
+        {
+            _snackbar.Add($"Lỗi: {result.ErrorMessage}", Severity.Error);
+        }
+
+        _loading = false;
+        StateHasChanged();
     }
 
     private string GetOrderStatusMessage(byte? status)
