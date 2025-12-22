@@ -752,6 +752,23 @@ namespace Pro219.API.Controllers
                 return StatusCode(500, Constant.ErrorCode.OtherError);
             }
         }
+
+        [HttpGet("get-all-by-key-word")]
+        public async Task<ActionResult<List<Order>>> GetAllByKeyword([FromQuery] string keyword)
+        {
+            try
+            {
+                var result = await orderRepository.GetAllByKeyword(keyword);
+                if (result == null)
+                {
+                    return Ok(new List<Order>());
+                }
+                return Ok(result);
+            } catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
     }
 }
 

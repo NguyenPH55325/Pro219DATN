@@ -40,6 +40,7 @@
             public const string OrderDetail = "/orders/:id/detail";
             public const string PaymentSuccess = "/order/payment-success";
             public const string PaymentCancelled = "/order/payment-cancelled";
+            public const string SearchOrder = "/orders/search";
         }
 
         public static class Admin
