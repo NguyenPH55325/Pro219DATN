@@ -129,12 +129,13 @@ namespace Pro219.API.Controllers
                         City = order.ShippingAddress.CityName,
                         District = order.ShippingAddress.DistrictName,
                         OtherInfo = order.ShippingAddress.OtherInfo ?? ""
-                    },                   
+                    },
                     Items = order.OrderItems.Select(oi => new OrderDetailItemDTO
                     {
                         CustomerId = order.CustomerId,
                         OrderItemId = oi.OrderItemId,
                         ProductVariantId = oi.ProductVariantId,
+                        ProductId = oi.ProductVariant?.Product?.Id,
                         ProductName = oi.ProductVariant?.Product?.Name ?? string.Empty,
                         Color = oi.ProductVariant?.Color?.Name,
                         Size = oi.ProductVariant?.Size?.Name,

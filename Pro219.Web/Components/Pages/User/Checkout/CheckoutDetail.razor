@@ -468,7 +468,7 @@
 
         try
         {
-            var listProductForCheckout = _data.Select(item => new CheckoutModel
+            var listProductForCheckout = _data.Select(item => new CheckoutListItem
             {
                 ProductName = $"{item.productName} - {item.ColorName} - {item.SizeName}",
                 Quantity = item.Quantity,
@@ -482,11 +482,16 @@
                 return;
             }
 
+
             int? discountId = _discountDetail?.DiscountId;
 
             var result = await _orderService.GetCheckoutUrl(
                 _token,
-                listProduct: listProductForCheckout,
+                checkoutBody: new CheckoutModel
+                {
+                    ListItemCheckout = listProductForCheckout,
+                    address = null,
+                },
                 discountAmount: _discountAmount + _discountShippingFee,
                 shippingFee: _shippingPrice,
                 note: _note ?? string.Empty,

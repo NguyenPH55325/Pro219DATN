@@ -8,6 +8,7 @@ namespace Pro219.Web.DTOs
         public int ProductId { get; set; }
 
         public int CustomerId { get; set; }
+        public string CustomerName { get; set; } = string.Empty;
 
         public int OrderItemId { get; set; }
 
