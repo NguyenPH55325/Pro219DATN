@@ -284,5 +284,26 @@ namespace Pro219.Web.Services
                 return ServiceResult<byte[]>.Failure("EXCEPTION", ex.Message, "500");
             }
         }
+
+        public async Task<ServiceResult<List<Order>>> GetAllByKeyword(string keyword)
+        {
+            var queryParams = new Dictionary<string, string?> { { "keyword", keyword } };
+            string url = QueryHelpers.AddQueryString("/Order/get-all-by-key-word", queryParams!);
+            var response = await _httpClient.GetAsync(url);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<List<Order>>();
+                    return ServiceResult<List<Order>>.Success(result);
+                }
+                else
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    var errorCode = result;
+                    var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                        ? Constant.Errors[errorCode ?? ""]
+                                        : result; 
+                    return ServiceResult<List<Order>>.Failure(result, errorMess, response.StatusCode.ToString());
+                }
+        }
     }
 }

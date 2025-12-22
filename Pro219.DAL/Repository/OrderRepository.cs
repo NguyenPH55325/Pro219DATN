@@ -221,6 +221,31 @@ namespace Pro219.DAL.Repository
                 return null;
             }
         }
+
+        public async Task<List<Order>> GetAllByKeyword(string keyword)
+        {
+            try
+            {
+                if(string.IsNullOrEmpty(keyword)) {
+                    return await _context.Orders.ToListAsync();
+                }
+
+                var orders = await (from o in _context.Orders
+                                   join sp in _context.Addresses
+                                   on o.ShippingAddressId equals sp.Id
+                                   where ((o.OrderCode.Contains(keyword) || sp.Phone.Contains(keyword)) && o.Delete != true)
+                                   select o).ToListAsync();
+
+                if (orders.Count > 0 )
+                {
+                    return orders;
+                }
+                return new List<Order>();
+            } catch (Exception)
+            {
+                return new List<Order>();
+            }
+        }
     }
 }
 

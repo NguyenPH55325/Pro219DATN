@@ -55,7 +55,7 @@
                 </MudMenu>
             </MudButton>
             <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo($"{RouterConst.User.SearchAll}?page={Constant.Pagination.DefaultPage}"))">Tất Cả Sản Phẩm</MudButton>
-            <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo(RouterConst.User.Home))">Tra cứu đơn hàng</MudButton>
+            <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo(RouterConst.User.SearchOrder))">Tra cứu đơn hàng</MudButton>
             @if (!string.IsNullOrEmpty(_token))
             {
                 <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo(RouterConst.User.CouponNow))">Mã giảm giá</MudButton>

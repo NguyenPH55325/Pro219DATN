@@ -1,0 +1,187 @@
+﻿@page "/orders/search"
+@layout MainLayout
+
+<PageTitle>@Constant.PageTitleUser Đơn Mua</PageTitle>
+
+<section class="mx-auto max-w-[1440px] p-8">
+    <h1 class="text-xl font-bold uppercase md:text-2xl lg:text-3xl">Tra cứu đơn hàng của bạn</h1>
+
+    <div class="my-6 w-full">
+        <MudTextField T="string" Value="@_searchOrder" Variant="Variant.Outlined" Label="Nhập số điện thoại hoặc mã đơn hàng của bạn" ValueChanged="HandleSearch" InputType="InputType.Search" />
+    </div>
+
+    <div>
+        @if (_orders.Any())
+        {
+            <div>
+                <MudTable Bordered Items="@_orders" Loading="@_loading" Class="w-full" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
+                    <HeaderContent>
+                        <MudTh hidden><MudTableSortLabel SortLabel="OrderId" T="string" hidden>OrderId</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Mã hóa đơn" T="string">Mã hóa đơn</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Ngày đặt hàng" T="string">Ngày đặt hàng</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Địa chỉ nhận hàng" T="string">Địa chỉ nhận hàng</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Phương thức thanh toán" T="string">Phương thức thanh toán</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Trạng thái thanh toán" T="string">Trạng thái thanh toán</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Trạng thái hóa đơn" T="string">Trạng thái hóa đơn</MudTableSortLabel></MudTh>
+                        <MudTh><MudTableSortLabel SortLabel="Chi tiết" T="string">Thao tác</MudTableSortLabel></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="OrderId" hidden>@context.OrderId</MudTd>
+                        <MudTd DataLabel="Mã hóa đơn">@context.OrderCode</MudTd>
+                        <MudTd DataLabel="Địa chỉ nhận hàng">@context.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
+                        <MudTd DataLabel="Ngày đặt hàng">
+                            @{
+                                var address = _addresses.FirstOrDefault(a => a.Id == context.ShippingAddressId);
+
+                                if (address != null)
+                                {
+                                    <div>
+                                        <p class="text-sm font-medium">@address?.FullName <span class="text-slate-500">@((!string.IsNullOrEmpty(address?.Phone) ? " - " : ""))@address?.Phone</span></p>
+                                        <p class="text-sm font-medium">
+                                            @address?.OtherInfo@((!string.IsNullOrEmpty(address?.OtherInfo) && (!string.IsNullOrEmpty(address?.StreetName) || !string.IsNullOrEmpty(address?.DistrictName) || !string.IsNullOrEmpty(address?.CityName)) ? ", " : ""))
+                                            @address?.StreetName@((!string.IsNullOrEmpty(address?.StreetName) && (!string.IsNullOrEmpty(address?.DistrictName) || !string.IsNullOrEmpty(address?.CityName)) ? ", " : ""))
+                                            @address?.DistrictName@((!string.IsNullOrEmpty(address?.DistrictName) && !string.IsNullOrEmpty(address?.CityName) ? ", " : ""))
+                                            @address?.CityName
+                                        </p>
+                                    </div>
+                                }
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Phương thức thanh toán">@(context.PaymentMethodId == Constant.PaymentMethod.CashBack ? "Tiền mặt" : "Chuyển khoản")</MudTd>
+                        <MudTd DataLabel="Trạng thái thanh toán">@context.PaymentStatus</MudTd>
+                        <MudTd DataLabel="Trạng thái hóa đơn">
+                            <span class="@GetOrderStatusClass(context.Status) rounded-full px-3 py-1 text-xs font-medium text-white">
+                                @GetOrderStatusMessage(context.Status)
+                            </span>
+                        </MudTd>
+                        <MudTd DataLabel="Chi tiết">
+                            <MudIconButton OnClick=@(() => navigation.NavigateTo(RouterConst.User.OrderDetail.Replace(":id", context.OrderId.ToString()))) Icon="@Icons.Material.Filled.Menu" />
+                            <MudIconButton OnClick=@(() => DowloadPDF(context.OrderId)) Icon="@Icons.Material.Filled.Download" Disabled="@(context.Status != Constant.OrderStatus.StatusDone)" />
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText>Không có dữ liệu.</MudText>
+                    </NoRecordsContent>
+                    <LoadingContent>
+                        <div class="flex w-full flex-col gap-3">
+                            @{
+                                for (var i = 0; i < Constant.DefaultSkeletons; i++)
+                                {
+                                    <div class="flex items-center justify-between gap-2">
+                                        <MudSkeleton Width="100%" Height="3rem" />
+                                        <MudSkeleton Width="100%" Height="3rem" />
+                                        <MudSkeleton Width="100%" Height="3rem" />
+                                        <MudSkeleton Width="100%" Height="3rem" />
+                                        <MudSkeleton Width="100%" Height="3rem" />
+                                        <MudSkeleton Width="100%" Height="3rem" />
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </LoadingContent>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </div>
+        }
+        else
+        {
+            <p class="text-center text-lg">Không có đơn hàng nào.</p>
+        }
+    </div>
+</section>
+
+@code {
+    private List<DAL.Models.Order> _orders = [];
+    private List<DAL.Models.Address> _addresses = [];
+    private GetMeResponseDTO _me = new GetMeResponseDTO();
+
+    private string _searchOrder = string.Empty;
+    private bool _loading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var resultMe = await localStorage.GetItemAsStringAsync(Constant.UserInfoLocalStorage);
+
+            if (!string.IsNullOrEmpty(resultMe))
+            {
+                _me = JsonSerializer.Deserialize<GetMeResponseDTO>(resultMe);
+            }
+        }
+    }
+
+    private async Task LoadData()
+    {
+        var resOrder = await _orderService.GetAllByKeyword(_searchOrder);
+        var resAsddress = await _addressService.GetAll();
+        if (resOrder.IsSuccess && resOrder.Data.Count() > 0)
+        {
+            _orders = resOrder.Data;
+        }
+
+        if (resAsddress.IsSuccess && resAsddress.Data.Count() > 0)
+        {
+            _addresses = resAsddress.Data;
+        }
+    }
+
+    private async Task HandleSearch(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return;
+
+        _searchOrder = value.Trim();
+
+        await LoadData();
+        _loading = false;
+        StateHasChanged();
+    }
+
+    private async Task DowloadPDF(int id)
+    {
+        _loading = true;
+
+        var result = await _orderService.GetInvoicePdf(id);
+
+        if (result.IsSuccess)
+        {
+            var base64 = Convert.ToBase64String(result.Data);
+            var orderCode = _orders.FirstOrDefault(o => o.OrderId == id)?.OrderCode ?? id.ToString();
+
+            await JS.InvokeVoidAsync("downloadFile", "application/pdf", base64, $"hoadon_{orderCode}.pdf");
+
+            _snackbar.Add("Tải hóa đơn thành công!", Severity.Success);
+        }
+        else
+        {
+            _snackbar.Add($"Lỗi: {result.ErrorMessage}", Severity.Error);
+        }
+
+        _loading = false;
+        StateHasChanged();
+    }
+
+    private string GetOrderStatusMessage(byte? status)
+    {
+        if (!status.HasValue)
+            return "Không xác định";
+
+        var statusItem = Constant.OrderStatusArray.FirstOrDefault(s => s.id == status.Value);
+        return statusItem?.label ?? "Không xác định";
+    }
+
+    private string GetOrderStatusClass(byte? status) =>
+        status switch
+        {
+            Constant.OrderStatus.StatusPending => "bg-gray-400", // Chờ xác nhận (1) - Màu xám
+            Constant.OrderStatus.StatusConfirm => "bg-blue-500", // Xác nhận (2) - Màu xanh dương
+            Constant.OrderStatus.StatusCanceledByUser => "bg-red-500", // Đã hủy bởi người dùng (3) - Màu đỏ
+            Constant.OrderStatus.StatusShipping => "bg-gray-700", // Đang giao hàng (4) - Màu xám đậm
+            Constant.OrderStatus.StatusShippingDone => "bg-green-500", // Đã giao hàng (5) - Màu xanh lá
+            Constant.OrderStatus.StatusShippingFailed => "bg-red-500", // Giao hàng thất bại (6) - Màu đỏ
+            Constant.OrderStatus.StatusDone => "bg-green-500", // Hoàn thành (7) - Màu xanh lá
+            _ => "bg-gray-400"
+        };
+}
