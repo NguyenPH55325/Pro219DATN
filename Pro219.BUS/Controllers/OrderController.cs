@@ -152,26 +152,57 @@ namespace Pro219.API.Controllers
                 return StatusCode(500, Constant.ErrorCode.OtherError);
             }
         }
-
+       
         [HttpPost("Checkout")]
-        public async Task<ActionResult<CheckoutDTO>> GetCheckoutUrl([FromBody] List<CheckoutItemDTO> listProduct, decimal discountAmount = 0, decimal shippingFee = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note ="", int addressId=-99)
+        public async Task<ActionResult<CheckoutDTO>> GetCheckoutUrl([FromBody] CheckoutParamsDTO checkoutParam, decimal discountAmount = 0, decimal shippingFee = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note ="", int addressId=-99)
        {
-            if(addressId==-99)
-            {
-                return BadRequest("Địa chỉ giao hàng không hợp lệ");
-            }
+            
             discountCodeRepository = new DiscountCodeRepository();
             PayOS payOS = new PayOS("09b8a42b-6105-4cd4-a4ee-8492e42e909c", "15cfbaf8-79a4-48a0-908f-248c30538001", "00b20c6b94e21bf27e6cb0ae2f26515637c93d70b2eeb832e7b51e299cba433d");
             List<ItemData> items = new List<ItemData>();
-            foreach (var product in listProduct)
+            foreach (var product in checkoutParam.ListItemCheckout)
             {
                 ItemData item = new ItemData(product.ProductName, product.Quantity, (int)product.UnitPrice);
                 items.Add(item);
             }
 
-            decimal totalPrice = listProduct.Sum(p => p.UnitPrice * p.Quantity);
-           
-            decimal finalAmount = (totalPrice - discountAmount)+shippingFee;
+            decimal totalPrice = checkoutParam.ListItemCheckout.Sum(p => p.UnitPrice * p.Quantity);
+            decimal finalAmount = 0;
+            if(checkoutParam.AddressDTO != null)
+            {
+                AddressRepository addressRepository = new AddressRepository();
+                // create address from DTO to get id
+                Address address = new Address();
+                address.CustomerId = -1;
+                address.FullName = checkoutParam.AddressDTO.FullName;
+                address.Phone = checkoutParam.AddressDTO.Phone;
+                address.Street = checkoutParam.AddressDTO.Street;
+                address.City = checkoutParam.AddressDTO.City;
+                address.District = checkoutParam.AddressDTO.District;
+                address.CityName = checkoutParam.AddressDTO.CityName;
+                address.DistrictName = checkoutParam.AddressDTO.DistrictName;
+                address.StreetName = checkoutParam.AddressDTO.StreetName;
+                address.OtherInfo = checkoutParam.AddressDTO.OtherInfo;
+                address.IsDefault = checkoutParam.AddressDTO.IsDefault;
+                address.CreateAt = DateTime.Now;
+                address.Delete = false;
+                address.Status = 1;
+                var resultAddress = await addressRepository.AddAddress(address);
+                if(resultAddress == null)
+                {
+                    return BadRequest();
+                }
+                addressId = resultAddress.Id;
+                finalAmount = totalPrice +shippingFee;
+            }
+            else 
+            {
+                finalAmount = (totalPrice - discountAmount)+shippingFee;
+            }
+            if (addressId == -99)
+            {
+                return BadRequest("Địa chỉ giao hàng không hợp lệ");
+            }
             int ordCode = new Random().Next(1, int.MaxValue);
             Order order = new Order();
             try
@@ -225,6 +256,7 @@ namespace Pro219.API.Controllers
                 order.ShippingAddressId = 1;
                 order.DiscountId = discountId == null ? null : (int)discountId;
                 order.PaymentMethodId = PaymentMethodTypeId;
+                order.OrderType = checkoutParam.AddressDTO != null ? Constant.OrderType.GuestOrder : Constant.OrderType.RegisteredOrder;
                 var result = await orderRepository.AddOrder(order);
 
 
@@ -235,7 +267,7 @@ namespace Pro219.API.Controllers
                 else
                 {
                     OrderItemRepository orderItemRepository = new OrderItemRepository();
-                    foreach (var product in listProduct)
+                    foreach (var product in checkoutParam.ListItemCheckout)
                     {
                         OrderItem orderItem = new OrderItem();
                         orderItem.OrderId = result.OrderId;

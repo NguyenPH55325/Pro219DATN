@@ -290,6 +290,8 @@ namespace Pro219.DAL.Context
 
             // Customers
             modelBuilder.Entity<Customer>().HasData(
+                new Customer { Id = -1, FullName = "Khách Vãng Lai", PhoneNumber = "0000000000", Email = "abc@example.com", DateOfBirth = new DateTime(1990, 5, 15), PasswordHash = "b855e41c5c5f5061ecba4fd8613a7760", CreateAt = seedDate, Status = 1, Delete = false },
+
                 new Customer { Id = 1, FullName = "Nguyễn Văn An", PhoneNumber = "0912345678", Email = "nguyenvanan@example.com", DateOfBirth = new DateTime(1990, 5, 15), PasswordHash = "b855e41c5c5f5061ecba4fd8613a7760", CreateAt = seedDate, Status = 1, Delete = false },
                 new Customer { Id = 2, FullName = "Trần Thị Bình", PhoneNumber = "0987654321", Email = "tranthibinh@example.com", DateOfBirth = new DateTime(1992, 8, 20), PasswordHash = "b855e41c5c5f5061ecba4fd8613a7760", CreateAt = seedDate, Status = 1, Delete = false },
                 new Customer { Id = 3, FullName = "Lê Minh Cường", PhoneNumber = "0901234567", Email = "leminhcuong@example.com", DateOfBirth = new DateTime(1988, 3, 10), PasswordHash = "b855e41c5c5f5061ecba4fd8613a7760", CreateAt = seedDate, Status = 1, Delete = false }

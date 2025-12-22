@@ -15,6 +15,8 @@ namespace Pro219.DAL.Models
 
         public int OrderItemId { get; set; }
 
+        public string CustomerName { get; set; } = string.Empty;
+
         [MaxLength(200)]
         public string Title { get; set; } = string.Empty;
 

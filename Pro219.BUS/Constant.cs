@@ -27,6 +27,12 @@
 
         }
 
+        public static class OrderType
+        {
+            public const byte GuestOrder = 1;
+            public const byte RegisteredOrder = 2;
+        }
+
         public static class OrderStatus
         {
             public const string PaymentPending = "Chờ thanh toán";

@@ -12,8 +12,10 @@ namespace Pro219.DAL.Models
         [Required]
         public int CustomerId { get; set; }
 
-        [Required]
-        public int ProductVariantId { get; set; }
+
+        public int? ProductVariantId { get; set; }
+
+        public int? ProductId { get; set; }
 
         public bool? Delete { get; set; }
 
