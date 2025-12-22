@@ -10,6 +10,9 @@
                 <MudRating @bind-SelectedValue="@_model.Overall" MaxValue="5" Size="Size.Large" />
             </div>
 
+            <MudTextField @bind-Value="@_customerName" For="@(() => _customerName)" Variant="Variant.Outlined" Placeholder="Họ tên" FullWidth="true" />
+            
+
             <MudTextField @bind-Value="@_model.Title" For="@(() => _model.Title)" Variant="Variant.Outlined" Placeholder="Tiêu đề" FullWidth="true" />
 
             <MudTextField @bind-Value="@_model.Content" For="@(() => _model.Content)" Variant="Variant.Outlined" Placeholder="Mô tả" FullWidth="true" Lines="7" />
@@ -35,15 +38,42 @@
     public int orderItemId { get; set; }
 
     [Parameter]
-    public int productId { get; set; }
+    public int? productId { get; set; }
 
     [Parameter]
     public int customerId { get; set; }
 
     private ReviewModel _model = new ReviewModel();
 
+    private string _token = string.Empty;
+    private string _customerName = string.Empty;
     private int _isActive = 1;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await LoadData();
+        StateHasChanged();
+    }
+
+    private async Task LoadData()
+    {
+        _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+
+        if (string.IsNullOrEmpty(_token))
+        {
+            _model.CustomerId = -1;
+        } else
+        {
+            _model.CustomerId = customerId;
+            var resCustomer = await _customerService.GetById(customerId);
+
+            if(resCustomer.IsSuccess && resCustomer.Data != null)
+            {
+                _model.CustomerName = resCustomer.Data.FullName;
+                _customerName = resCustomer.Data.FullName;
+            }
+        }
+    }
     async Task OnSubmit()
     {
         if(_model.Overall <= 0)
@@ -53,9 +83,9 @@
         }
 
         _model.Status = (byte)_isActive;
-        _model.CustomerId = customerId;
+        _model.CustomerName = _customerName;
         _model.OrderItemId = orderItemId;
-        _model.ProductId = productId;
+        _model.ProductId = productId ?? -1;
 
         var result = await _reviewService.Create(_model);
 

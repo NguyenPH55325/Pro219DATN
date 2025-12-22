@@ -9,6 +9,8 @@ namespace Pro219.API.DTOs
 
         [Required]
         public int CustomerId { get; set; }
+        [Required] 
+        public string CustomerName { get; set; } = string.Empty;
 
         [Required]
         public int OrderItemId { get; set; }

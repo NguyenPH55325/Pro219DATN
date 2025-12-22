@@ -1,5 +1,9 @@
-﻿@page "/orders/{id:int}/detail"
+﻿@using System.Timers
+@implements IDisposable
+
+@page "/orders/{id:int}/detail"
 @layout MainLayout
+
 
 <section class="mx-auto max-w-[1440px] p-8">
     <h1 class="text-xl font-bold uppercase md:text-2xl lg:text-3xl">Chi tiết đơn hàng</h1>
@@ -83,6 +87,7 @@
                         <MudTh><MudTableSortLabel SortLabel="Số lượng" T="string">Số lượng</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="Đơn giá" T="string">Đơn giá</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="Thành tiền" T="string">Thành tiền</MudTableSortLabel></MudTh>
+                        <MudTh>Đánh giá</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="OrderItemId" hidden>@context.OrderItemId</MudTd>
@@ -100,38 +105,25 @@
                             }
                         </MudTd>
                         <MudTd DataLabel="Sản phẩm">
-                            @{
-                                var productVariant = _productVariants.FirstOrDefault(pv => pv.Id == context.ProductVariantId);
-                                if (productVariant != null)
-                                {
-                                    var product = _products.FirstOrDefault(p => p.Id == productVariant.ProductId);
-                                    if (product != null)
-                                    {
-                                        var brand = _brands.FirstOrDefault(b => b.Id == product.BrandId);
-
-                                        <button @onclick="@(() => navigation.NavigateTo(RouterConst.User.ProductDetail + $"/{product.Id}"))">@context.ProductName @(brand != null ? $"- {brand.Name}" : "") @(context.Color != null ? $"- {context.Color}" : "") @(context.Size != null ? $"- {context.Size}" : "")</button>
-                                       
-                                    }
-                                }
-                            }
+                            <button @onclick="@(() => navigation.NavigateTo(RouterConst.User.ProductDetail + $"/{context.ProductId}"))">@context.ProductName @(context.Color != null ? $"- {context.Color}" : "") @(context.Size != null ? $"- {context.Size}" : "")</button>
                         </MudTd>
                         <MudTd DataLabel="Số lượng">@context.Quantity</MudTd>
                         <MudTd DataLabel="Đơn giá">@context.UnitPrice.ToString("C", vietnameseCulture)</MudTd>
                         <MudTd DataLabel="Thành tiền">@((context.Quantity * context.UnitPrice).ToString("C", vietnameseCulture))</MudTd>
-                        @{
-                            var productVariant = _productVariants.FirstOrDefault(pv => pv.Id == context.ProductVariantId);
-                            if (productVariant != null)
+                        <MudTd DataLabel="Đánh giá">
+                            @if((_orderDetail?.Status == Constant.OrderStatus.StatusDone) && !context.IsReviewed)
                             {
-                                var product = _products.FirstOrDefault(p => p.Id == productVariant.ProductId);
-
-                                @if ((_orderDetail?.Status == Constant.OrderStatus.StatusDone) && !context.IsReviewed && product != null)
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled=@(_isDialogOpen) OnClick="@(() => HandleOpenReviewDialog(context.OrderItemId, context.ProductId, context.CustomerId))">Đánh giá</MudButton>
+                            } else
+                            {
+                                if(_orderDetail?.Status != Constant.OrderStatus.StatusDone) {
+                                    <span class="font-bold text-yellow-300">Đơn hàng chưa hoàn thành</span>
+                                } else
                                 {
-                                    <MudTd DataLabel="Thao tác">
-                                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => HandleOpenReviewDialog(context.OrderItemId, product.Id, context.CustomerId))">Đánh giá</MudButton>
-                                    </MudTd>
+                                    <span class="font-bold text-green-600">Đã đánh giá</span>
                                 }
                             }
-                        }
+                        </MudTd>
                     </RowTemplate>
                     <NoRecordsContent>
                         <MudText>Không có dữ liệu.</MudText>
@@ -170,19 +162,26 @@
     public int id { get; set; }
 
     readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
+    private Timer? _timer;
 
     private Pro219.Web.DTOs.OrderDetailDTO _orderDetail = null;
     private List<DAL.Models.ProductVariant> _productVariants = [];
     private List<DAL.Models.ProductImage> _productImages = [];
     private List<DAL.Models.Product> _products = [];
-    private List<DAL.Models.Brand> _brands = [];
     private bool _loading = true;
+    private bool _isDialogOpen = false;
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
         _loading = false;
+
+        _timer = new Timer(4000);
+        _timer.Elapsed += async (sender, e) => await RefreshData();
+        _timer.AutoReset = true;
+        _timer.Enabled = true;
+
         StateHasChanged();
     }
 
@@ -197,29 +196,6 @@
             {
                 _orderDetail = resOrderDetailWithAny.Data;
             }
-        }
-
-        var resProductVariants = await _productVariantService.GetAll();
-        if (resProductVariants.IsSuccess && resProductVariants.Data.Count() > 0)
-        {
-            _productVariants = resProductVariants.Data;
-        }
-
-        var resProductImages = await _productImageService.GetAll();
-        if (resProductImages.IsSuccess && resProductImages.Data.Count() > 0)
-        {
-            _productImages = resProductImages.Data;
-        }
-
-        var resProducts = await _productService.GetAll();
-        if (resProducts.IsSuccess && resProducts.Data.Count() > 0)
-        {
-            _products = resProducts.Data;
-        }
-
-        var resBrands = await _brandService.GetAll();
-        if (resBrands.IsSuccess && resBrands.Data.Count() > 0) {
-            _brands = resBrands.Data;
         }
     }
 
@@ -259,21 +235,32 @@
         }
     }
 
-    async Task HandleOpenReviewDialog(int orderItemId, int productId, int customerId)
+    async Task HandleOpenReviewDialog(int orderItemId, int? productId, int customerId)
     {
-        var createReviewParameter = new DialogParameters<Common.User.ReviewDialog>
+        try
         {
-            {x => x.productId, productId},
-            {x => x.orderItemId, orderItemId},
-            {x => x.customerId, customerId},
-        };
+            _isDialogOpen = true;
 
-        var dialog = await _dialogService.ShowAsync<Common.User.ReviewDialog>("Options Dialog", createReviewParameter, _maxWidth);
-        var result = await dialog.Result;
+           var createReviewParameter = new DialogParameters();
+            createReviewParameter.Add("productId", productId);
+            createReviewParameter.Add("orderItemId", orderItemId);
+            createReviewParameter.Add("customerId", customerId);
 
-        if (!result.Canceled)
+            var dialog = await _dialogService.ShowAsync<Common.User.ReviewDialog>("Options Dialog", createReviewParameter, _maxWidth);
+            var result = await dialog.Result;
+
+            if (!result.Canceled)
+            {
+                await LoadData();
+                StateHasChanged();
+            }
+        }catch (Exception ex)
         {
-            await LoadData();
+            Console.WriteLine(ex.Message);
+        }
+        finally 
+        {
+            _isDialogOpen = false;
             StateHasChanged();
         }
     }
@@ -290,5 +277,22 @@
             result += "\n";
         }
         return result;
+    }
+
+    private async Task RefreshData()
+    {
+        if (_loading || _isDialogOpen) return;
+
+        await InvokeAsync(async () =>
+        {
+            await LoadData();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
     }
 }

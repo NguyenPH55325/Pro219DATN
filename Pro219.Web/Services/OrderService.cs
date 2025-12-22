@@ -17,7 +17,7 @@ namespace Pro219.Web.Services
 
         public async Task<ServiceResult<Pro219.Web.DTOs.CheckoutDTO>> GetCheckoutUrl(
             string token,
-            List<CheckoutModel> listProduct,
+            CheckoutModel checkoutBody,
             decimal discountAmount = 0,
             decimal shippingFee = 0,
             string note = "",
@@ -52,7 +52,7 @@ namespace Pro219.Web.Services
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
             }
 
-            request.Content = JsonContent.Create(listProduct);
+            request.Content = JsonContent.Create(checkoutBody);
 
             var response = await _httpClient.SendAsync(request);
 

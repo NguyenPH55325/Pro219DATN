@@ -141,6 +141,13 @@ else
 
                     </div>
                     <div class="flex-1">
+                        @if(string.IsNullOrEmpty(review.CustomerName))
+                        {
+                            <p>Khách mua hàng</p>
+                        } else
+                        {
+                            <p>@(review.Status == 1 ? review.CustomerName : MaskString(review.CustomerName))</p>
+                        }
                         <MudRating SelectedValue="@review.Overall" MaxValue="5" Size="Size.Small" />
                         <h4 class="text-base font-medium">@review.Title</h4>
                         <p class="whitespace-pre-wrap text-sm">@review.Content</p>
@@ -155,45 +162,7 @@ else
         <p class="text-center text-base font-medium text-gray-500">Chưa có đánh giá nào!</p>
     }
 </section>
-@* // best seller*@
-@*<section class="mx-auto mb-10 max-w-screen-xl pt-10">
-    <h2 class="w-fit border-b-4 border-solid border-black text-base font-bold uppercase">Sản phẩm bán chạy</h2>
-    <MudCarousel Class="mud-width-full mt-4 h-[24rem] md:h-[19.25rem] sm:h-[15rem]" ShowBullets="false" EnableSwipeGesture="false" AutoCycle="false" TData="object">
-        <MudCarouselItem>
-            <div class="flex justify-between">
-                <ProductItem />
-                <ProductItem />
-                <ProductItem />
-                <ProductItem />
-            </div>
-        </MudCarouselItem>
-        <MudCarouselItem>
-            <div class="flex justify-between">
-                <ProductItem />
-                <ProductItem />
-                <ProductItem />
-                <ProductItem />
-            </div>
-        </MudCarouselItem>
-        <MudCarouselItem>
-            <div class="flex justify-between">
-                <ProductItem />
-                <ProductItem />
-                <ProductItem />
-                <ProductItem />
-            </div>
-        </MudCarouselItem>
-        <MudCarouselItem>
-            <div class="flex justify-between">
-                <ProductItem />
-                <ProductItem />
-                <ProductItem />
-                <ProductItem />
-            </div>
-        </MudCarouselItem>
-    </MudCarousel>
-</section>*@
-@* banner *@
+
 <section class="mx-auto mb-6 max-w-screen-xl pt-10">
     <img src="/Assets/Images/user-home-banner-2.jpg" alt="banner" />
 </section>
@@ -208,7 +177,7 @@ else
     private List<DAL.Models.Review> _reviews = [];
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
-    private decimal _averageRating = 0;
+    private double _averageRating = 0;
     private string _token = "";
     private int _selectedColorId = 0;
     private string _selectedColorName = "";
@@ -253,8 +222,7 @@ else
                 _reviews = _resReview.Data;
                 var reviewCount = _reviews.Count();
                 var sumOverall = _reviews.Sum(x => x.Overall);
-                decimal powerOfTen = (decimal)Math.Pow(10, 2);
-                _averageRating = Decimal.Truncate((sumOverall / reviewCount) * powerOfTen) / 100;
+                _averageRating = Math.Truncate((double)sumOverall / reviewCount * 100) / 100;
             }
         } else
         {
@@ -377,12 +345,6 @@ else
 
     private async Task AddToCart()
     {
-        // if (string.IsNullOrEmpty(_token))
-        // {
-        //     _snackbar.Add("Chức năng thêm giỏ hàng khi chưa đăng nhập đang phát triển. Vui lòng đăng nhập.", Severity.Warning);
-        //     return;
-        // }
-
         if (_foundVariant == null)
         {
             _snackbar.Add("Vui lòng chọn Màu sắc và Kích thước", Severity.Info);
@@ -512,5 +474,20 @@ else
                 _snackbar.Add("Có lỗi xảy ra", Severity.Error);
             }
         }
+    }
+
+    public static string MaskString(string input)
+    {
+        if (string.IsNullOrEmpty(input) || input.Length <= 2)
+        {
+            return input;
+        }
+
+        char firstChar = input[0];
+        char lastChar = input[input.Length - 1];
+
+        string middleMask = new string('*', input.Length - 2);
+
+        return $"{firstChar}{middleMask}{lastChar}";
     }
 }

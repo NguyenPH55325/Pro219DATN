@@ -5,10 +5,42 @@ namespace Pro219.Web.DTOs
 {
     public class CheckoutModel
     {
+        public List<CheckoutListItem> ListItemCheckout { get; set; } = new List<CheckoutListItem>();
+
+        public CheckoutAddressModel? address { get; set; }
+    }
+
+    public class CheckoutListItem
+    {
         public string ProductName { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public int ProductVariantId { get; set; }
+    }
+
+    public class CheckoutAddressModel
+    {
+        public int CustomerId { get; set; }
+
+        public string FullName { get; set; } = string.Empty;
+
+        public string Phone { get; set; } = string.Empty;
+
+        public string Street { get; set; } = string.Empty;
+
+        public string City { get; set; } = string.Empty;
+
+        public string District { get; set; } = string.Empty;
+
+        public string CityName { get; set; } = string.Empty;
+
+        public string DistrictName { get; set; } = string.Empty;
+
+        public string StreetName { get; set; } = string.Empty;
+
+        public string? OtherInfo { get; set; }
+
+        public bool IsDefault { get; set; }= false;
     }
 
     public class GuestCheckoutModel

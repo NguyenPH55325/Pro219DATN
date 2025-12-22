@@ -113,6 +113,7 @@ namespace Pro219.API.Controllers
                     ProductId = reviewDTO.ProductId,
                     CustomerId = reviewDTO.CustomerId,
                     OrderItemId = reviewDTO.OrderItemId,
+                    CustomerName = reviewDTO.CustomerName,
                     Title = reviewDTO.Title,
                     Content = reviewDTO.Content,
                     Overall = reviewDTO.Overall,

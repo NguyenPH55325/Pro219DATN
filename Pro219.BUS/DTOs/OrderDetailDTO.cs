@@ -36,6 +36,7 @@ namespace Pro219.API.DTOs
         public int OrderItemId { get; set; }
         public int? CustomerId { get; set; }
         public int ProductVariantId { get; set; }
+        public int? ProductId { get; set; }
         public string ProductName { get; set; } = string.Empty;
         public string? Color { get; set; }
         public string? Size { get; set; }
