@@ -1,5 +1,9 @@
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using Net.payOS;
+using Net.payOS.Types;
 using Pro219.API.DTOs;
+using Pro219.API.Services;
 using Pro219.API.Utilities;
 using Pro219.DAL.Models;
 using Pro219.DAL.Repository;
@@ -9,10 +13,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using System.Text.Json;
-using Net.payOS.Types;
-using Net.payOS;
+using System.Threading.Tasks;
 
 namespace Pro219.API.Controllers
 {
@@ -26,6 +28,9 @@ namespace Pro219.API.Controllers
             WriteIndented = false
         };
 
+        private readonly OrderManagerService _orderManagerService;
+        private readonly IBackgroundJobClient _backgroundJobClient;
+
         OrderRepository orderRepository;
         DiscountCodeRepository discountCodeRepository;
         ProductVariantRepository productVariantRepository;
@@ -35,8 +40,10 @@ namespace Pro219.API.Controllers
         SizeRepository sizeRepository;
         BrandRepository brandRepository;
 
-        public OrderController()
+        public OrderController(OrderManagerService orderManagerService, IBackgroundJobClient backgroundJobClient)
         {
+            _orderManagerService = orderManagerService;
+            _backgroundJobClient = backgroundJobClient;
             orderRepository = new OrderRepository();
             productVariantRepository = new ProductVariantRepository();
             orderItemRepository = new OrderItemRepository();
@@ -223,7 +230,7 @@ namespace Pro219.API.Controllers
             }
             CustomerRepository customerRepository = new CustomerRepository();
             Customer currentCustomer = customerRepository.FindCustomerByEmailAndPhone("", phoneNumber).Result;
-            if(currentCustomer == null)
+            if (currentCustomer == null)
             {
                 currentCustomer = new Customer();
                 currentCustomer.Id = -1;
@@ -298,7 +305,7 @@ namespace Pro219.API.Controllers
                 order.CustomerType = currentCustomer.FullName == null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;
                 var result = await orderRepository.AddOrder(order);
 
-              
+
                 if (result == null)
                 {
                     return BadRequest();
@@ -352,9 +359,9 @@ namespace Pro219.API.Controllers
             if (PaymentMethodTypeId == 2)
             {
                 DateTimeOffset utcNow = DateTimeOffset.UtcNow;
-                DateTimeOffset expirationTime = utcNow.AddMinutes(15);
+                DateTimeOffset expirationTime = utcNow.AddHours(24);
                 long expiredAt = expirationTime.ToUnixTimeSeconds();
-                PaymentData paymentData = new PaymentData(ordCode, (int)finalAmount, "Adam Store Thanh toán", items, "http://localhost:5001/order/payment-cancelled?order-id=" + order.OrderId, "http://localhost:5001/order/payment-success?order-id=" + order.OrderId+"&pos=true",null,null,null,null,null, expiredAt);
+                PaymentData paymentData = new PaymentData(ordCode, (int)finalAmount, "Adam Store Thanh toán", items, "http://localhost:5001/order/payment-cancelled?order-id=" + order.OrderId, "http://localhost:5001/order/payment-success?order-id=" + order.OrderId + "&pos=true", null, null, null, null, null, expiredAt);
                 CreatePaymentResult createPayment = await payOS.createPaymentLink(paymentData);
 
                 if (createPayment.status == "PENDING")
@@ -370,8 +377,13 @@ namespace Pro219.API.Controllers
                                 return BadRequest("Số lượng kho không đủ");
                         }
                     }
+                    order.PaymentExpiration = DateTime.Now.AddHours(24);
                     order.PaymentLink = createPayment.checkoutUrl;
                     await orderRepository.UpdateOrder(order);
+                    _backgroundJobClient.Schedule<OrderManagerService>(
+            x => x.CancelExpiredOrderAsync(order.OrderId),
+            TimeSpan.FromHours(24)
+        );
                     return Ok(checkoutDTO);
                 }
                 else
@@ -397,12 +409,12 @@ namespace Pro219.API.Controllers
 
             return BadRequest("Lỗi");
 
-        }   
+        }
 
         [HttpPost("Checkout")]
-        public async Task<ActionResult<CheckoutDTO>> GetCheckoutUrl([FromBody] CheckoutParamsDTO checkoutParam, decimal discountAmount = 0, decimal shippingFee = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note ="", int addressId=-99)
-       {
-            
+        public async Task<ActionResult<CheckoutDTO>> GetCheckoutUrl([FromBody] CheckoutParamsDTO checkoutParam, decimal discountAmount = 0, decimal shippingFee = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note = "", int addressId = -99)
+        {
+
             discountCodeRepository = new DiscountCodeRepository();
             // Basic request validation
             if (checkoutParam == null || checkoutParam.ListItemCheckout == null || !checkoutParam.ListItemCheckout.Any())
@@ -468,7 +480,7 @@ namespace Pro219.API.Controllers
 
             decimal totalPrice = checkoutParam.ListItemCheckout.Sum(p => p.UnitPrice * p.Quantity);
             decimal finalAmount = 0;
-            if(checkoutParam.AddressDTO != null)
+            if (checkoutParam.AddressDTO != null)
             {
                 AddressRepository addressRepository = new AddressRepository();
                 // create address from DTO to get id
@@ -488,16 +500,16 @@ namespace Pro219.API.Controllers
                 address.Delete = false;
                 address.Status = 1;
                 var resultAddress = await addressRepository.AddAddress(address);
-                if(resultAddress == null)
+                if (resultAddress == null)
                 {
                     return BadRequest();
                 }
                 addressId = resultAddress.Id;
-                finalAmount = totalPrice +shippingFee;
+                finalAmount = totalPrice + shippingFee;
             }
-            else 
+            else
             {
-                finalAmount = (totalPrice - discountAmount)+shippingFee;
+                finalAmount = (totalPrice - discountAmount) + shippingFee;
             }
             if (addressId == -99)
             {
@@ -507,7 +519,7 @@ namespace Pro219.API.Controllers
             Order order = new Order();
             try
             {
-                if(PaymentMethodTypeId == 1)
+                if (PaymentMethodTypeId == 1)
                 {
                     var statusHistory = ParseStatusHistory(order.StatusHistory);
                     statusHistory.Add(new StatusHistoryEntry
@@ -519,8 +531,8 @@ namespace Pro219.API.Controllers
                         DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
                     });
                     order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
-                } 
-                
+                }
+
                 else
                 {
                     var statusHistory = ParseStatusHistory(order.StatusHistory);
@@ -533,7 +545,7 @@ namespace Pro219.API.Controllers
                         DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
                     });
                     order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
-                }    
+                }
 
 
                 order.OrderCode = "DH" + ordCode.ToString();
@@ -578,7 +590,7 @@ namespace Pro219.API.Controllers
                         orderItem.Subtotal = product.UnitPrice * product.Quantity;
                         orderItem.Delete = false;
                         var resultItem = await orderItemRepository.AddOrderItem(orderItem);
-                        if(resultItem == null)
+                        if (resultItem == null)
                         {
                             return BadRequest();
                         }
@@ -590,18 +602,18 @@ namespace Pro219.API.Controllers
                 return StatusCode(500, Constant.ErrorCode.OtherError);
             }
 
-            if(discountId != null && discountAmount > 0)
+            if (discountId != null && discountAmount > 0)
             {
                 var discountCode = await discountCodeRepository.GetDiscountCodeById((int)discountId);
-                if(discountCode != null)
+                if (discountCode != null)
                 {
                     discountCode.UsageCount++;
                     var result = await discountCodeRepository.UpdateDiscountCode(discountCode);
-                    if(result == null)
+                    if (result == null)
                     {
                         return BadRequest(Constant.ErrorCode.DatabaseError);
                     }
-                   
+
                 }
             }
 
@@ -609,11 +621,14 @@ namespace Pro219.API.Controllers
             checkoutDTO.OrderCode = order.OrderCode;
             checkoutDTO.OrderId = order.OrderId;
             checkoutDTO.PaymentType = PaymentMethodTypeId;
-            
+
 
             if (PaymentMethodTypeId == 2)
             {
-                PaymentData paymentData = new PaymentData(ordCode, (int)finalAmount, "Adam Store Thanh toán", items, "http://localhost:5001/order/payment-cancelled?order-id=" + order.OrderId, "http://localhost:5001/order/payment-success?order-id=" + order.OrderId);
+                DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+                DateTimeOffset expirationTime = utcNow.AddHours(24);
+                long expiredAt = expirationTime.ToUnixTimeSeconds();
+                PaymentData paymentData = new PaymentData(ordCode, (int)finalAmount, "Adam Store Thanh toán", items, "http://localhost:5001/order/payment-cancelled?order-id=" + order.OrderId, "http://localhost:5001/order/payment-success?order-id=" + order.OrderId,null,null,null,null,null, expiredAt);
 
                 CreatePaymentResult createPayment = await payOS.createPaymentLink(paymentData);
 
@@ -630,8 +645,13 @@ namespace Pro219.API.Controllers
                                 return BadRequest("Số lượng kho không đủ");
                         }
                     }
+                    order.PaymentExpiration = DateTime.Now.AddHours(24);
                     order.PaymentLink = createPayment.checkoutUrl;
                     await orderRepository.UpdateOrder(order);
+                    await orderRepository.UpdateOrder(order);
+                    _backgroundJobClient.Schedule<OrderManagerService>(
+            x => x.CancelExpiredOrderAsync(order.OrderId),
+            TimeSpan.FromHours(24));
                     return Ok(checkoutDTO);
                 }
                 else
@@ -639,10 +659,10 @@ namespace Pro219.API.Controllers
                     return BadRequest();
                 }
             }
-            else if(PaymentMethodTypeId == 1)            
+            else if (PaymentMethodTypeId == 1)
             {
-                checkoutDTO.URLPayment = null ;
-                List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);                
+                checkoutDTO.URLPayment = null;
+                List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
                 if (orderItemsList != null && orderItemsList.Any())
                 {
                     foreach (var orderItem in orderItemsList)
@@ -654,20 +674,20 @@ namespace Pro219.API.Controllers
                 }
                 return Ok(checkoutDTO);
             }
-           
+
             return BadRequest("Lỗi");
-           
+
 
         }
 
         [HttpGet("PaymentSuccess")]
-        public async Task<ActionResult<Order>> PaymentSuccess( [FromQuery] int orderId, [FromQuery] bool pos, [FromQuery] string errorMessage = null)
+        public async Task<ActionResult<Order>> PaymentSuccess([FromQuery] int orderId, [FromQuery] bool pos, [FromQuery] string errorMessage = null)
         {
 
             try
             {
                 var order = await orderRepository.GetOrderById(orderId);
-                if(order == null)
+                if (order == null)
                 {
                     return NotFound();
                 }
@@ -708,10 +728,10 @@ namespace Pro219.API.Controllers
                     order.Status = Constant.OrderStatus.StatusPending;
                     order.LastUpdate = DateTime.Now;
                     order.UpdateBy = "System";
-                }              
-              
-                var result = await orderRepository.UpdateOrder(order);          
-                if(result == null)
+                }
+
+                var result = await orderRepository.UpdateOrder(order);
+                if (result == null)
                 {
                     return BadRequest();
                 }
@@ -732,7 +752,7 @@ namespace Pro219.API.Controllers
                 var order = await orderRepository.GetOrderById(orderId);
                 if (order.Status == Constant.OrderStatus.StatusCanceledByUser)
                     return Ok();
-                if(order == null)
+                if (order == null)
                 {
                     return NotFound();
                 }
@@ -777,13 +797,13 @@ namespace Pro219.API.Controllers
         }
 
 
-      
+
         [HttpGet("GetAll")]
-        public async Task<ActionResult<List<Order>>> GetAllOrders([FromQuery] string? orderCode = null, [FromQuery] string? fullName = null, [FromQuery] string? phoneNumber = null)
+        public async Task<ActionResult<List<Order>>> GetAllOrders([FromQuery] string? keyword)
         {
             try
             {
-                var result = await orderRepository.GetAllOrders(orderCode, fullName, phoneNumber);
+                var result = await orderRepository.GetAllOrders(keyword);
                 if (result == null)
                 {
                     return Ok(new List<Order>());
@@ -1001,7 +1021,7 @@ namespace Pro219.API.Controllers
                             if (orderItem.ProductVariant.Product != null)
                             {
                                 invoiceItem.ProductName = orderItem.ProductVariant.Product.Name;
-                                
+
                                 if (orderItem.ProductVariant.Product.Brand != null)
                                 {
                                     invoiceItem.BrandName = orderItem.ProductVariant.Product.Brand.Name;
@@ -1112,7 +1132,7 @@ namespace Pro219.API.Controllers
                             if (orderItem.ProductVariant.Product != null)
                             {
                                 invoiceItem.ProductName = orderItem.ProductVariant.Product.Name;
-                                
+
                                 if (orderItem.ProductVariant.Product.Brand != null)
                                 {
                                     invoiceItem.BrandName = orderItem.ProductVariant.Product.Brand.Name;
@@ -1156,7 +1176,8 @@ namespace Pro219.API.Controllers
                     return Ok(new List<Order>());
                 }
                 return Ok(result);
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return StatusCode(500, Constant.ErrorCode.OtherError);
             }
