@@ -22,11 +22,11 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<ActionResult<List<Brand>>> GetAllBrands()
+        public async Task<ActionResult<List<Brand>>> GetAllBrands(string keyword)
         {
             try
             {
-                var result = await brandRepository.GetAllBrands();
+                var result = await brandRepository.GetAllBrands(keyword);
                 if (result == null)
                 {
                     return Ok(new List<Brand>());

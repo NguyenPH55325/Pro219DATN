@@ -17,14 +17,24 @@ namespace Pro219.DAL.Repository
             _context = new ClothesDbContext();
         }
 
-        public async Task<List<Brand>> GetAllBrands()
+        public async Task<List<Brand>> GetAllBrands(string keyword)
         {
             try
             {
-                var brands = await _context.Brands
-                    .Where(x => x.Delete != true)
-                    .ToListAsync();
-                return brands;
+                if (keyword == null)
+                {
+                    var brands = await _context.Brands
+                        .Where(x => x.Delete != true)
+                        .ToListAsync();
+                    return brands;
+                }
+                else
+                {
+                    var brands = await _context.Brands
+                        .Where(x => x.Delete != true && x.Name.Contains(keyword))
+                        .ToListAsync();
+                    return brands;
+                }
             }
             catch (Exception)
             {

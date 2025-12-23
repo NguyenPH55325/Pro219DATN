@@ -17,14 +17,25 @@ namespace Pro219.DAL.Repository
             _context = new ClothesDbContext();
         }
 
-        public async Task<List<Size>> GetAllSizes()
+        public async Task<List<Size>> GetAllSizes(string keyword)
         {
             try
             {
-                var sizes = await _context.Sizes
-                    .Where(x => x.Delete != true)
-                    .ToListAsync();
-                return sizes;
+                if (keyword == null)
+                {
+
+                    var sizes = await _context.Sizes
+                        .Where(x => x.Delete != true)
+                        .ToListAsync();
+                    return sizes;
+                }
+                else
+                {
+                    var sizes = await _context.Sizes
+                        .Where(x => x.Delete != true && x.Name.Contains(keyword))
+                        .ToListAsync();
+                    return sizes;
+                }
             }
             catch (Exception)
             {

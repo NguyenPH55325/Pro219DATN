@@ -776,11 +776,11 @@ namespace Pro219.API.Controllers
 
       
         [HttpGet("GetAll")]
-        public async Task<ActionResult<List<Order>>> GetAllOrders()
+        public async Task<ActionResult<List<Order>>> GetAllOrders([FromQuery] string? orderCode = null, [FromQuery] string? fullName = null, [FromQuery] string? phoneNumber = null)
         {
             try
             {
-                var result = await orderRepository.GetAllOrders();
+                var result = await orderRepository.GetAllOrders(orderCode, fullName, phoneNumber);
                 if (result == null)
                 {
                     return Ok(new List<Order>());

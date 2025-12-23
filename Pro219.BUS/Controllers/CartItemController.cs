@@ -185,8 +185,8 @@ namespace Pro219.API.Controllers
                 var allProductVariants = await productVariantRepository.GetAllProductVariants();
                 var allProducts = await productRepository.GetAllProducts();
                 var allProductImages = await productImageRepository.GetAllProductImages();
-                var allSizes = await sizeRepository.GetAllSizes();
-                var allColors = await colorRepository.GetAllColors();
+                var allSizes = await sizeRepository.GetAllSizes(null);
+                var allColors = await colorRepository.GetAllColors(null);
 
                 var variantMap = allProductVariants.ToDictionary(pv => pv.Id);
                 var productMap = allProducts.ToDictionary(p => p.Id);
@@ -239,8 +239,8 @@ namespace Pro219.API.Controllers
                 var allProductVariants = await productVariantRepository.GetAllProductVariants();
                 var allProducts = await productRepository.GetAllProducts();
                 var allProductImages = await productImageRepository.GetAllProductImages();
-                var allSizes = await sizeRepository.GetAllSizes();
-                var allColors = await colorRepository.GetAllColors();
+                var allSizes = await sizeRepository.GetAllSizes(null);
+                var allColors = await colorRepository.GetAllColors(null);
 
                 var variantMap = allProductVariants.ToDictionary(pv => pv.Id);
                 var productMap = allProducts.ToDictionary(p => p.Id);

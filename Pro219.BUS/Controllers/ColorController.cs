@@ -22,11 +22,11 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<ActionResult<List<Color>>> GetAllColors()
+        public async Task<ActionResult<List<Color>>> GetAllColors(string keyword)
         {
             try
             {
-                var result = await colorRepository.GetAllColors();
+                var result = await colorRepository.GetAllColors(keyword);
                 if (result == null)
                 {
                     return Ok(new List<Color>());

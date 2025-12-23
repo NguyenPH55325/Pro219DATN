@@ -22,11 +22,11 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("GetAllCategories")]
-        public async Task<ActionResult<List<CategoryDTO>>> GetAllCategories()
+        public async Task<ActionResult<List<CategoryDTO>>> GetAllCategories(string keyword)
         {
             try
             {
-                List<Category> result = await categoryRepository.GetAllCategories();
+                List<Category> result = await categoryRepository.GetAllCategories(keyword);
                 if (result == null)
                 {
                     return NoContent();
@@ -169,7 +169,7 @@ namespace Pro219.API.Controllers
         {
             try
             {
-                var allCategories = await categoryRepository.GetAllCategories();
+                var allCategories = await categoryRepository.GetAllCategories(null);
                 if (allCategories == null || allCategories.Count == 0)
                 {
                     return Ok(new List<CategoryDTO>());

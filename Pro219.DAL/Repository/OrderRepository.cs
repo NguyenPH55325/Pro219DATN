@@ -23,13 +23,39 @@ namespace Pro219.DAL.Repository
             _context = context;
         }
 
-        public async Task<List<Order>> GetAllOrders()
+        public async Task<List<Order>> GetAllOrders(string? orderCode = null, string? fullName = null, string? phoneNumber = null)
         {
             try
             {
-                var orders = await _context.Orders
+                var query = _context.Orders
+                    .Include(o => o.ShippingAddress)
                     .Where(x => x.Delete != true)
-                    .ToListAsync();
+                    .AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(orderCode))
+                {
+                    query = query.Where(x => x.OrderCode.Contains(orderCode));
+                }
+
+                if (!string.IsNullOrWhiteSpace(fullName))
+                {
+                    query = query.Where(x => x.ShippingAddress != null && x.ShippingAddress.FullName.Contains(fullName));
+                }
+
+                if (!string.IsNullOrWhiteSpace(phoneNumber))
+                {
+                    query = query.Where(x => x.ShippingAddress != null && x.ShippingAddress.Phone.Contains(phoneNumber));
+                }
+
+                var orders = await query.ToListAsync();
+                // Break navigation cycles for serialization
+                foreach (var order in orders)
+                {
+                    if (order.ShippingAddress != null)
+                    {
+                        order.ShippingAddress.Orders = null;
+                    }
+                }
                 return orders;
             }
             catch (Exception)

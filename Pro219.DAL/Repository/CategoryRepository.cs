@@ -18,13 +18,24 @@ namespace Pro219.DAL.Repository
 
         }
 
-        public async Task<List<Category>> GetAllCategories()
+        public async Task<List<Category>> GetAllCategories(string keyword)
         {
-            List<Category> listCategory = new List<Category>();
-            listCategory = _context.Categories.Where(x => x.Delete != true).ToList();
-            if (listCategory.Count > 0)
+
+
+            if (keyword == null)
+            {
+                List<Category> listCategory = new List<Category>();
+                listCategory = _context.Categories.Where(x => x.Delete != true).ToList();
                 return listCategory;
-            return null;
+            }
+            else
+            {
+                List<Category> listCategory = new List<Category>();
+                listCategory = _context.Categories.Where(x => x.Delete != true&&x.Name.Contains(keyword)).ToList();
+                return listCategory;
+            }
+            
+           
         }
         public async Task<Category> GetCategoryById(int id)
         {

@@ -17,14 +17,23 @@ namespace Pro219.DAL.Repository
             _context = new ClothesDbContext();
         }
 
-        public async Task<List<Color>> GetAllColors()
+        public async Task<List<Color>> GetAllColors(string keyword)
         {
             try
             {
-                var colors = await _context.Colors
-                    .Where(x => x.Delete != true)
+                if (keyword == null)
+                {
+
+
+                    var colors = await _context.Colors
+                        .Where(x => x.Delete != true)
+                        .ToListAsync();
+                    return colors;
+                }
+                var filteredColors = await _context.Colors
+                    .Where(x => x.Delete != true && x.Name.Contains(keyword))
                     .ToListAsync();
-                return colors;
+                return filteredColors;
             }
             catch (Exception)
             {
