@@ -9,6 +9,41 @@
         <a href="@RouterConst.Admin.CreateProduct" class="leading-[1.5rem] h-10 rounded-lg bg-admin-default px-6 py-2 text-white">Tạo mới</a>
     </div>
 
+    <div class="my-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div class="grid w-full grid-cols-3 gap-x-6 gap-y-4">
+            <div>
+                <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
+                              AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
+            </div>
+            <div>
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Loại giảm giá" Value="@_searchCategory" ValueChanged="OnChangeCategory">
+                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
+                    @if (_categories.Any())
+                    {
+                        @foreach (var item in _categories)
+                        {
+                            <MudSelectItem Value="item.Id">@item.Name</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </div>
+            <div>
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Loại áp dụng" Value="@_searchBrand" ValueChanged="OnChangeBrand">
+                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
+                    @if (_brands.Any())
+                    {
+                        @foreach (var item in _brands)
+                        {
+                            <MudSelectItem Value="item.Id">@item.Name</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </div>
+            <div>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+            </div>
+        </div>
+    </div>
     <div class="mt-6 w-full overscroll-x-auto rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
         <MudTable Bordered Items="@_products" Loading="@_loading" Class="w-full" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true" Height="calc(100lvh - 16.5rem)">
             <HeaderContent>
@@ -66,6 +101,7 @@
 </div>
 
 @code {
+    private CancellationTokenSource? _cts;
     private List<DAL.Models.Product> _products = [];
     private List<DAL.Models.ProductImage> _productImages = [];
     private List<DAL.Models.Category> _categories = [];
@@ -74,6 +110,10 @@
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Large, FullWidth = true };
+
+    private string _searchValue = string.Empty;
+    private int _searchCategory = 0;
+    private int _searchBrand = 0;
     private bool _loading = true;
 
     private List<BreadcrumbItem> _items =
@@ -127,6 +167,51 @@
         {
             _productImages = dataProductImage;
         }
+    }
+
+        private async Task onChangeSearch(string value)
+    {
+        _searchValue = value;
+
+        if (string.IsNullOrEmpty(value))
+        {
+            // await LoadData();
+            return;
+        }
+
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(700, _cts.Token);
+
+            _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async Task OnChangeCategory(int value)
+    {
+        _searchCategory = value;
+        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+    }
+
+    private async Task OnChangeBrand(int value)
+    {
+        _searchBrand = value;
+        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+    }
+
+    private async Task OnReset()
+    {
+        _searchValue = string.Empty;
+        _searchCategory = 0;
+        _searchBrand = 0;
+
+        // TODO: call api
     }
 
     void HandleRedirect(int id, bool isProductVariant)

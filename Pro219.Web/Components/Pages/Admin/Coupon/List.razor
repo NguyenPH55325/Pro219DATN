@@ -9,21 +9,53 @@
         <a href="@RouterConst.Admin.CreateCoupon" class="leading-[1.5rem] h-10 rounded-lg bg-admin-default px-6 py-2 text-white">Tạo mới</a>
     </div>
 
-    <div class="mt-6 w-full rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <MudTable Bordered Items="@_discountCodes" Loading="@_loading" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true" Height="calc(100lvh - 16.5rem)">
+    <div class="my-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+         <div class="grid w-full grid-cols-3 gap-x-6 gap-y-4">
+            <div>
+                <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
+                                AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
+            </div>
+            <div>
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Loại giảm giá" Value="@_searchDiscountTpe" ValueChanged="OnChangeDiscountType">
+                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
+                    <MudSelectItem Value="1">Phần trăm</MudSelectItem>
+                    <MudSelectItem Value="2">Cố định</MudSelectItem>
+                </MudSelect>
+            </div>
+            <div>
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Loại áp dụng" Value="@_searchDiscountAmountType" ValueChanged="OnChangeDiscountAmountType">
+                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
+                    <MudSelectItem Value="1">Hóa đơn</MudSelectItem>
+                    <MudSelectItem Value="2">Phí vận chuyển</MudSelectItem>
+                </MudSelect>
+            </div
+            <div>
+                <MudDatePicker Variant="Variant.Outlined" Placeholder="Ngày bắt đầu" Date="@_startDate" DateChanged="OnChangeStartDate" MaxDate="@_maxStartDate" />
+            </div>
+            <div>
+                <MudDatePicker Variant="Variant.Outlined" Placeholder="Ngày bắt đầu" Date="@_endDate" DateChanged="OnChangeEndDate" MinDate="@_minEndDate" />
+            </div>
+            <div>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-full rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+        <MudTable Bordered Items="@_discountCodes" Loading="@_loading" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true" Height="calc(100lvh - 20.5rem)">
             <HeaderContent>
-                <MudTh><MudTableSortLabel SortLabel="Code" T="DAL.Models.DiscountCode">Mã</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="DiscountType" T="DAL.Models.DiscountCode">Loại Giảm Giá</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Value" T="DAL.Models.DiscountCode">Giá Trị</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Giá trị tối thiểu áp dụng" T="DAL.Models.DiscountCode">Giá trị tối thiểu áp dụng</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Giá trị giảm tối đa" T="DAL.Models.DiscountCode">Giá trị giảm tối đa</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Áp dụng" T="DAL.Models.DiscountCode">Áp dụng</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Số lần sử dụng tối đa" T="DAL.Models.DiscountCode">Số mã được phát hành</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Số mã được phát hành" T="DAL.Models.DiscountCode">Đã sử dụng</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="StartDate" T="DAL.Models.DiscountCode">Ngày Bắt Đầu</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="EndDate" T="DAL.Models.DiscountCode">Ngày Kết Thúc</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="IsActive" T="DAL.Models.DiscountCode">Trạng Thái</MudTableSortLabel></MudTh>
-                <MudTh>Thao tác</MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Code" T="DAL.Models.DiscountCode">Mã</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="DiscountType" T="DAL.Models.DiscountCode">Loại Giảm Giá</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Value" T="DAL.Models.DiscountCode">Giá Trị</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Giá trị tối thiểu áp dụng" T="DAL.Models.DiscountCode">Giá trị tối thiểu áp dụng</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Giá trị giảm tối đa" T="DAL.Models.DiscountCode">Giá trị giảm tối đa</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Áp dụng" T="DAL.Models.DiscountCode">Áp dụng</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Số lần sử dụng tối đa" T="DAL.Models.DiscountCode">Số mã được phát hành</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Số mã được phát hành" T="DAL.Models.DiscountCode">Đã sử dụng</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="StartDate" T="DAL.Models.DiscountCode">Ngày Bắt Đầu</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="EndDate" T="DAL.Models.DiscountCode">Ngày Kết Thúc</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="IsActive" T="DAL.Models.DiscountCode">Trạng Thái</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap">Thao tác</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Code">@context.Code</MudTd>
@@ -46,12 +78,12 @@
 
                     <MudIconButton Icon="@Icons.Material.Filled.BorderColor"
                                    aria-label="update"
-                                   Href="@(isActiveNow ? null : $"{RouterConst.Admin.EditCoupon.Replace(":id", context.DiscountId.ToString())}")"
+                                   Href=@($"{RouterConst.Admin.EditCoupon.Replace(":id", context.DiscountId.ToString())}")
                                    Disabled="@isActiveNow"></MudIconButton>
 
                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                    aria-label="delete"
-                                   OnClick="@(isActiveNow ? null : () => OpenDialogDelete(context.DiscountId))"
+                                   OnClick="@(() => OpenDialogDelete(context.DiscountId))"
                                    Disabled="@isActiveNow"></MudIconButton>
                 </MudTd>
             </RowTemplate>
@@ -86,15 +118,24 @@
 </div>
 
 @code {
+    private CancellationTokenSource? _cts;
     private List<DAL.Models.DiscountCode> _discountCodes = [];
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Large, FullWidth = true };
+
+    private string _searchValue = string.Empty;
+    private int _searchDiscountTpe = 0;
+    private int _searchDiscountAmountType = 0;
+    private DateTime? _startDate = DateTime.Now.AddDays(-14);
+    private DateTime? _endDate = DateTime.Now;
+    private DateTime? _maxStartDate = DateTime.Now;
+    private DateTime? _minEndDate = DateTime.Now.AddDays(-14);
     private bool _loading = true;
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Mã Giảm Giá", href: "#", disabled: true),
+    new("Mã Giảm Giá", href: "#", disabled: true),
     ];
 
     protected override async Task OnInitializedAsync()
@@ -122,6 +163,69 @@
             _discountCodes = data;
         }
         StateHasChanged();
+    }
+
+    private async Task onChangeSearch(string value)
+    {
+        _searchValue = value;
+
+        if (string.IsNullOrEmpty(value))
+        {
+            // await LoadData();
+            return;
+        }
+
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(700, _cts.Token);
+
+            _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async Task OnChangeDiscountType(int value)
+    {
+        _searchDiscountTpe = value;
+        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+    }
+
+    private async Task OnChangeDiscountAmountType(int value)
+    {
+        _searchDiscountAmountType = value;
+        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+    }
+
+    private async Task OnChangeStartDate(DateTime? value)
+    {
+        _startDate = value;
+        _minEndDate = value;
+        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+    }
+
+    private async Task OnChangeEndDate(DateTime? value)
+    {
+        _endDate = value;
+        _maxStartDate = value;
+        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+    }
+
+    private async Task OnReset()
+    {
+        _searchValue = string.Empty;
+        _searchDiscountTpe = 0;
+        _searchDiscountAmountType = 0;
+        _startDate = DateTime.Now.AddDays(-14);
+        _endDate = DateTime.Now;
+        _maxStartDate = DateTime.Now;
+        _minEndDate = DateTime.Now.AddDays(-14);
+
+        // TODO: call api
     }
 
     async Task OpenDialogDelete(int id)
