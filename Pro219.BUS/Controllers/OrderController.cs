@@ -370,7 +370,8 @@ namespace Pro219.API.Controllers
                                 return BadRequest("Số lượng kho không đủ");
                         }
                     }
-
+                    order.PaymentLink = createPayment.checkoutUrl;
+                    await orderRepository.UpdateOrder(order);
                     return Ok(checkoutDTO);
                 }
                 else
@@ -629,6 +630,8 @@ namespace Pro219.API.Controllers
                                 return BadRequest("Số lượng kho không đủ");
                         }
                     }
+                    order.PaymentLink = createPayment.checkoutUrl;
+                    await orderRepository.UpdateOrder(order);
                     return Ok(checkoutDTO);
                 }
                 else
