@@ -135,6 +135,7 @@
             public const string OrderStatusShippingFailed = "Giao hàng thất bại";
             public const string OrderStatusDone = "Hoàn thành";
 
+            public const byte StatusNoCheckout = 0;
             public const byte StatusPending = 1;
             public const byte StatusConfirm = 2;
             public const byte StatusCanceledByUser = 3;

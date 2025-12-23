@@ -69,6 +69,9 @@
                             <MudRadio Value="@Constant.PaymentMethod.CashBack" Class="!w-full">
                                Thanh toán khi nhận hàng (COD)
                             </MudRadio>
+                            <MudRadio Value="@Constant.PaymentMethod.Transfer" Class="!w-full">
+                                Chuyển khoản
+                            </MudRadio>
                         </MudRadioGroup>
                     </div>
 
@@ -120,7 +123,7 @@
                         <span class="flex-shrink-0 text-sm font-bold uppercase">Tổng tiền:</span>
                         <span class="whitespace-pre-wrap text-sm font-medium">@FormatCurrency(CalculateTotal())</span>
                     </div>
-                    <MudButton Class="!h-10" Color="Color.Dark" Variant="Variant.Filled" OnClick="OnSubmit" Disabled="@(!_data.Any())">
+                    <MudButton Class="!h-10" Color="Color.Dark" Variant="Variant.Filled" OnClick="OnCheckout" Disabled="@(!_data.Any())">
                         Đặt Hàng
                     </MudButton>
                 </div>
@@ -155,7 +158,6 @@
     private string _token = string.Empty;
     private string _note = string.Empty;
     private decimal _shippingPrice = 0;
-    private int _selectPaymentMethod = Constant.PaymentMethod.CashBack;
     private int _orderIdSuccess = -1;
     private string _orderCodeSuccess = string.Empty;
 
@@ -318,193 +320,183 @@
         }
     }
 
-    // private async Task OnCheckout()
-    // {
-    //     Validate giỏ hàng
-    //     if (!_data.Any())
-    //     {
-    //         _snackbar.Add("Giỏ hàng của bạn đang trống. Vui lòng thêm sản phẩm vào giỏ hàng.", Severity.Warning);
-    //         return;
-    //     }
-
-    //     Validate địa chỉ giao hàng
-    //     if (_addressDefault == null)
-    //     {
-    //         _snackbar.Add("Vui lòng chọn địa chỉ giao hàng.", Severity.Warning);
-    //         return;
-    //     }
-
-    //     if (_addressDefault.Id <= 0)
-    //     {
-    //         _snackbar.Add("Địa chỉ giao hàng không hợp lệ.", Severity.Error);
-    //         return;
-    //     }
-
-    //     Validate sản phẩm trong giỏ hàng
-    //     var invalidProducts = _data.Where(item =>
-    //         item.Quantity <= 0 ||
-    //         item.UnitPrice <= 0 ||
-    //         item.VariantId <= 0 ||
-    //         string.IsNullOrWhiteSpace(item.productName)
-    //     ).ToList();
-
-    //     if (invalidProducts.Any())
-    //     {
-    //         _snackbar.Add("Có sản phẩm không hợp lệ trong giỏ hàng. Vui lòng kiểm tra lại.", Severity.Error);
-    //         return;
-    //     }
-
-    //     Validate token
-    //     if (string.IsNullOrWhiteSpace(_token))
-    //     {
-    //         _snackbar.Add("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", Severity.Warning);
-    //         return;
-    //     }
-
-    //     Validate tổng tiền
-    //     var subtotal = CalculateSubtotal();
-    //     if (subtotal <= 0)
-    //     {
-    //         _snackbar.Add("Tổng tiền sản phẩm phải lớn hơn 0.", Severity.Error);
-    //         return;
-    //     }
-
-    //     var total = CalculateTotal();
-    //     if (total < 0)
-    //     {
-    //         _snackbar.Add("Tổng tiền thanh toán không hợp lệ. Vui lòng kiểm tra lại mã giảm giá.", Severity.Error);
-    //         return;
-    //     }
-
-    //     try
-    //     {
-    //         var listProductForCheckout = _data.Select(item => new CheckoutModel
-    //             {
-    //                 ProductName = $"{item.productName} - {item.ColorName} - {item.SizeName}",
-    //                 Quantity = item.Quantity,
-    //                 UnitPrice = item.UnitPrice ?? 0,
-    //                 ProductVariantId = item.VariantId
-    //             }).ToList();
-
-    //         if (!listProductForCheckout.Any())
-    //         {
-    //             _snackbar.Add("Không có sản phẩm để thanh toán.", Severity.Error);
-    //             return;
-    //         }
-
-    //         int? discountId = _discountDetail?.DiscountId;
-
-    //         var result = await _orderService.GetCheckoutUrl(
-    //             _token,
-    //             listProduct: listProductForCheckout,
-    //             discountAmount: _discountAmount + _discountShippingFee,
-    //             shippingFee: _shippingPrice,
-    //             note: _note ?? string.Empty,
-    //             shippingAddressId: _addressDefault.Id,
-    //             paymentMethodTypeId: _selectPaymentMethod,
-    //             discountId: discountId
-    //         );
-
-    //         if (result.IsSuccess && result.Data != null)
-    //         {
-    //             var data = result.Data;
-
-    //             Validate response data
-    //             if (!data.PaymentType.HasValue)
-    //             {
-    //                 _snackbar.Add("Không nhận được thông tin phương thức thanh toán từ server.", Severity.Error);
-    //                 return;
-    //             }
-
-    //             if (data.PaymentType == Constant.PaymentMethod.Transfer)
-    //             {
-    //                 if (string.IsNullOrWhiteSpace(data.URLPayment))
-    //                 {
-    //                     _snackbar.Add("Không nhận được URL thanh toán. Vui lòng thử lại hoặc liên hệ hỗ trợ.", Severity.Error);
-    //                     return;
-    //                 }
-
-    //                 if (!data.OrderId.HasValue || data.OrderId.Value <= 0)
-    //                 {
-    //                     _snackbar.Add("Không nhận được mã đơn hàng. Vui lòng thử lại.", Severity.Error);
-    //                     return;
-    //                 }
-
-    //                 await ClearCartAfterCheckout();
-    //                 await _cartStateService.LoadCartDetailsAsync();
-
-    //                 _snackbar.Add("Chuyển hướng đến cổng thanh toán...", Severity.Info);
-    //                 navigation.NavigateTo(data.URLPayment);
-    //             }
-    //             else if (data.PaymentType == Constant.PaymentMethod.CashBack)
-    //             {
-    //                 if (!data.OrderId.HasValue || data.OrderId.Value <= 0)
-    //                 {
-    //                     _snackbar.Add("Không nhận được mã đơn hàng. Vui lòng thử lại hoặc liên hệ hỗ trợ.", Severity.Error);
-    //                     return;
-    //                 }
-
-    //                 if (string.IsNullOrWhiteSpace(data.OrderCode))
-    //                 {
-    //                     _snackbar.Add("Không nhận được mã số đơn hàng. Vui lòng thử lại hoặc liên hệ hỗ trợ.", Severity.Error);
-    //                     return;
-    //                 }
-
-    //                 await ClearCartAfterCheckout();
-
-    //                 _isCheckoutSuccess = true;
-    //                 _orderIdSuccess = data.OrderId.Value;
-    //                 _orderCodeSuccess = data.OrderCode;
-
-    //                 _snackbar.Add("Đặt hàng thành công! Đơn hàng sẽ được xử lý.", Severity.Success);
-    //                 await _cartStateService.LoadCartDetailsAsync();
-    //                 StateHasChanged();
-    //             }
-    //             else
-    //             {
-    //                 _snackbar.Add($"Phương thức thanh toán không hợp lệ: {data.PaymentType}", Severity.Error);
-    //             }
-    //         }
-    //         else
-    //         {
-    //             var errorMessage = result.ErrorMessage ?? "Đặt hàng thất bại. Vui lòng thử lại.";
-
-    //             if (result.StatusCode == "400")
-    //             {
-    //                 errorMessage = result.ErrorMessage ?? "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin đơn hàng.";
-    //             }
-    //             else if (result.StatusCode == "401" || result.StatusCode == "403")
-    //             {
-    //                 errorMessage = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
-    //             }
-    //             else if (result.StatusCode == "500")
-    //             {
-    //                 errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.";
-    //             }
-
-    //             _snackbar.Add(errorMessage, Severity.Error);
-    //         }
-    //     }
-    //     catch (HttpRequestException ex)
-    //     {
-    //         _snackbar.Add("Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng và thử lại.", Severity.Error);
-    //     }
-    //     catch (TaskCanceledException ex)
-    //     {
-    //         _snackbar.Add("Yêu cầu đã hết thời gian chờ. Vui lòng thử lại.", Severity.Warning);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         _snackbar.Add($"Lỗi đặt hàng: {ex.Message}. Vui lòng thử lại hoặc liên hệ hỗ trợ.", Severity.Error);
-    //     }
-    // }
-
-    private async Task OnSubmit()
+    private async Task OnCheckout()
     {
         if (string.IsNullOrEmpty(_model.FullName) || string.IsNullOrEmpty(_model.Phone) || string.IsNullOrEmpty(_selectedWard) || _selectedProvince <= 0 || _selectedDistrict <= 0)
         {
             _snackbar.Add("Vui lòng điền đầy đủ thông tin", Severity.Warning);
             return;
+        }
+
+        if (!_data.Any())
+        {
+            _snackbar.Add("Giỏ hàng của bạn đang trống. Vui lòng thêm sản phẩm vào giỏ hàng.", Severity.Warning);
+            return;
+        }
+
+        var invalidProducts = _data.Where(item =>
+            item.Quantity <= 0 ||
+            item.UnitPrice <= 0 ||
+            item.VariantId <= 0 ||
+            string.IsNullOrWhiteSpace(item.productName)
+        ).ToList();
+
+        if (invalidProducts.Any())
+        {
+            _snackbar.Add("Có sản phẩm không hợp lệ trong giỏ hàng. Vui lòng kiểm tra lại.", Severity.Error);
+            return;
+        }
+
+        var subtotal = CalculateSubtotal();
+        if (subtotal <= 0)
+        {
+            _snackbar.Add("Tổng tiền sản phẩm phải lớn hơn 0.", Severity.Error);
+            return;
+        }
+
+        var total = CalculateTotal();
+        if (total < 0)
+        {
+            _snackbar.Add("Tổng tiền thanh toán không hợp lệ. Vui lòng kiểm tra lại mã giảm giá.", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            var listProductForCheckout = _data.Select(item => new CheckoutListItem
+                {
+                    ProductName = $"{item.productName} - {item.ColorName} - {item.SizeName}",
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice ?? 0,
+                    ProductVariantId = item.VariantId
+                }).ToList();
+
+            if (!listProductForCheckout.Any())
+            {
+                _snackbar.Add("Không có sản phẩm để thanh toán.", Severity.Error);
+                return;
+            }
+
+            int? discountId = _discountDetail?.DiscountId;
+
+            var result = await _orderService.GetCheckoutUrl(
+                _token,
+                checkoutBody: new CheckoutModel
+                {
+                    ListItemCheckout = listProductForCheckout,
+                    AddressDTO = new CheckoutAddressModel
+                    {
+                        CustomerId = -1,
+                        FullName = _model.FullName,
+                        Phone = _model.Phone,
+                        Street = _selectedWard,
+                        City = _selectedProvince.ToString(),
+                        District = _selectedDistrict.ToString(),
+                        CityName = _model.CityName,
+                        DistrictName = _model.DistrictName,
+                        StreetName = _model.StreetName,
+                        OtherInfo = _model.OtherInfo,
+                        IsDefault = false,
+                    },
+                },
+                discountAmount: 0,
+                shippingFee: _shippingPrice,
+                note: _note ?? string.Empty,
+                shippingAddressId: -99,
+                paymentMethodTypeId: _model.PaymentMethod,
+                discountId: null
+            );
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                var data = result.Data;
+
+                if (!data.PaymentType.HasValue)
+                {
+                    _snackbar.Add("Không nhận được thông tin phương thức thanh toán từ server.", Severity.Error);
+                    return;
+                }
+
+                if (data.PaymentType == Constant.PaymentMethod.Transfer)
+                {
+                    if (string.IsNullOrWhiteSpace(data.URLPayment))
+                    {
+                        _snackbar.Add("Không nhận được URL thanh toán. Vui lòng thử lại hoặc liên hệ hỗ trợ.", Severity.Error);
+                        return;
+                    }
+
+                    if (!data.OrderId.HasValue || data.OrderId.Value <= 0)
+                    {
+                        _snackbar.Add("Không nhận được mã đơn hàng. Vui lòng thử lại.", Severity.Error);
+                        return;
+                    }
+
+                    await ClearCartAfterCheckout();
+                    await _cartStateService.LoadCartDetailsAsync();
+                    await localStorage.RemoveItemAsync(Constant.CartItemKey, _cts.Token);
+                    _cartItemLocal.Clear();
+
+                    _snackbar.Add("Chuyển hướng đến cổng thanh toán...", Severity.Info);
+                    navigation.NavigateTo(data.URLPayment);
+                }
+                else if (data.PaymentType == Constant.PaymentMethod.CashBack)
+                {
+                    if (!data.OrderId.HasValue || data.OrderId.Value <= 0)
+                    {
+                        _snackbar.Add("Không nhận được mã đơn hàng. Vui lòng thử lại hoặc liên hệ hỗ trợ.", Severity.Error);
+                        return;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(data.OrderCode))
+                    {
+                        _snackbar.Add("Không nhận được mã số đơn hàng. Vui lòng thử lại hoặc liên hệ hỗ trợ.", Severity.Error);
+                        return;
+                    }
+
+                    await ClearCartAfterCheckout();
+                    await localStorage.RemoveItemAsync(Constant.CartItemKey, _cts.Token);
+                    _cartItemLocal.Clear();
+
+                    _isCheckoutSuccess = true;
+                    _orderIdSuccess = data.OrderId.Value;
+                    _orderCodeSuccess = data.OrderCode;
+
+                    _snackbar.Add("Đặt hàng thành công! Đơn hàng sẽ được xử lý.", Severity.Success);
+                    await _cartStateService.LoadCartDetailsAsync();
+                    StateHasChanged();
+                }
+                else
+                {
+                    _snackbar.Add($"Phương thức thanh toán không hợp lệ: {data.PaymentType}", Severity.Error);
+                }
+            }
+            else
+            {
+                var errorMessage = result.ErrorMessage ?? "Đặt hàng thất bại. Vui lòng thử lại.";
+
+                if (result.StatusCode == "400")
+                {
+                    errorMessage = result.ErrorMessage ?? "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin đơn hàng.";
+                }
+                else if (result.StatusCode == "500")
+                {
+                    errorMessage = "Lỗi hệ thống. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.";
+                }
+
+                _snackbar.Add(errorMessage, Severity.Error);
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            _snackbar.Add("Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng và thử lại.", Severity.Error);
+        }
+        catch (TaskCanceledException ex)
+        {
+            _snackbar.Add("Yêu cầu đã hết thời gian chờ. Vui lòng thử lại.", Severity.Warning);
+        }
+        catch (Exception ex)
+        {
+            _snackbar.Add($"Lỗi đặt hàng: {ex.Message}. Vui lòng thử lại hoặc liên hệ hỗ trợ.", Severity.Error);
         }
     }
 

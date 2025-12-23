@@ -72,7 +72,10 @@
                 <span class="whitespace-pre-wrap text-sm">@GetHistoryOrder(_orderDetail?.StatusHistory)</span>
             </div>
         </div>
-        <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Error" OnClick="CancelOrder" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusPending)">Hủy đơn hàng</MudButton>
+        <div class="flex items-center gap-4">
+            <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Error" OnClick="CancelOrder" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusPending)">Hủy đơn hàng</MudButton>
+            <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Info" OnClick="ReCheckout" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusNoCheckout)">Thanh toán</MudButton>
+        </div>
     </div>
 
         <div class="mt-6 px-6">
@@ -197,6 +200,11 @@
                 _orderDetail = resOrderDetailWithAny.Data;
             }
         }
+    }
+
+    async Task ReCheckout()
+    {
+        
     }
 
     async Task CancelOrder()

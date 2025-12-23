@@ -552,8 +552,7 @@ namespace Pro219.API.Controllers
                 order.UpdateBy = "System";
                 order.IsOrderPOS = false;
                 order.Status = PaymentMethodTypeId == 2 ? Constant.OrderStatus.StatusWaitingForPayment : Constant.OrderStatus.StatusPending;
-                order.CustomerId = User.FindFirst(ClaimTypes.SerialNumber)?.Value == null ? null : int.Parse(User.FindFirst(ClaimTypes.SerialNumber)?.Value);
-                order.ShippingAddressId = 1;
+                order.CustomerId = User.FindFirst(ClaimTypes.SerialNumber)?.Value == null ? -1 : int.Parse(User.FindFirst(ClaimTypes.SerialNumber)?.Value);
                 order.DiscountId = discountId == null ? null : (int)discountId;
                 order.PaymentMethodId = PaymentMethodTypeId;
                 order.CustomerType = checkoutParam.AddressDTO != null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;
