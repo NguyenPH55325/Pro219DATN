@@ -28,6 +28,7 @@ namespace Pro219.DAL.Models
         public DateTime OrderDate { get; set; }
 
         public string? PaymentLink { get; set; } = string.Empty;
+        public DateTime? PaymentExpiration { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalAmount { get; set; }

@@ -23,7 +23,7 @@ namespace Pro219.DAL.Repository
             _context = context;
         }
 
-        public async Task<List<Order>> GetAllOrders(string? orderCode = null, string? fullName = null, string? phoneNumber = null)
+        public async Task<List<Order>> GetAllOrders(string? keyword = null)
         {
             try
             {
@@ -32,19 +32,19 @@ namespace Pro219.DAL.Repository
                     .Where(x => x.Delete != true)
                     .AsQueryable();
 
-                if (!string.IsNullOrWhiteSpace(orderCode))
+                if (!string.IsNullOrWhiteSpace(keyword))
                 {
-                    query = query.Where(x => x.OrderCode.Contains(orderCode));
+                    query = query.Where(x => x.OrderCode.Contains(keyword));
                 }
 
-                if (!string.IsNullOrWhiteSpace(fullName))
+                if (!string.IsNullOrWhiteSpace(keyword))
                 {
-                    query = query.Where(x => x.ShippingAddress != null && x.ShippingAddress.FullName.Contains(fullName));
+                    query = query.Where(x => x.ShippingAddress != null && x.ShippingAddress.FullName.Contains(keyword));
                 }
 
-                if (!string.IsNullOrWhiteSpace(phoneNumber))
+                if (!string.IsNullOrWhiteSpace(keyword))
                 {
-                    query = query.Where(x => x.ShippingAddress != null && x.ShippingAddress.Phone.Contains(phoneNumber));
+                    query = query.Where(x => x.ShippingAddress != null && x.ShippingAddress.Phone.Contains(keyword));
                 }
 
                 var orders = await query.ToListAsync();
