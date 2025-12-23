@@ -7,7 +7,7 @@
     <h1 class="text-xl font-bold uppercase md:text-2xl lg:text-3xl">Tra cứu đơn hàng của bạn</h1>
 
     <div class="my-6 w-full">
-        <MudTextField T="string" Value="@_searchOrder" Variant="Variant.Outlined" Label="Nhập số điện thoại hoặc mã đơn hàng của bạn" ValueChanged="HandleSearch" InputType="InputType.Search" />
+        <MudTextField @bind-Value="@_searchOrder" Variant="Variant.Outlined" Label="Nhập số điện thoại hoặc mã đơn hàng của bạn" TextChanged="HandleSearch" InputType="InputType.Search" />
     </div>
 
     <div>
