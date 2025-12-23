@@ -27,7 +27,7 @@
 
         }
 
-        public static class OrderType
+        public static class CustomerType
         {
             public const byte GuestOrder = 1;
             public const byte RegisteredOrder = 2;

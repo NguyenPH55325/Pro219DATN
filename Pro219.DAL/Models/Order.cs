@@ -12,19 +12,22 @@ namespace Pro219.DAL.Models
         public int? CustomerId { get; set; }
 
 
-        public int ShippingAddressId { get; set; }
+        public int? ShippingAddressId { get; set; }
 
         public int? DiscountId { get; set; }
 
         public int? PaymentMethodId { get; set; }
 
-        public byte? OrderType { get; set; }
+        public byte? CustomerType { get; set; }
+
+        public bool? IsOrderPOS { get; set; } = false;
 
         [MaxLength(50)]
         public string OrderCode { get; set; } = string.Empty;
 
         public DateTime OrderDate { get; set; }
 
+        public string? PaymentLink { get; set; } = string.Empty;
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalAmount { get; set; }

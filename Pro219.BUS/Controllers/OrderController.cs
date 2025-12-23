@@ -28,10 +28,22 @@ namespace Pro219.API.Controllers
 
         OrderRepository orderRepository;
         DiscountCodeRepository discountCodeRepository;
+        ProductVariantRepository productVariantRepository;
+        OrderItemRepository orderItemRepository;
+        ProductRepository productRepository;
+        ColorRepository colorRepository;
+        SizeRepository sizeRepository;
+        BrandRepository brandRepository;
 
         public OrderController()
         {
             orderRepository = new OrderRepository();
+            productVariantRepository = new ProductVariantRepository();
+            orderItemRepository = new OrderItemRepository();
+            productRepository = new ProductRepository();
+            colorRepository = new ColorRepository();
+            sizeRepository = new SizeRepository();
+            brandRepository = new BrandRepository();
         }
 
         [HttpPut("UpdateStatus")]
@@ -153,12 +165,298 @@ namespace Pro219.API.Controllers
                 return StatusCode(500, Constant.ErrorCode.OtherError);
             }
         }
-       
+
+        [HttpPost("checkout-pos")]
+        public async Task<ActionResult<CheckoutDTO>> GetCheckoutForPOS([FromBody] CheckoutParamsDTO checkoutParam, string? phoneNumber = null, decimal discountAmount = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note = "")
+        {
+            if (checkoutParam == null || checkoutParam.ListItemCheckout == null || !checkoutParam.ListItemCheckout.Any())
+            {
+                return BadRequest("Dữ liệu checkout không hợp lệ");
+            }
+            foreach (var item in checkoutParam.ListItemCheckout)
+            {
+                if (item.ProductVariantId <= 0 || item.Quantity <= 0)
+                {
+                    return BadRequest("Sản phẩm bạn đã chọn đã hết");
+                }
+
+                var variant = await productVariantRepository.GetProductVariantById(item.ProductVariantId);
+                if (variant == null || variant.Delete == true || variant.IsActive == false || (variant.Status.HasValue && variant.Status == 0))
+                {
+                    return BadRequest("Sản phẩm không còn hoạt động hoặc đã bị xóa");
+                }
+
+                if (variant.StockQuantity < item.Quantity)
+                {
+                    return BadRequest("Số lượng kho không đủ");
+                }
+
+                var product = await productRepository.GetProductById(variant.ProductId);
+                if (product == null || product.Delete == true || (product.Status.HasValue && product.Status == 0))
+                {
+                    return BadRequest("Sản phẩm không còn hoạt động hoặc đã bị xóa");
+                }
+
+                var brand = await brandRepository.GetBrandById(product.BrandId);
+                if (brand == null || brand.Delete == true || (brand.Status.HasValue && brand.Status == 0))
+                {
+                    return BadRequest("Thương hiệu đã ngừng kinh doanh");
+                }
+
+                if (variant.ColorId.HasValue)
+                {
+                    var color = await colorRepository.GetColorById(variant.ColorId.Value);
+                    if (color == null || color.Delete == true || (color.Status.HasValue && color.Status == 0))
+                    {
+                        return BadRequest("Màu sắc không còn hoạt động");
+                    }
+                }
+
+                if (variant.SizeId.HasValue)
+                {
+                    var size = await sizeRepository.GetSizeById(variant.SizeId.Value);
+                    if (size == null || size.Delete == true || (size.Status.HasValue && size.Status == 0))
+                    {
+                        return BadRequest("Kích cỡ không còn kinh doanh");
+                    }
+                }
+            }
+            CustomerRepository customerRepository = new CustomerRepository();
+            Customer currentCustomer = customerRepository.FindCustomerByEmailAndPhone("", phoneNumber).Result;
+            if(currentCustomer == null)
+            {
+                currentCustomer = new Customer();
+                currentCustomer.Id = -1;
+            }
+            // PaymentMethodTypeId: 1 - Thanh toán tại quầy, 2 - Thanh toán Chuyển khoản tại quầy
+            discountCodeRepository = new DiscountCodeRepository();
+            PayOS payOS = new PayOS("09b8a42b-6105-4cd4-a4ee-8492e42e909c", "15cfbaf8-79a4-48a0-908f-248c30538001", "00b20c6b94e21bf27e6cb0ae2f26515637c93d70b2eeb832e7b51e299cba433d");
+            List<ItemData> items = new List<ItemData>();
+            foreach (var product in checkoutParam.ListItemCheckout)
+            {
+                ItemData item = new ItemData(product.ProductName, product.Quantity, (int)product.UnitPrice);
+                items.Add(item);
+            }
+
+            decimal totalPrice = checkoutParam.ListItemCheckout.Sum(p => p.UnitPrice * p.Quantity);
+            decimal finalAmount = 0;
+            finalAmount = (totalPrice - discountAmount);
+            int ordCode = new Random().Next(1, int.MaxValue);
+            Order order = new Order();
+            try
+            {
+                if (PaymentMethodTypeId == 1)
+                {
+                    var statusHistory = ParseStatusHistory(order.StatusHistory);
+                    statusHistory.Add(new StatusHistoryEntry
+                    {
+                        Index = statusHistory.Count + 1,
+                        Status = Constant.OrderStatus.StatusPending,
+                        OrderStatus = Constant.OrderStatus.OrderStatusPending,
+                        PaymentStatus = Constant.OrderStatus.PaymentPending,
+                        DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
+                    });
+                    order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
+                }
+
+                else
+                {
+                    var statusHistory = ParseStatusHistory(order.StatusHistory);
+                    statusHistory.Add(new StatusHistoryEntry
+                    {
+                        Index = statusHistory.Count + 1,
+                        Status = Constant.OrderStatus.StatusWaitingForPayment,
+                        OrderStatus = Constant.OrderStatus.OrderStatusWaitingForPayment,
+                        PaymentStatus = Constant.OrderStatus.PaymentPending,
+                        DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
+                    });
+                    order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
+                }
+
+
+                order.OrderCode = "DH" + ordCode.ToString();
+                order.TotalAmount = totalPrice;
+                order.DiscountAmount = discountAmount;
+                order.ShippingAddressId = null;
+                order.Notes = note;
+                order.FinalAmount = finalAmount;
+                order.ShippingFee = 0;
+                order.OrderDate = DateTime.Now;
+                order.PaymentStatus = Constant.OrderStatus.PaymentPending;
+                order.OrderStatus = "Đặt hàng"; // status = 1;
+                order.DiscountId = discountId;
+                order.Notes = currentCustomer.Id == -1 ? "Khách vãng lai" : "Khách hàng có tài khoản";
+                order.CreateAt = DateTime.Now;
+                order.LastUpdate = DateTime.Now;
+                order.IsOrderPOS = true;
+                order.UpdateBy = "System";
+                order.Status = PaymentMethodTypeId == 2 ? Constant.OrderStatus.StatusWaitingForPayment : Constant.OrderStatus.StatusPending;
+                order.CustomerId = currentCustomer.Id == -1 ? currentCustomer.Id : currentCustomer.Id;
+                order.ShippingAddressId = null;
+                order.DiscountId = discountId == null ? null : (int)discountId;
+                order.PaymentMethodId = PaymentMethodTypeId;
+                order.CustomerType = currentCustomer.FullName == null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;
+                var result = await orderRepository.AddOrder(order);
+
+              
+                if (result == null)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    OrderItemRepository orderItemRepository = new OrderItemRepository();
+                    foreach (var product in checkoutParam.ListItemCheckout)
+                    {
+                        OrderItem orderItem = new OrderItem();
+                        orderItem.OrderId = result.OrderId;
+                        orderItem.ProductVariantId = product.ProductVariantId;
+                        orderItem.Quantity = product.Quantity;
+                        orderItem.UnitPrice = product.UnitPrice;
+                        orderItem.Subtotal = product.UnitPrice * product.Quantity;
+                        orderItem.Delete = false;
+                        var resultItem = await orderItemRepository.AddOrderItem(orderItem);
+                        if (resultItem == null)
+                        {
+                            return BadRequest();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+
+            if (discountId != null && discountAmount > 0)
+            {
+                var discountCode = await discountCodeRepository.GetDiscountCodeById((int)discountId);
+                if (discountCode != null)
+                {
+                    discountCode.UsageCount++;
+                    var result = await discountCodeRepository.UpdateDiscountCode(discountCode);
+                    if (result == null)
+                    {
+                        return BadRequest(Constant.ErrorCode.DatabaseError);
+                    }
+
+                }
+            }
+
+            CheckoutDTO checkoutDTO = new CheckoutDTO();
+            checkoutDTO.OrderCode = order.OrderCode;
+            checkoutDTO.OrderId = order.OrderId;
+            checkoutDTO.PaymentType = PaymentMethodTypeId;
+
+
+            if (PaymentMethodTypeId == 2)
+            {
+                DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+                DateTimeOffset expirationTime = utcNow.AddMinutes(15);
+                long expiredAt = expirationTime.ToUnixTimeSeconds();
+                PaymentData paymentData = new PaymentData(ordCode, (int)finalAmount, "Adam Store Thanh toán", items, "http://localhost:5001/order/payment-cancelled?order-id=" + order.OrderId, "http://localhost:5001/order/payment-success?order-id=" + order.OrderId+"&pos=true",null,null,null,null,null, expiredAt);
+                CreatePaymentResult createPayment = await payOS.createPaymentLink(paymentData);
+
+                if (createPayment.status == "PENDING")
+                {
+                    checkoutDTO.URLPayment = createPayment.checkoutUrl;
+                    List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
+                    if (orderItemsList != null && orderItemsList.Any())
+                    {
+                        foreach (var orderItem in orderItemsList)
+                        {
+                            var re = await productVariantRepository.DecreaseProductVariantQuantity(orderItem.ProductVariantId, orderItem.Quantity);
+                            if (re == false)
+                                return BadRequest("Số lượng kho không đủ");
+                        }
+                    }
+
+                    return Ok(checkoutDTO);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            else if (PaymentMethodTypeId == 1)
+            {
+                checkoutDTO.URLPayment = null;
+                List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
+                if (orderItemsList != null && orderItemsList.Any())
+                {
+                    foreach (var orderItem in orderItemsList)
+                    {
+                        var re = await productVariantRepository.DecreaseProductVariantQuantity(orderItem.ProductVariantId, orderItem.Quantity);
+                        if (re == false)
+                            return BadRequest("Số lượng kho không đủ");
+                    }
+                }
+                return Ok(checkoutDTO);
+            }
+
+            return BadRequest("Lỗi");
+
+        }   
+
         [HttpPost("Checkout")]
         public async Task<ActionResult<CheckoutDTO>> GetCheckoutUrl([FromBody] CheckoutParamsDTO checkoutParam, decimal discountAmount = 0, decimal shippingFee = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note ="", int addressId=-99)
        {
             
             discountCodeRepository = new DiscountCodeRepository();
+            // Basic request validation
+            if (checkoutParam == null || checkoutParam.ListItemCheckout == null || !checkoutParam.ListItemCheckout.Any())
+            {
+                return BadRequest("Dữ liệu checkout không hợp lệ");
+            }
+            foreach (var item in checkoutParam.ListItemCheckout)
+            {
+                if (item.ProductVariantId <= 0 || item.Quantity <= 0)
+                {
+                    return BadRequest("Sản phẩm bạn đã chọn đã hết");
+                }
+
+                var variant = await productVariantRepository.GetProductVariantById(item.ProductVariantId);
+                if (variant == null || variant.Delete == true || variant.IsActive == false || (variant.Status.HasValue && variant.Status == 0))
+                {
+                    return BadRequest("Sản phẩm không còn hoạt động hoặc đã bị xóa");
+                }
+
+                if (variant.StockQuantity < item.Quantity)
+                {
+                    return BadRequest("Số lượng kho không đủ");
+                }
+
+                var product = await productRepository.GetProductById(variant.ProductId);
+                if (product == null || product.Delete == true || (product.Status.HasValue && product.Status == 0))
+                {
+                    return BadRequest("Sản phẩm không còn hoạt động hoặc đã bị xóa");
+                }
+
+                var brand = await brandRepository.GetBrandById(product.BrandId);
+                if (brand == null || brand.Delete == true || (brand.Status.HasValue && brand.Status == 0))
+                {
+                    return BadRequest("Thương hiệu đã ngừng kinh doanh");
+                }
+
+                if (variant.ColorId.HasValue)
+                {
+                    var color = await colorRepository.GetColorById(variant.ColorId.Value);
+                    if (color == null || color.Delete == true || (color.Status.HasValue && color.Status == 0))
+                    {
+                        return BadRequest("Màu sắc không còn hoạt động");
+                    }
+                }
+
+                if (variant.SizeId.HasValue)
+                {
+                    var size = await sizeRepository.GetSizeById(variant.SizeId.Value);
+                    if (size == null || size.Delete == true || (size.Status.HasValue && size.Status == 0))
+                    {
+                        return BadRequest("Kích cỡ không còn kinh doanh");
+                    }
+                }
+            }
+
             PayOS payOS = new PayOS("09b8a42b-6105-4cd4-a4ee-8492e42e909c", "15cfbaf8-79a4-48a0-908f-248c30538001", "00b20c6b94e21bf27e6cb0ae2f26515637c93d70b2eeb832e7b51e299cba433d");
             List<ItemData> items = new List<ItemData>();
             foreach (var product in checkoutParam.ListItemCheckout)
@@ -252,12 +550,13 @@ namespace Pro219.API.Controllers
                 order.CreateAt = DateTime.Now;
                 order.LastUpdate = DateTime.Now;
                 order.UpdateBy = "System";
+                order.IsOrderPOS = false;
                 order.Status = PaymentMethodTypeId == 2 ? Constant.OrderStatus.StatusWaitingForPayment : Constant.OrderStatus.StatusPending;
                 order.CustomerId = User.FindFirst(ClaimTypes.SerialNumber)?.Value == null ? null : int.Parse(User.FindFirst(ClaimTypes.SerialNumber)?.Value);
                 order.ShippingAddressId = 1;
                 order.DiscountId = discountId == null ? null : (int)discountId;
                 order.PaymentMethodId = PaymentMethodTypeId;
-                order.OrderType = checkoutParam.AddressDTO != null ? Constant.OrderType.GuestOrder : Constant.OrderType.RegisteredOrder;
+                order.CustomerType = checkoutParam.AddressDTO != null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;
                 var result = await orderRepository.AddOrder(order);
 
 
@@ -320,7 +619,16 @@ namespace Pro219.API.Controllers
                 if (createPayment.status == "PENDING")
                 {
                     checkoutDTO.URLPayment = createPayment.checkoutUrl;
-
+                    List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
+                    if (orderItemsList != null && orderItemsList.Any())
+                    {
+                        foreach (var orderItem in orderItemsList)
+                        {
+                            var re = await productVariantRepository.DecreaseProductVariantQuantity(orderItem.ProductVariantId, orderItem.Quantity);
+                            if (re == false)
+                                return BadRequest("Số lượng kho không đủ");
+                        }
+                    }
                     return Ok(checkoutDTO);
                 }
                 else
@@ -331,6 +639,16 @@ namespace Pro219.API.Controllers
             else if(PaymentMethodTypeId == 1)            
             {
                 checkoutDTO.URLPayment = null ;
+                List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);                
+                if (orderItemsList != null && orderItemsList.Any())
+                {
+                    foreach (var orderItem in orderItemsList)
+                    {
+                        var re = await productVariantRepository.DecreaseProductVariantQuantity(orderItem.ProductVariantId, orderItem.Quantity);
+                        if (re == false)
+                            return BadRequest("Số lượng kho không đủ");
+                    }
+                }
                 return Ok(checkoutDTO);
             }
            
@@ -340,7 +658,7 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("PaymentSuccess")]
-        public async Task<ActionResult<Order>> PaymentSuccess( [FromQuery] int orderId, [FromQuery] string errorMessage = null)
+        public async Task<ActionResult<Order>> PaymentSuccess( [FromQuery] int orderId, [FromQuery] bool pos, [FromQuery] string errorMessage = null)
         {
 
             try
@@ -351,21 +669,45 @@ namespace Pro219.API.Controllers
                     return NotFound();
                 }
                 var statusHistory = ParseStatusHistory(order.StatusHistory);
-                statusHistory.Add(new StatusHistoryEntry
+                if (pos == true)
                 {
-                    Index = statusHistory.Count + 1,
-                    Status = Constant.OrderStatus.StatusPending,
-                    OrderStatus = Constant.OrderStatus.OrderStatusPending,
-                    PaymentStatus = Constant.OrderStatus.PaymentCompleted,
-                    DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
-                });
-                order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
-                order.PaymentStatus = Constant.OrderStatus.PaymentCompleted;
-                order.OrderStatus = Constant.OrderStatus.OrderStatusPending;
-                order.Status = Constant.OrderStatus.StatusPending;
-                order.LastUpdate = DateTime.Now;
-                order.UpdateBy = "System";
-                var result = await orderRepository.UpdateOrder(order);
+                    statusHistory.Add(new StatusHistoryEntry
+                    {
+                        Index = statusHistory.Count + 1,
+                        Status = Constant.OrderStatus.StatusDone,
+                        OrderStatus = Constant.OrderStatus.OrderStatusDone,
+                        PaymentStatus = Constant.OrderStatus.PaymentCompleted,
+                        DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
+                    });
+
+                    order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
+                    order.PaymentStatus = Constant.OrderStatus.PaymentCompleted;
+                    order.OrderStatus = Constant.OrderStatus.OrderStatusDone;
+                    order.Status = Constant.OrderStatus.StatusDone;
+                    order.LastUpdate = DateTime.Now;
+                    order.UpdateBy = "System";
+
+                }
+                else
+                {
+                    statusHistory.Add(new StatusHistoryEntry
+                    {
+                        Index = statusHistory.Count + 1,
+                        Status = Constant.OrderStatus.StatusPending,
+                        OrderStatus = Constant.OrderStatus.OrderStatusPending,
+                        PaymentStatus = Constant.OrderStatus.PaymentCompleted,
+                        DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
+                    });
+
+                    order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
+                    order.PaymentStatus = Constant.OrderStatus.PaymentCompleted;
+                    order.OrderStatus = Constant.OrderStatus.OrderStatusPending;
+                    order.Status = Constant.OrderStatus.StatusPending;
+                    order.LastUpdate = DateTime.Now;
+                    order.UpdateBy = "System";
+                }              
+              
+                var result = await orderRepository.UpdateOrder(order);          
                 if(result == null)
                 {
                     return BadRequest();
@@ -385,6 +727,8 @@ namespace Pro219.API.Controllers
             try
             {
                 var order = await orderRepository.GetOrderById(orderId);
+                if (order.Status == Constant.OrderStatus.StatusCanceledByUser)
+                    return Ok();
                 if(order == null)
                 {
                     return NotFound();
@@ -405,7 +749,19 @@ namespace Pro219.API.Controllers
                 order.LastUpdate = DateTime.Now;
                 order.UpdateBy = "System";
                 var result = await orderRepository.UpdateOrder(order);
-                if(result == null)
+
+                List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
+                if (orderItemsList != null && orderItemsList.Any())
+                {
+                    foreach (var orderItem in orderItemsList)
+                    {
+                        var re = await productVariantRepository.IncreaseProductVariantQuantity(orderItem.ProductVariantId, orderItem.Quantity);
+                        if (re == false)
+                            return BadRequest("Số lượng kho không đủ");
+                    }
+                }
+
+                if (result == null)
                 {
                     return BadRequest();
                 }

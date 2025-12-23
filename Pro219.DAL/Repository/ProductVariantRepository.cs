@@ -47,6 +47,21 @@ namespace Pro219.DAL.Repository
             }
         }
 
+        public async Task<int> GetProductVariantQuantityById(int id)
+        {
+            try
+            {
+                var variant = await _context.ProductVariants.FindAsync(id);
+                if (variant == null || variant.Delete == true)
+                    return 0;
+                return variant.StockQuantity;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
+
         public async Task<List<ProductVariant>> GetProductVariantsByProductId(int productId)
         {
             try
@@ -132,6 +147,50 @@ namespace Pro219.DAL.Repository
             catch (Exception)
             {
                 return null;
+            }
+        }
+
+        public async Task<bool> IncreaseProductVariantQuantity(int id, int count)
+        {
+            try
+            {
+                var variant = await _context.ProductVariants.FindAsync(id);
+
+                if (variant == null || variant.Delete == true) return false;
+
+                variant.StockQuantity += count;
+                variant.UpdateAt = DateTime.Now;
+
+                _context.ProductVariants.Update(variant);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> DecreaseProductVariantQuantity(int id, int count)
+        {
+            try
+            {
+                var variant = await _context.ProductVariants.FindAsync(id);
+
+                if (variant == null || variant.Delete == true) return false;
+
+                if (variant.StockQuantity - count < 0) return false;
+
+                variant.StockQuantity -= count;
+                variant.UpdateAt = DateTime.Now;
+
+                _context.ProductVariants.Update(variant);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
     }
