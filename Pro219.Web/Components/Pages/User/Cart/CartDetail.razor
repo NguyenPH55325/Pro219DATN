@@ -262,6 +262,7 @@
             {
                 _snackbar.Add("Xóa thành công", Severity.Success);
                 await _cartStateService.LoadCartDetailsAsync();
+                await LoadData();
                 StateHasChanged();
             }
             else

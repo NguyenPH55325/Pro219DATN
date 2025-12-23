@@ -22,7 +22,7 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("GetAllCategories")]
-        public async Task<ActionResult<List<CategoryDTO>>> GetAllCategories(string keyword)
+        public async Task<ActionResult<List<CategoryDTO>>> GetAllCategories(string? keyword)
         {
             try
             {

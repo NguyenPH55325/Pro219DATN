@@ -74,7 +74,7 @@
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Thương Hiệu", href: "#", disabled: true),
+    new("Thương Hiệu", href: "#", disabled: true),
     ];
 
     protected override async Task OnInitializedAsync()
@@ -95,7 +95,7 @@
 
     async Task LoadData()
     {
-        var res = await _brandService.GetAll();
+        var res = await _brandService.GetAll(_searchValue);
         var data = res.Data;
         if (res.IsSuccess && data != null)
         {
@@ -110,7 +110,7 @@
 
         if (string.IsNullOrEmpty(value))
         {
-            // await LoadData();
+            await LoadData();
             return;
         }
 
@@ -119,9 +119,8 @@
 
         try
         {
-            await Task.Delay(700, _cts.Token);
-
-            _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+            await Task.Delay(500, _cts.Token);
+            await LoadData();
         }
         catch (TaskCanceledException)
         {
@@ -131,6 +130,8 @@
     private async Task OnReset()
     {
         _searchValue = string.Empty;
+        await Task.Delay(500, _cts.Token);
+        await LoadData();
     }
 
     async Task OpenDialogDelete(int id)

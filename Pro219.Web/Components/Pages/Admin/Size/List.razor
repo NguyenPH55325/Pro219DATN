@@ -15,9 +15,9 @@
                 <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
                               AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
             </div>
-        </div>
-        <div>
-            <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+            <div>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" /> Đặt lại bộ lọc</MudButton>
+            </div>
         </div>
     </div>
 
@@ -73,7 +73,7 @@
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Kích Thước", href: "#", disabled: true),
+    new("Kích Thước", href: "#", disabled: true),
     ];
 
     protected override async Task OnInitializedAsync()
@@ -92,7 +92,7 @@
 
     async Task LoadData()
     {
-        var res = await _sizeService.GetAll();
+        var res = await _sizeService.GetAll(_searchValue);
         var data = res.Data;
         if(res.IsSuccess && data != null)
         {
@@ -104,21 +104,20 @@
     private async Task onChangeSearch(string value)
     {
         _searchValue = value;
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        await Task.Delay(500, _cts.Token);
 
         if (string.IsNullOrEmpty(value))
         {
-            // await LoadData();
+            await LoadData();
             return;
         }
 
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
 
         try
         {
-            await Task.Delay(700, _cts.Token);
-
-            _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+            await LoadData();
         }
         catch (TaskCanceledException)
         {
@@ -145,5 +144,7 @@
     private async Task OnReset()
     {
         _searchValue = string.Empty;
+        await Task.Delay(500);
+        await LoadData();
     }
 }

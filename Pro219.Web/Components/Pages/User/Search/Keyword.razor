@@ -195,21 +195,21 @@
     {
         if (!_colors.Any())
         {
-            var resColor = await _colorService.GetAll();
+            var resColor = await _colorService.GetAll(null);
             if (resColor.IsSuccess && resColor.Data.Count() > 0)
                 _colors = resColor.Data;
         }
 
         if (!_brands.Any())
         {
-            var resBrand = await _brandService.GetAll();
+            var resBrand = await _brandService.GetAll(null);
             if (resBrand.IsSuccess && resBrand.Data.Count() > 0)
                 _brands = resBrand.Data;
         }
 
         if (!_sizes.Any())
         {
-            var resSize = await _sizeService.GetAll();
+            var resSize = await _sizeService.GetAll(null);
             if (resSize.IsSuccess && resSize.Data.Count() > 0)
                 _sizes = resSize.Data;
         }

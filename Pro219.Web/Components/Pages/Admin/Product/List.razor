@@ -40,7 +40,7 @@
                 </MudSelect>
             </div>
             <div>
-                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="flex h-14 w-full items-center gap-2"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
             </div>
         </div>
     </div>
@@ -147,14 +147,14 @@
             _products = dataProduct;
         }
 
-        var resCatgegory = await _categoryService.GetAll();
+        var resCatgegory = await _categoryService.GetAll(null);
         var dataCatgegory = resCatgegory.Data;
         if (resCatgegory.IsSuccess && dataCatgegory != null)
         {
             _categories = dataCatgegory;
         }
 
-        var resBrand = await _brandService.GetAll();
+        var resBrand = await _brandService.GetAll(null);
         var dataBrand = resBrand.Data;
         if (resBrand.IsSuccess && dataBrand != null)
         {

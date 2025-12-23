@@ -71,9 +71,19 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<List<Order>>> GetAll()
+        public async Task<ServiceResult<List<Order>>> GetAll(string? keyword)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/GetAll");
+            var queryParams = new Dictionary<string, string?>();
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                queryParams.Add("keyword", keyword);
+            }
+
+            string url = QueryHelpers.AddQueryString("/Order/GetAll", queryParams!);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
             var response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {

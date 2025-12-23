@@ -22,7 +22,7 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<ActionResult<List<Color>>> GetAllColors(string keyword)
+        public async Task<ActionResult<List<Color>>> GetAllColors(string? keyword)
         {
             try
             {

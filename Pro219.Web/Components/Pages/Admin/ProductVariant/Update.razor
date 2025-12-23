@@ -143,8 +143,8 @@
         _isLoading = true;
 
         var resProductVariant = await _productVariantService.GetById(productVariantId);
-        var resSize = await _sizeService.GetAll();
-        var resColor = await _colorService.GetAll();
+        var resSize = await _sizeService.GetAll(null);
+        var resColor = await _colorService.GetAll(null);
 
         var dataProductVariant = resProductVariant.Data;
         var dataSize = resSize.Data;

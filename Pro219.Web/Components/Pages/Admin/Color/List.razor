@@ -99,7 +99,7 @@
 
     async Task LoadData()
     {
-        var res = await _colorService.GetAll();
+        var res = await _colorService.GetAll(_searchValue);
         var data = res.Data;
         if (res.IsSuccess && data != null)
         {
@@ -111,21 +111,20 @@
     private async Task onChangeSearch(string value)
     {
         _searchValue = value;
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        await Task.Delay(700, _cts.Token);
 
         if (string.IsNullOrEmpty(value))
         {
-            // await LoadData();
+            await LoadData();
             return;
         }
 
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
 
         try
         {
-            await Task.Delay(700, _cts.Token);
-
-            _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+            await LoadData();
         }
         catch (TaskCanceledException)
         {
@@ -152,5 +151,7 @@
     private async Task OnReset()
     {
         _searchValue = string.Empty;
+        await Task.Delay(700, _cts.Token);
+        await LoadData();
     }
 }

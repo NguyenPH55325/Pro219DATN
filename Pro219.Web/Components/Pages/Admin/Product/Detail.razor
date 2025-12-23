@@ -191,14 +191,14 @@
 
             }
 
-            var resSize = await _sizeService.GetAll();
+            var resSize = await _sizeService.GetAll(null);
             var dataSize = resSize.Data;
             if (resSize.IsSuccess && dataSize != null)
             {
                 _sizes = dataSize;
             }
 
-            var resColor = await _colorService.GetAll();
+            var resColor = await _colorService.GetAll(null);
             var dataColor = resColor.Data;
             if (resColor.IsSuccess && dataColor != null)
             {

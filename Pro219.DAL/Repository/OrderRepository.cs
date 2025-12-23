@@ -34,17 +34,7 @@ namespace Pro219.DAL.Repository
 
                 if (!string.IsNullOrWhiteSpace(keyword))
                 {
-                    query = query.Where(x => x.OrderCode.Contains(keyword));
-                }
-
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    query = query.Where(x => x.ShippingAddress != null && x.ShippingAddress.FullName.Contains(keyword));
-                }
-
-                if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    query = query.Where(x => x.ShippingAddress != null && x.ShippingAddress.Phone.Contains(keyword));
+                    query = query.Where(x => x.OrderCode.Contains(keyword) || (x.ShippingAddress != null && x.ShippingAddress.FullName.Contains(keyword)) || x.ShippingAddress != null && x.ShippingAddress.Phone.Contains(keyword));
                 }
 
                 var orders = await query.ToListAsync();
