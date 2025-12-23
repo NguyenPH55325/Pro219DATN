@@ -22,7 +22,7 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<ActionResult<List<Size>>> GetAllSizes(string keywordName)
+        public async Task<ActionResult<List<Size>>> GetAllSizes(string? keywordName)
         {
             try
             {

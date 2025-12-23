@@ -16,7 +16,7 @@
                               AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
             </div>
             <div>
-                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" />Đặt lại bộ lọc</MudButton>
             </div>
         </div>
     </div>
@@ -101,7 +101,7 @@
 
     async Task LoadData()
     {
-        var res = await _categoryService.GetAll();
+        var res = await _categoryService.GetAll(_searchValue);
         var data = res.Data;
         if (res.IsSuccess && data != null)
         {
@@ -116,7 +116,7 @@
 
         if (string.IsNullOrEmpty(value))
         {
-            // await LoadData();
+            await LoadData();
             return;
         }
 
@@ -125,9 +125,8 @@
 
         try
         {
-            await Task.Delay(700, _cts.Token);
-
-            _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+            await Task.Delay(500, _cts.Token);
+            await LoadData();
         }
         catch (TaskCanceledException)
         {
@@ -166,5 +165,7 @@
     private async Task OnReset()
     {
         _searchValue = string.Empty;
+
+        await LoadData();
     }
 }

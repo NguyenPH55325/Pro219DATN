@@ -150,8 +150,8 @@
 
         // 1. Tải dữ liệu chính (Sản phẩm, Danh mục, Thương hiệu)
         var resProduct = await _productService.GetById(id);
-        var resCategory = await _categoryService.GetAll();
-        var resBrand = await _brandService.GetAll();
+        var resCategory = await _categoryService.GetAll(null);
+        var resBrand = await _brandService.GetAll(null);
 
         if (resProduct.IsSuccess && resProduct.Data != null)
         {

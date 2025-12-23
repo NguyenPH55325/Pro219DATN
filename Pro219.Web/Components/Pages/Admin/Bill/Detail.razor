@@ -255,17 +255,17 @@
             _products = resProducts.Data;
         }
 
-        var resColors = await _colorService.GetAll();
+        var resColors = await _colorService.GetAll(null);
         if (resColors.IsSuccess && resColors.Data.Count() > 0) {
             _colors = resColors.Data;
         }
 
-        var resSizes = await _sizeService.GetAll();
+        var resSizes = await _sizeService.GetAll(null);
         if (resSizes.IsSuccess && resSizes.Data.Count() > 0) {
             _sizes = resSizes.Data;
         }
 
-        var resBrands = await _brandService.GetAll();
+        var resBrands = await _brandService.GetAll(null);
         if (resBrands.IsSuccess && resBrands.Data.Count() > 0) {
             _brands = resBrands.Data;
         }

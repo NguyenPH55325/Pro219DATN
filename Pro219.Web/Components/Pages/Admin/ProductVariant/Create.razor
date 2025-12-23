@@ -127,8 +127,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var resSize = await _sizeService.GetAll();
-        var resColor = await _colorService.GetAll();
+        var resSize = await _sizeService.GetAll(null);
+        var resColor = await _colorService.GetAll(null);
 
         var dataSize = resSize.Data;
         var dataColor = resColor.Data;

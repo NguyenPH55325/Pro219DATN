@@ -13,9 +13,10 @@ namespace Pro219.Web.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ServiceResult<List<Brand>>> GetAll()
+        public async Task<ServiceResult<List<Brand>>> GetAll(string? keyword)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, "/Brand/GetAll");
+            var url = string.IsNullOrEmpty(keyword) ? "/Brand/GetAll" : $"/Brand/GetAll?keyword={keyword}";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
 
             var response = await _httpClient.SendAsync(request);
 

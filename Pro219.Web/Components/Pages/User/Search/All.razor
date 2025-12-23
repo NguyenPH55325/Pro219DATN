@@ -208,21 +208,21 @@
 
     private async Task LoadMaterial()
     {
-        var resColor = await _colorService.GetAll();
+        var resColor = await _colorService.GetAll(null);
 
         if (resColor.IsSuccess && resColor.Data.Count() > 0)
         {
             _colors = resColor.Data;
         }
 
-        var resBrand = await _brandService.GetAll();
+        var resBrand = await _brandService.GetAll(null);
 
         if (resBrand.IsSuccess && resBrand.Data.Count() > 0)
         {
             _brands = resBrand.Data;
         }
 
-        var resSize = await _sizeService.GetAll();
+        var resSize = await _sizeService.GetAll(null);
 
         if (resSize.IsSuccess && resSize.Data.Count() > 0)
         {

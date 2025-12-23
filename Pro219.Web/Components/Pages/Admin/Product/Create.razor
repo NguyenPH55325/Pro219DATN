@@ -124,8 +124,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var resCategory = await _categoryService.GetAll();
-        var resBrand = await _brandService.GetAll();
+        var resCategory = await _categoryService.GetAll(null);
+        var resBrand = await _brandService.GetAll(null);
 
         var dataCategory = resCategory.Data;
         var dataBrand = resBrand.Data;
