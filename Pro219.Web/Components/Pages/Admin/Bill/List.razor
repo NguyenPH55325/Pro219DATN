@@ -8,8 +8,20 @@
         <h1 class="leading-[3rem] h-12 text-3xl font-bold text-admin-default">Danh sách hóa đơn</h1>
     </div>
 
+    <div class="my-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div class="grid w-full grid-cols-3 gap-x-6 gap-y-4">
+            <div>
+                <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
+                              AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
+            </div>
+            <div>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+            </div>
+        </div>
+    </div>
+
     <div class="mt-6 w-full rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <MudTable Bordered Items="@_orders" Loading="@_loading" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true" Height="calc(100lvh - 16.5rem)">
+        <MudTable Bordered Items="@_orders" Loading="@_loading" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true" Height="calc(100lvh - 20.5rem)">
             <HeaderContent>
                 <MudTh hidden><MudTableSortLabel SortLabel="OrderId" T="string" hidden>OrderId</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Mã hóa đơn" T="string">Mã hóa đơn</MudTableSortLabel></MudTh>
@@ -80,8 +92,11 @@
 </div>
 
 @code {
+    private CancellationTokenSource? _cts;
     private List<DAL.Models.Order> _orders = [];
     private List<DAL.Models.Address> _addresses = [];
+
+    private string _searchValue = string.Empty;
     private bool _loading = true;
 
     private List<BreadcrumbItem> _items =
@@ -111,6 +126,35 @@
         {
             _addresses = resAsddress.Data;
         }
+    }
+
+    private async Task onChangeSearch(string value)
+    {
+        _searchValue = value;
+
+        if (string.IsNullOrEmpty(value))
+        {
+            // await LoadData();
+            return;
+        }
+
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(700, _cts.Token);
+
+            _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async Task OnReset()
+    {
+        _searchValue = string.Empty;
     }
 
     private async Task DowloadPDF(int id)
