@@ -7,7 +7,7 @@ namespace Pro219.Web.DTOs
     {
         public List<CheckoutListItem> ListItemCheckout { get; set; } = new List<CheckoutListItem>();
 
-        public CheckoutAddressModel? address { get; set; }
+        public CheckoutAddressModel? AddressDTO { get; set; }
     }
 
     public class CheckoutListItem

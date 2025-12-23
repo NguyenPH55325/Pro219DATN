@@ -82,9 +82,10 @@
             </div>
         </div>
 
-        @if (_orderDetail != null && ShouldShowButtons())
-        {
-            <div class="w mt-4 flex items-center justify-center gap-4">
+        <div class="w mt-4 flex items-center justify-center gap-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Surface" OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.Bill))">Quay lại</MudButton>
+            @if (_orderDetail != null && ShouldShowButtons())
+            {
                 @if (_orderDetail.Status == Constant.OrderStatus.StatusPending)
                 {
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => HandleStatusUpdate(Constant.OrderStatus.StatusPending))">Xác nhận</MudButton>
@@ -102,8 +103,8 @@
                 {
                     <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => HandleStatusUpdate(Constant.OrderStatus.StatusShippingDone))">Hoàn thành</MudButton>
                 }
-            </div>
-        }
+            }
+        </div>
 
         <MudDivider Class="my-6" />
 
