@@ -43,6 +43,7 @@
             public const string OrderStatusPending = "Đang chờ xử lý";
             public const string OrderStatusConfirm = "Đã xác nhận";
             public const string OrderStatusCanceledByUser = "Đã hủy bởi người dùng";
+            public const string OrderStatusPaymentExpired = "Đã huỷ do hết thời gian thanh toán";
             public const string OrderStatusShipping = "Đang giao hàng";
             public const string OrderStatusShippingDone = "Đã giao hàng";
             public const string OrderStatusShippingFailed = "Giao hàng thất bại";
