@@ -31,5 +31,7 @@ namespace Pro219.Web.DTOs
         public string SizeName { get; set; } = string.Empty;
 
         public string ImageUrl { get; set; } = string.Empty;
+
+        public int StockQuantity { get; set; }
     }
 }

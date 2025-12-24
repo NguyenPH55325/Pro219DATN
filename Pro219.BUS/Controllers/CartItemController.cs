@@ -15,6 +15,7 @@ namespace Pro219.API.Controllers
     public class CartItemController : ControllerBase
     {
         CartItemRepository cartItemRepository;
+        CartRepository cartRepository;
         ProductVariantRepository productVariantRepository;
         ProductRepository productRepository;
         ProductImageRepository productImageRepository;
@@ -24,6 +25,7 @@ namespace Pro219.API.Controllers
         public CartItemController()
         {
             cartItemRepository = new CartItemRepository();
+            cartRepository = new CartRepository();
             productVariantRepository = new ProductVariantRepository();
             productRepository = new ProductRepository();
             productImageRepository = new ProductImageRepository();
@@ -149,6 +151,62 @@ namespace Pro219.API.Controllers
             }
         }
 
+        [HttpPut("update-quantity")]
+        [Authorize(Roles = "Admin,Manager,Staff,Customer")]
+        public async Task<ActionResult<CartItem>> UpdateCartItemQuantity([FromBody] AddToCartDTO updateQuantityDto)
+        {
+            try
+            {
+                if (updateQuantityDto == null || updateQuantityDto.Quantity <= 0)
+                {
+                    return BadRequest(Constant.ErrorCode.DataRequired);
+                }
+
+                var productVariant = await productVariantRepository.GetProductVariantById(updateQuantityDto.VariantId);
+                if (productVariant == null) {
+                    return StatusCode(500, Constant.ErrorCode.DataNotFound);
+                }
+                if (productVariant.StockQuantity < updateQuantityDto.Quantity)
+                {
+                    return StatusCode(500, Constant.ErrorCode.OutOfStock);
+                }
+
+                string userId = User.FindFirst(ClaimTypes.SerialNumber)?.Value;
+
+                if (userId == null)
+                {
+                    return StatusCode(500, Constant.ErrorCode.DatabaseError);
+                }
+
+                var customerCart = await cartRepository.GetCartByCustomerId(int.Parse(userId));
+                if (customerCart == null)
+                {
+                    return StatusCode(500, Constant.ErrorCode.DatabaseError);
+                }
+
+                var cartItem = await cartRepository.GetCartItemByProductVariantId(customerCart.Id, updateQuantityDto.VariantId);
+
+                if (cartItem == null)
+                {
+                    return StatusCode(500, Constant.ErrorCode.DataNotFound);
+                }
+
+                cartItem.Quantity = updateQuantityDto.Quantity;
+                cartItem.UpdateAt = DateTime.Now;
+                cartItem.UpdateBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var updatedCartItem = await cartItemRepository.UpdateCartItem(cartItem);
+                if (updatedCartItem == null)
+                {
+                    return StatusCode(500, Constant.ErrorCode.DatabaseError);
+                }
+                return Ok(updatedCartItem);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+
         [HttpDelete("Delete/{id}")]
         [Authorize(Roles = "Admin,Manager,Staff,Customer")]
         public async Task<ActionResult<CartItem>> DeleteCartItem(int id)
@@ -208,6 +266,7 @@ namespace Pro219.API.Controllers
                     }
 
                     var image = allProductImages.Where(pi => pi.ProductVariantId == productVariant?.Id && pi.ProductId == product?.Id).FirstOrDefault();
+                    var variant = allProductVariants.Where(x => x.Id == productVariant?.Id).FirstOrDefault();
                     return new CartItemWithProductDTO
                     {
                         Id = cartItem.Id,
@@ -217,6 +276,7 @@ namespace Pro219.API.Controllers
                         Quantity = cartItem.Quantity,
                         ColorName = color?.Name ?? "",
                         SizeName = size?.Name ?? "",
+                        StockQuantity = variant?.StockQuantity ?? 0,
                         ImageUrl = image != null ? image.ImageUrl : "/Assets/Images/default-image.png",
                         UnitPrice = cartItem.UnitPrice ?? product?.BasePrice ?? 0,
                     };
@@ -262,6 +322,7 @@ namespace Pro219.API.Controllers
                     }
 
                     var image = allProductImages.Where(pi => pi.ProductVariantId == productVariant?.Id && pi.ProductId == product?.Id).FirstOrDefault();
+                    var variant = allProductVariants.Where(x => x.Id == productVariant?.Id).FirstOrDefault();
                     return new CartItemWithProductDTO
                     {
                         VariantId = cartItem.VariantId,
@@ -270,6 +331,7 @@ namespace Pro219.API.Controllers
                         Quantity = cartItem.Quantity,
                         ColorName = color?.Name ?? "",
                         SizeName = size?.Name ?? "",
+                        StockQuantity = variant?.StockQuantity ?? 0,
                         ImageUrl = image != null ? image.ImageUrl : "/Assets/Images/default-image.png",
                         UnitPrice = productVariant?.Price ?? product?.BasePrice ?? 0,
                     };

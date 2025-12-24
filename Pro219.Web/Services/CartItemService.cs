@@ -59,6 +59,38 @@ namespace Pro219.Web.Services
             }
         }
 
+        public async Task<ServiceResult<CartItem>> UpdateQuantity(AddCartModel addToCartDTO, string token)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, "/CartItem/update-quantity");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
+
+            request.Content = JsonContent.Create(addToCartDTO);
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<CartItem>();
+                return ServiceResult<CartItem>.Success(result);
+            }
+            else
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var errorCode = result;
+
+                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                    ? Constant.Errors[errorCode ?? ""]
+                                    : result; 
+                return ServiceResult<CartItem>.Failure(result, errorMess, response.StatusCode.ToString());
+            }
+        } 
+
         public async Task<ServiceResult<CartItem>> Update(CartItemUpdateDTO cartItemUpdateDTO, string token)
         {
             var request = new HttpRequestMessage(HttpMethod.Put, "/CartItem/Update");

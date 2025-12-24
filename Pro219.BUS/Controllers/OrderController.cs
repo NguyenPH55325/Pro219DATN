@@ -140,6 +140,7 @@ namespace Pro219.API.Controllers
                     DiscountAmount = order.DiscountAmount,
                     Status = order.Status,
                     Note = order.Notes,
+                    CustomerId = order.CustomerId,
                     Address = order.ShippingAddress == null ? null : new OrderDetailAddressDTO
                     {
                         Name = order.ShippingAddress.FullName,
@@ -151,7 +152,6 @@ namespace Pro219.API.Controllers
                     },
                     Items = order.OrderItems.Select(oi => new OrderDetailItemDTO
                     {
-                        CustomerId = order.CustomerId,
                         OrderItemId = oi.OrderItemId,
                         ProductVariantId = oi.ProductVariantId,
                         ProductId = oi.ProductVariant?.Product?.Id,
