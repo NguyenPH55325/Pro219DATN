@@ -17,13 +17,40 @@ namespace Pro219.DAL.Repository
             _context = new ClothesDbContext();
         }
 
-        public async Task<List<DiscountCode>> GetAllDiscountCodes()
+        public async Task<List<DiscountCode>> GetAllDiscountCodes(string? code = null, string? discountType = null, byte? type = null, DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {
-                var discountCodes = await _context.DiscountCodes
+                var query = _context.DiscountCodes
                     .Where(x => x.Delete != true)
-                    .ToListAsync();
+                    .AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(code))
+                {
+                    query = query.Where(x => x.Code.Contains(code));
+                }
+
+                if (!string.IsNullOrWhiteSpace(discountType))
+                {
+                    query = query.Where(x => x.DiscountType.Contains(discountType));
+                }
+
+                if (type.HasValue)
+                {
+                    query = query.Where(x => x.Type == type);
+                }
+
+                if (startDate.HasValue)
+                {
+                    query = query.Where(x => x.StartDate.Date >= startDate.Value.Date);
+                }
+
+                if (endDate.HasValue)
+                {
+                    query = query.Where(x => x.EndDate.Date <= endDate.Value.Date);
+                }
+
+                var discountCodes = await query.ToListAsync();
                 return discountCodes;
             }
             catch (Exception)

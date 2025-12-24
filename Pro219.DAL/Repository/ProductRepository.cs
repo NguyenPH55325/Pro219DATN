@@ -23,8 +23,8 @@ namespace Pro219.DAL.Repository
         }
 
         public async Task<List<ProductDetailDto>> GetAllProducts(
-            int page,
-            int pageSize,
+            int? page = null,
+            int? pageSize = null,
             int? brandId = null,
             int? sizeId = null,
             int? colorId = null,
@@ -73,10 +73,7 @@ namespace Pro219.DAL.Repository
                         break;
                 }
 
-                var productListDto = await query
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(p => new ProductDetailDto
+                var productListQuery = query.Select(p => new ProductDetailDto
                     {
                         Id = p.Id,
                         Name = p.Name,
@@ -143,7 +140,16 @@ namespace Pro219.DAL.Repository
                                             ? (double?)p.Reviews.Where(r => r.Status == 1).Average(r => r.Overall)
                                             : null
                     })
-                    .ToListAsync();
+                    .AsQueryable();
+
+                if (page.HasValue && pageSize.HasValue && page > 0 && pageSize > 0)
+                {
+                    productListQuery = productListQuery
+                        .Skip((page.Value - 1) * pageSize.Value)
+                        .Take(pageSize.Value);
+                }
+
+                var productListDto = await productListQuery.ToListAsync();
 
                 return productListDto;
             }
@@ -155,8 +161,8 @@ namespace Pro219.DAL.Repository
 
         public async Task<List<ProductDetailDto>> GetAllProductsInCategory(
             int categoryId, 
-            int page, 
-            int pageSize,
+            int? page = null, 
+            int? pageSize = null,
             int? brandId = null,
             int? sizeId = null,
             int? colorId = null,
@@ -205,10 +211,7 @@ namespace Pro219.DAL.Repository
                         break;
                 }
 
-                var productListDto = await query
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(p => new ProductDetailDto
+                var productListQuery = query.Select(p => new ProductDetailDto
                     {
                         Id = p.Id,
                         Name = p.Name,
@@ -275,7 +278,16 @@ namespace Pro219.DAL.Repository
                                             ? (double?)p.Reviews.Where(r => r.Status == 1).Average(r => r.Overall)
                                             : null
                     })
-                    .ToListAsync();
+                    .AsQueryable();
+
+                if (page.HasValue && pageSize.HasValue && page > 0 && pageSize > 0)
+                {
+                    productListQuery = productListQuery
+                        .Skip((page.Value - 1) * pageSize.Value)
+                        .Take(pageSize.Value);
+                }
+
+                var productListDto = await productListQuery.ToListAsync();
 
                 return productListDto;
             }
@@ -287,8 +299,8 @@ namespace Pro219.DAL.Repository
 
         public async Task<List<ProductDetailDto>> GetAllProductByKeyWord(
             string keyWord, 
-            int page, 
-            int pageSize,
+            int? page = null, 
+            int? pageSize = null,
             int? brandId = null,
             int? sizeId = null,
             int? colorId = null,
@@ -337,10 +349,7 @@ namespace Pro219.DAL.Repository
                         break;
                 }
 
-                var productListDto = await query
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(p => new ProductDetailDto
+                var productListQuery = query.Select(p => new ProductDetailDto
                     {
                         Id = p.Id,
                         Name = p.Name,
@@ -407,7 +416,16 @@ namespace Pro219.DAL.Repository
                                             ? (double?)p.Reviews.Where(r => r.Status == 1).Average(r => r.Overall)
                                             : null
                     })
-                    .ToListAsync();
+                    .AsQueryable();
+
+                if (page.HasValue && pageSize.HasValue && page > 0 && pageSize > 0)
+                {
+                    productListQuery = productListQuery
+                        .Skip((page.Value - 1) * pageSize.Value)
+                        .Take(pageSize.Value);
+                }
+
+                var productListDto = await productListQuery.ToListAsync();
                 return productListDto;
             }
             catch (Exception)

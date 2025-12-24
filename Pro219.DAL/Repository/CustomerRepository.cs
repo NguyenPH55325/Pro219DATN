@@ -39,9 +39,19 @@ namespace Pro219.DAL.Repository
             }
         }
 
-        public async Task<List<Customer>> GetAllCustomers()
+        public async Task<List<Customer>> GetAllCustomers(string? keyword = null)
         {
-            return await _context.Customers.Where(x => x.Delete != true).ToListAsync();
+            var query = _context.Customers.Where(x => x.Delete != true).AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(x =>
+                    (x.FullName != null && x.FullName.Contains(keyword)) ||
+                    (x.Email != null && x.Email.Contains(keyword)) ||
+                    (x.PhoneNumber != null && x.PhoneNumber.Contains(keyword)));
+            }
+
+            return await query.ToListAsync();
         }
         public async Task<Customer> GetByIdCustomer(int id)
         {

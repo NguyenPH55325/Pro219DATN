@@ -27,6 +27,7 @@ namespace Pro219.API.DTOs
         public decimal TotalAmount { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal FinalAmount { get; set; }
+        public decimal ShippingFee { get; set; }
     }
 
     public class ShippingAddressDTO

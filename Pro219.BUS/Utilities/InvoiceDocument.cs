@@ -240,12 +240,21 @@ namespace Pro219.API.Utilities
                             row.ConstantItem(90).AlignRight().Text(FormatCurrency(_invoice.TotalAmount)).FontSize(9);
                         });
 
-                        if (_invoice.DiscountInfo != null && _invoice.DiscountAmount > 0)
+                        if (_invoice.DiscountAmount > 0)
                         {
                             innerColumn.Item().PaddingTop(2).Row(row =>
                             {
-                                row.RelativeItem().Text($"Giảm ({_invoice.DiscountInfo.Code}):").FontSize(9).SemiBold().FontColor(Colors.Red.Darken1);
+                                row.RelativeItem().Text($"Giảm ({_invoice.ShippingFee}):").FontSize(9).SemiBold().FontColor(Colors.Red.Darken1);
                                 row.ConstantItem(90).AlignRight().Text($"-{FormatCurrency(_invoice.DiscountAmount)}").FontSize(9).FontColor(Colors.Red.Darken1);
+                            });
+                        }
+
+                        if (_invoice.ShippingFee > 0)
+                        {
+                            innerColumn.Item().PaddingTop(2).Row(row =>
+                            {
+                                row.RelativeItem().Text($"Phí giao hàng ({_invoice.ShippingFee}):").FontSize(9).SemiBold().FontColor(Colors.Red.Darken1);
+                                row.ConstantItem(90).AlignRight().Text($"+{FormatCurrency(_invoice.ShippingFee)}").FontSize(9).FontColor(Colors.Red.Darken1);
                             });
                         }
 

@@ -1104,6 +1104,10 @@ namespace Pro219.API.Controllers
                         DiscountAmount = order.DiscountAmount
                     };
                 }
+                if (order.ShippingFee!=0)
+                {
+                   invoice.ShippingFee = order.ShippingFee;
+                }
 
                 if (order.PaymentMethodId.HasValue && order.PaymentMethod != null)
                 {

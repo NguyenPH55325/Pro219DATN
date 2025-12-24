@@ -22,11 +22,16 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<ActionResult<List<DiscountCode>>> GetAllDiscountCodes()
+        public async Task<ActionResult<List<DiscountCode>>> GetAllDiscountCodes(
+            [FromQuery] string? code = null,
+            [FromQuery] string? discountType = null,
+            [FromQuery] byte? type = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
             try
             {
-                var result = await discountCodeRepository.GetAllDiscountCodes();
+                var result = await discountCodeRepository.GetAllDiscountCodes(code, discountType, type, startDate, endDate);
                 if (result == null)
                 {
                     return Ok(new List<DiscountCode>());
@@ -40,11 +45,16 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("GetAllNow")]
-        public async Task<ActionResult<List<DiscountCode>>> GetAllDiscountCodeNow()
+        public async Task<ActionResult<List<DiscountCode>>> GetAllDiscountCodeNow(
+            [FromQuery] string? code = null,
+            [FromQuery] string? discountType = null,
+            [FromQuery] byte? type = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
             try
             {
-                var result = await discountCodeRepository.GetAllDiscountCodes();
+                var result = await discountCodeRepository.GetAllDiscountCodes(code, discountType, type, startDate, endDate);
                 if (result == null)
                 {
                     return Ok(new List<DiscountCode>());

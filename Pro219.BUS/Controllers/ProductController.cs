@@ -23,8 +23,8 @@ namespace Pro219.API.Controllers
 
         [HttpGet("GetAllProducts")]
         public async Task<ActionResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>> GetAllProducts(
-            int page,
-            int pageSize,
+            [FromQuery] int? page = null,
+            [FromQuery] int? pageSize = null,
             [FromQuery] int? brandId = null,
             [FromQuery] int? sizeId = null,
             [FromQuery] int? colorId = null,
@@ -48,8 +48,8 @@ namespace Pro219.API.Controllers
         [HttpGet("GetAllProductsInCategory/{categoryId}")]
         public async Task<ActionResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>> GetAllProductsInCategory(
             int categoryId, 
-            int page, 
-            int pageSize,
+            [FromQuery] int? page = null, 
+            [FromQuery] int? pageSize = null,
             [FromQuery] int? brandId = null,
             [FromQuery] int? sizeId = null,
             [FromQuery] int? colorId = null,
@@ -73,8 +73,8 @@ namespace Pro219.API.Controllers
         [HttpGet("GetAllProductByKeyWord/{keyWord}")]
         public async Task<ActionResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>> GetAllProductByKeyWord(
             string keyWord, 
-            int page, 
-            int pageSize,
+            [FromQuery] int? page = null, 
+            [FromQuery] int? pageSize = null,
             [FromQuery] int? brandId = null,
             [FromQuery] int? sizeId = null,
             [FromQuery] int? colorId = null,

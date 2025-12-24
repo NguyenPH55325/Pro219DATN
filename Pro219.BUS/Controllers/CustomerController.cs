@@ -22,11 +22,11 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("get-all")]
-        public async Task<ActionResult<List<Customer>>> GetAllCustomers()
+        public async Task<ActionResult<List<Customer>>> GetAllCustomers([FromQuery] string? keyword = null)
         {
             try
             {
-                var result = await _customerRepository.GetAllCustomers();
+                var result = await _customerRepository.GetAllCustomers(keyword);
                 if (result == null || result.Count() == 0)
                 {
                     return Ok(new List<Customer>());
