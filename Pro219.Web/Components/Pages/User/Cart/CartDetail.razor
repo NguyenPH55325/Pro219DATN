@@ -134,6 +134,12 @@
     {
         if (item == null) return;
 
+        if (isIncrease && item.Quantity + 1 > item.StockQuantity)
+        {
+            _snackbar.Add($"Chỉ còn {item.StockQuantity} sản phẩm", Severity.Warning);
+            return;
+        }
+
         if (string.IsNullOrEmpty(_token))
         {
 
@@ -159,58 +165,24 @@
             await _cartStateService.LoadCartDetailsAsync();
             StateHasChanged();
         } else
-        {   
-            if(isIncrease)
+        {
+            if (item.Quantity <= 1 && !isIncrease) return;
+            var items = new AddCartModel()
             {
-                var newItem = new CartItemUpdateDTO()
-                {
-                    Id = item.Id,
-                    CartId = item.CartId,
-                    VariantId = item.VariantId,
-                    Quantity = item.Quantity + 1,
-                    IsSelectedForCheckout = false,
-                    UnitPrice = item.UnitPrice,
-                    Status = item.Status,
-                    Delete = item.Delete
-                };
-
-                var result = await _cartItemService.Update(newItem, _token);
-
-                if (result.IsSuccess)
-                {
-                    await LoadData();
-                    await _cartStateService.LoadCartDetailsAsync();
-                    StateHasChanged();
-                } else
-                {
-                    _snackbar.Add("Đã có lỗi xảy ra", Severity.Error);
-                }
+                VariantId = item.VariantId,
+                Quantity = isIncrease ? item.Quantity +1 : item.Quantity - 1,
+            };
+            var result = await _cartItemService.UpdateQuantity(items, _token);
+            if (result.IsSuccess)
+            {
+                await LoadData();
+                await _cartStateService.LoadCartDetailsAsync();
+                StateHasChanged();
             } else
             {
-                if (item.Quantity <= 1) return;
-                var newItem = new CartItemUpdateDTO()
-                    {
-                        Id = item.Id,
-                        CartId = item.CartId,
-                        VariantId = item.VariantId,
-                        Quantity = item.Quantity - 1,
-                        IsSelectedForCheckout = false,
-                        UnitPrice = item.UnitPrice,
-                        Status = item.Status,
-                        Delete = item.Delete
-                    };
-
-                var result = await _cartItemService.Update(newItem, _token);
-
-                if (result.IsSuccess)
+                if (!string.IsNullOrEmpty(result.ErrorMessage))
                 {
-                    await LoadData();
-                    await _cartStateService.LoadCartDetailsAsync();
-                    StateHasChanged();
-                }
-                else
-                {
-                    _snackbar.Add("Đã có lỗi xảy ra", Severity.Error);
+                    _snackbar.Add(result.ErrorMessage, Severity.Warning);
                 }
             }
         }

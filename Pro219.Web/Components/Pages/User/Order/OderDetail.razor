@@ -116,7 +116,7 @@
                         <MudTd DataLabel="Đánh giá">
                             @if((_orderDetail?.Status == Constant.OrderStatus.StatusDone) && !context.IsReviewed)
                             {
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled=@(_isDialogOpen) OnClick="@(() => HandleOpenReviewDialog(context.OrderItemId, context.ProductId, context.CustomerId))">Đánh giá</MudButton>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled=@(_isDialogOpen) OnClick="@(() => HandleOpenReviewDialog(context.OrderItemId, context.ProductId))">Đánh giá</MudButton>
                             } else
                             {
                                 if(_orderDetail?.Status != Constant.OrderStatus.StatusDone) {
@@ -173,14 +173,22 @@
     private List<DAL.Models.Product> _products = [];
     private bool _loading = true;
     private bool _isDialogOpen = false;
+    private string _token = string.Empty;
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
         _loading = false;
 
-        _timer = new Timer(4000);
+        _timer = new Timer(3500);
         _timer.Elapsed += async (sender, e) => await RefreshData();
         _timer.AutoReset = true;
         _timer.Enabled = true;
@@ -243,7 +251,7 @@
         }
     }
 
-    async Task HandleOpenReviewDialog(int orderItemId, int? productId, int customerId)
+    async Task HandleOpenReviewDialog(int orderItemId, int? productId)
     {
         try
         {
@@ -252,7 +260,7 @@
            var createReviewParameter = new DialogParameters();
             createReviewParameter.Add("productId", productId);
             createReviewParameter.Add("orderItemId", orderItemId);
-            createReviewParameter.Add("customerId", customerId);
+            createReviewParameter.Add("customerId", _orderDetail.CustomerId);
 
             var dialog = await _dialogService.ShowAsync<Common.User.ReviewDialog>("Options Dialog", createReviewParameter, _maxWidth);
             var result = await dialog.Result;

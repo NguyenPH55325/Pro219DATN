@@ -79,6 +79,8 @@
 
             public const string OtherError = "other_error";
             public const string DatabaseError = "database_error";
+
+            public const string OutOfStock = "out_of_stock";
         }
 
         public static readonly Dictionary<string, string> Errors = new Dictionary<string, string>
@@ -97,6 +99,7 @@
             { ErrorCode.DataRequired, "Thiếu dữ liệu gửi đi." },
             { ErrorCode.DatabaseError, "Lỗi database." },
             { ErrorCode.OtherError, "Đã có lỗi xảy ra." },
+            { ErrorCode.OutOfStock, "Số lượng đạt tối đa."},
             { "", "Đã có lỗi xảy ra." },
         };
 

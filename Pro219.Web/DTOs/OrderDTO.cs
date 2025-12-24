@@ -16,6 +16,7 @@ namespace Pro219.Web.DTOs
         public decimal ShippingFee { get; set; }
         public string? Note { get; set; }
         public byte? Status { get; set; }
+        public int CustomerId { get; set; }
         public OrderDetailAddressDTO? Address { get; set; }
         public List<OrderDetailItemDTO> Items { get; set; } = new List<OrderDetailItemDTO>();
         public List<StatusHistoryEntry>? StatusHistory { get; set; }
@@ -33,7 +34,6 @@ namespace Pro219.Web.DTOs
 
     public class OrderDetailItemDTO
     {
-        public int CustomerId { get; set; }
         public int OrderItemId { get; set; }
         public int ProductVariantId { get; set; }
         public int? ProductId { get; set; }
