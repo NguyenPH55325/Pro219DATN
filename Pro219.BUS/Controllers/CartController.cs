@@ -17,7 +17,7 @@ namespace Pro219.API.Controllers
         CartRepository cartRepository;
         CartItemRepository cartItemRepository;
         ProductVariantRepository productVariantRepository;
-        
+
 
         public CartController()
         {
@@ -103,16 +103,94 @@ namespace Pro219.API.Controllers
             }
         }
 
+        [HttpPost("UpdateCartFromGuestLogin")]
+        public async Task<ActionResult<Cart>> UpdateCartFromGuestLogin([FromBody] List<AddToCartDTO> localCartItems)
+        {
+            try
+            {
+                if (localCartItems == null)
+                {
+                    return BadRequest(Constant.ErrorCode.DataRequired);
+                }
+
+                productVariantRepository = new ProductVariantRepository();
+                cartItemRepository = new CartItemRepository();
+                var cartRepository = new CartRepository();
+                string userId = User.FindFirst(ClaimTypes.SerialNumber)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+
+                    foreach (var item in localCartItems)
+                    {
+                        var productVariant = await productVariantRepository.GetProductVariantById(item.VariantId);
+                        if (productVariant == null)
+                        {
+                            return NotFound(Constant.ErrorCode.DataNotFound);
+                        }
+                        if (productVariant.StockQuantity < item.Quantity)
+                        {
+                            return BadRequest(Constant.ErrorCode.OutOfStock);
+                        }
+                        var customerCart = await cartRepository.GetCartByCustomerId(int.Parse(userId));
+                        var cartItem = await cartRepository.GetCartItemByProductVariantId(customerCart.Id, item.VariantId);
+                        if (cartItem != null && (cartItem.Quantity + item.Quantity) > productVariant.StockQuantity)
+                        {
+                            return BadRequest(Constant.ErrorCode.OutOfStock);
+                        }
+                        if (cartItem != null)
+                        {
+                            cartItem.Quantity += item.Quantity;
+                            cartItem.UpdateAt = DateTime.Now;
+                            cartItem.UpdateBy = userId;
+                            var updatedCartItem = await cartItemRepository.UpdateCartItem(cartItem);
+                            if (updatedCartItem == null)
+                            {
+                                return BadRequest(Constant.ErrorCode.DatabaseError);
+                            }
+                        }
+                        else
+                        {
+                            var newCartItem = new CartItem
+                            {
+                                CartId = customerCart.Id,
+                                VariantId = item.VariantId,
+                                Quantity = item.Quantity,
+                                UnitPrice = productVariant.Price,
+                                AddedAt = DateTime.Now,
+                                CreateAt = DateTime.Now,
+                                UpdateBy = userId,
+                                IsSelectedForCheckout = false,
+                                Status = 1
+                            };
+                            var addedCartItem = await cartItemRepository.AddCartItem(newCartItem);
+                            if (addedCartItem == null)
+                            {
+                                return BadRequest(Constant.ErrorCode.DatabaseError);
+                            }
+                        }
+                    }
+                    return Ok();
+
+
+                }
+                else
+                {
+                    return Unauthorized();
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+
         [HttpPost("AddToCart")]
         public async Task<ActionResult<CartItem>> AddProductToCart([FromBody] AddToCartDTO addToCartDto)
         {
             try
             {
-                if (addToCartDto == null || addToCartDto.Quantity<=0)
-                {
-                    return BadRequest(Constant.ErrorCode.DataRequired);
-                }
-
                 productVariantRepository = new ProductVariantRepository();
                 cartItemRepository = new CartItemRepository();
                 var productVariant = await productVariantRepository.GetProductVariantById(addToCartDto.VariantId);
@@ -125,8 +203,22 @@ namespace Pro219.API.Controllers
                 {
                     return BadRequest(Constant.ErrorCode.OutOfStock);
                 }
-
                 string userId = User.FindFirst(ClaimTypes.SerialNumber)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var cartRepository = new CartRepository();
+                    var customerCart = await cartRepository.GetCartByCustomerId(int.Parse(userId));
+                    var cartItem = await cartRepository.GetCartItemByProductVariantId(customerCart.Id, addToCartDto.VariantId);
+                    if (cartItem != null && (cartItem.Quantity + addToCartDto.Quantity) > productVariant.StockQuantity)
+                    {
+                        return BadRequest(Constant.ErrorCode.OutOfStock);
+                    }
+                }
+
+                if (addToCartDto == null || addToCartDto.Quantity <= 0)
+                {
+                    return BadRequest(Constant.ErrorCode.DataRequired);
+                }
 
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -152,7 +244,7 @@ namespace Pro219.API.Controllers
 
                     var cartItem = await cartRepository.GetCartItemByProductVariantId(customerCart.Id, addToCartDto.VariantId);
 
-                    if(cartItem != null)
+                    if (cartItem != null)
                     {
                         cartItem.Quantity += addToCartDto.Quantity;
                         cartItem.UpdateAt = DateTime.Now;
@@ -184,7 +276,7 @@ namespace Pro219.API.Controllers
                             return StatusCode(500, Constant.ErrorCode.DatabaseError);
                         }
                         return Ok(addedCartItem);
-                    }                    
+                    }
 
                 }
                 return StatusCode(500, Constant.ErrorCode.OtherError);
