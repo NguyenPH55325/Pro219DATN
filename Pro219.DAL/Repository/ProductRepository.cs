@@ -33,7 +33,11 @@ namespace Pro219.DAL.Repository
             try
             {
                 var query = _context.Products
-                    .Where(p => p.Delete == false);
+                    .Include(p => p.Brand)
+                    .Include(p => p.Category)
+                    .Where(p => p.Delete == false
+                        && p.Brand.Delete == false && p.Brand.Status == 1
+                        && p.Category.Delete == false && p.Category.Status == 1);
 
                 if (brandId.HasValue && brandId.Value > 0)
                 {
@@ -74,19 +78,19 @@ namespace Pro219.DAL.Repository
                 }
 
                 var productListQuery = query.Select(p => new ProductDetailDto
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        BasePrice = p.BasePrice,
-                        Description = p.Description,
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    BasePrice = p.BasePrice,
+                    Description = p.Description,
 
-                        CategoryName = p.Category.Name,
-                        BrandName = p.Brand.Name,
-                        SaleName = p.Sale != null ? p.Sale.Name : null,
-                        CreateAt = p.CreatedAt,
+                    CategoryName = p.Category.Name,
+                    BrandName = p.Brand.Name,
+                    SaleName = p.Sale != null ? p.Sale.Name : null,
+                    CreateAt = p.CreatedAt,
 
 
-                        AvailableColors = p.ProductVariants
+                    AvailableColors = p.ProductVariants
                             .Where(pv => pv.Delete == false)
                             .Select(pv => pv.Color)
                             .Distinct()
@@ -98,7 +102,7 @@ namespace Pro219.DAL.Repository
                             })
                             .ToList(),
 
-                        AvailableSizes = p.ProductVariants
+                    AvailableSizes = p.ProductVariants
                             .Where(pv => pv.Delete == false)
                             .Select(pv => pv.Size)
                             .Distinct()
@@ -108,12 +112,12 @@ namespace Pro219.DAL.Repository
                                 Name = s.Name
                             })
                             .ToList(),
-                        ImageUrls = p.ProductImages
+                    ImageUrls = p.ProductImages
                             .Where(pi => pi.Delete == false && pi.ProductVariantId == null)
                             .Select(pi => pi.ImageUrl)
                             .ToList(),
 
-                        Variants = p.ProductVariants
+                    Variants = p.ProductVariants
                             .Where(pv => pv.Delete == false && (!colorId.HasValue || colorId.Value <= 0 || pv.ColorId == colorId.Value))
                             .Select(pv => new ProductVariantDto
                             {
@@ -135,11 +139,11 @@ namespace Pro219.DAL.Repository
                                     .ToList()
                             }).ToList(),
 
-                        ReviewCount = p.Reviews.Count(r => r.Status == 1),
-                        AverageRating = p.Reviews.Any(r => r.Status == 1)
+                    ReviewCount = p.Reviews.Count(r => r.Status == 1),
+                    AverageRating = p.Reviews.Any(r => r.Status == 1)
                                             ? (double?)p.Reviews.Where(r => r.Status == 1).Average(r => r.Overall)
                                             : null
-                    })
+                })
                     .AsQueryable();
 
                 if (page.HasValue && pageSize.HasValue && page > 0 && pageSize > 0)
@@ -160,8 +164,8 @@ namespace Pro219.DAL.Repository
         }
 
         public async Task<List<ProductDetailDto>> GetAllProductsInCategory(
-            int categoryId, 
-            int? page = null, 
+            int categoryId,
+            int? page = null,
             int? pageSize = null,
             int? brandId = null,
             int? sizeId = null,
@@ -171,7 +175,11 @@ namespace Pro219.DAL.Repository
             try
             {
                 var query = _context.Products
-                    .Where(p => p.Delete == false && p.CategoryId == categoryId);
+                    .Include(p => p.Brand)
+                    .Include(p => p.Category)
+                    .Where(p => p.Delete == false && p.CategoryId == categoryId
+                        && p.Brand.Delete == false && p.Brand.Status == 1
+                        && p.Category.Delete == false && p.Category.Status == 1);
 
                 if (brandId.HasValue && brandId.Value > 0)
                 {
@@ -212,23 +220,23 @@ namespace Pro219.DAL.Repository
                 }
 
                 var productListQuery = query.Select(p => new ProductDetailDto
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        BasePrice = p.BasePrice,
-                        Description = p.Description,
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    BasePrice = p.BasePrice,
+                    Description = p.Description,
 
-                        CategoryName = p.Category.Name,
-                        BrandName = p.Brand.Name,
-                        SaleName = p.Sale != null ? p.Sale.Name : null,
-                        CreateAt = p.CreatedAt,
+                    CategoryName = p.Category.Name,
+                    BrandName = p.Brand.Name,
+                    SaleName = p.Sale != null ? p.Sale.Name : null,
+                    CreateAt = p.CreatedAt,
 
-                       
-                        AvailableColors = p.ProductVariants
+
+                    AvailableColors = p.ProductVariants
                             .Where(pv => pv.Delete == false)
-                            .Select(pv => pv.Color) 
-                            .Distinct() 
-                            .Select(c => new ColorDto 
+                            .Select(pv => pv.Color)
+                            .Distinct()
+                            .Select(c => new ColorDto
                             {
                                 Id = c.Id,
                                 Name = c.Name,
@@ -236,22 +244,22 @@ namespace Pro219.DAL.Repository
                             })
                             .ToList(),
 
-                        AvailableSizes = p.ProductVariants
+                    AvailableSizes = p.ProductVariants
                             .Where(pv => pv.Delete == false)
-                            .Select(pv => pv.Size) 
-                            .Distinct() 
-                            .Select(s => new SizeDto 
+                            .Select(pv => pv.Size)
+                            .Distinct()
+                            .Select(s => new SizeDto
                             {
                                 Id = s.Id,
                                 Name = s.Name
                             })
                             .ToList(),
-                        ImageUrls = p.ProductImages
+                    ImageUrls = p.ProductImages
                             .Where(pi => pi.Delete == false && pi.ProductVariantId == null)
                             .Select(pi => pi.ImageUrl)
                             .ToList(),
 
-                        Variants = p.ProductVariants
+                    Variants = p.ProductVariants
                             .Where(pv => pv.Delete == false && (!colorId.HasValue || colorId.Value <= 0 || pv.ColorId == colorId.Value))
                             .Select(pv => new ProductVariantDto
                             {
@@ -273,11 +281,11 @@ namespace Pro219.DAL.Repository
                                     .ToList()
                             }).ToList(),
 
-                        ReviewCount = p.Reviews.Count(r => r.Status == 1),
-                        AverageRating = p.Reviews.Any(r => r.Status == 1)
+                    ReviewCount = p.Reviews.Count(r => r.Status == 1),
+                    AverageRating = p.Reviews.Any(r => r.Status == 1)
                                             ? (double?)p.Reviews.Where(r => r.Status == 1).Average(r => r.Overall)
                                             : null
-                    })
+                })
                     .AsQueryable();
 
                 if (page.HasValue && pageSize.HasValue && page > 0 && pageSize > 0)
@@ -298,8 +306,8 @@ namespace Pro219.DAL.Repository
         }
 
         public async Task<List<ProductDetailDto>> GetAllProductByKeyWord(
-            string keyWord, 
-            int? page = null, 
+            string keyWord,
+            int? page = null,
             int? pageSize = null,
             int? brandId = null,
             int? sizeId = null,
@@ -309,8 +317,12 @@ namespace Pro219.DAL.Repository
             try
             {
                 var query = _context.Products
-                    .Where(p => p.Delete == false && p.Name.ToLower().Contains(keyWord.ToLower()));
-                
+                    .Include(p => p.Brand)
+                    .Include(p => p.Category)
+                    .Where(p => p.Delete == false && p.Name.ToLower().Contains(keyWord.ToLower())
+                        && p.Brand.Delete == false && p.Brand.Status == 1
+                        && p.Category.Delete == false && p.Category.Status == 1);
+
                 if (brandId.HasValue && brandId.Value > 0)
                 {
                     query = query.Where(p => p.BrandId == brandId.Value);
@@ -350,23 +362,23 @@ namespace Pro219.DAL.Repository
                 }
 
                 var productListQuery = query.Select(p => new ProductDetailDto
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        BasePrice = p.BasePrice,
-                        Description = p.Description,
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    BasePrice = p.BasePrice,
+                    Description = p.Description,
 
-                        CategoryName = p.Category.Name,
-                        BrandName = p.Brand.Name,
-                        SaleName = p.Sale != null ? p.Sale.Name : null,
-                        CreateAt = p.CreatedAt,
+                    CategoryName = p.Category.Name,
+                    BrandName = p.Brand.Name,
+                    SaleName = p.Sale != null ? p.Sale.Name : null,
+                    CreateAt = p.CreatedAt,
 
-                       
-                        AvailableColors = p.ProductVariants
+
+                    AvailableColors = p.ProductVariants
                             .Where(pv => pv.Delete == false)
-                            .Select(pv => pv.Color) 
-                            .Distinct() 
-                            .Select(c => new ColorDto 
+                            .Select(pv => pv.Color)
+                            .Distinct()
+                            .Select(c => new ColorDto
                             {
                                 Id = c.Id,
                                 Name = c.Name,
@@ -374,22 +386,22 @@ namespace Pro219.DAL.Repository
                             })
                             .ToList(),
 
-                        AvailableSizes = p.ProductVariants
+                    AvailableSizes = p.ProductVariants
                             .Where(pv => pv.Delete == false)
-                            .Select(pv => pv.Size) 
-                            .Distinct() 
-                            .Select(s => new SizeDto 
+                            .Select(pv => pv.Size)
+                            .Distinct()
+                            .Select(s => new SizeDto
                             {
                                 Id = s.Id,
                                 Name = s.Name
                             })
                             .ToList(),
-                        ImageUrls = p.ProductImages
+                    ImageUrls = p.ProductImages
                             .Where(pi => pi.Delete == false && pi.ProductVariantId == null)
                             .Select(pi => pi.ImageUrl)
                             .ToList(),
 
-                        Variants = p.ProductVariants
+                    Variants = p.ProductVariants
                             .Where(pv => pv.Delete == false && (!colorId.HasValue || colorId.Value <= 0 || pv.ColorId == colorId.Value))
                             .Select(pv => new ProductVariantDto
                             {
@@ -411,11 +423,11 @@ namespace Pro219.DAL.Repository
                                     .ToList()
                             }).ToList(),
 
-                        ReviewCount = p.Reviews.Count(r => r.Status == 1),
-                        AverageRating = p.Reviews.Any(r => r.Status == 1)
+                    ReviewCount = p.Reviews.Count(r => r.Status == 1),
+                    AverageRating = p.Reviews.Any(r => r.Status == 1)
                                             ? (double?)p.Reviews.Where(r => r.Status == 1).Average(r => r.Overall)
                                             : null
-                    })
+                })
                     .AsQueryable();
 
                 if (page.HasValue && pageSize.HasValue && page > 0 && pageSize > 0)
@@ -439,7 +451,51 @@ namespace Pro219.DAL.Repository
             try
             {
                 var products = await _context.Products
-                    .Where(x => x.Delete != true)
+                    .AsNoTracking()
+                    .Where(x => x.Delete != true
+                        && x.Brand.Delete != true && x.Brand.Status == 1
+                        && x.Category.Delete != true && x.Category.Status == 1)
+                    .Select(p => new Product
+                    {
+                        Id = p.Id,
+                        CategoryId = p.CategoryId,
+                        BrandId = p.BrandId,
+                        SaleId = p.SaleId,
+                        Name = p.Name,
+                        Description = p.Description,
+                        BasePrice = p.BasePrice,
+                        CreatedAt = p.CreatedAt,
+                        Status = p.Status,
+                        Delete = p.Delete,
+                        UpdateAt = p.UpdateAt,
+                        DeleteAt = p.DeleteAt,
+                        UpdateBy = p.UpdateBy,
+                        Brand = p.Brand != null ? new Brand
+                        {
+                            Id = p.Brand.Id,
+                            Name = p.Brand.Name,
+                            Description = p.Brand.Description,
+                            Status = p.Brand.Status,
+                            Delete = p.Brand.Delete,
+                            CreateAt = p.Brand.CreateAt,
+                            UpdateAt = p.Brand.UpdateAt,
+                            DeleteAt = p.Brand.DeleteAt,
+                            UpdateBy = p.Brand.UpdateBy
+                        } : null,
+                        Category = p.Category != null ? new Category
+                        {
+                            Id = p.Category.Id,
+                            ParentCategoryId = p.Category.ParentCategoryId,
+                            Name = p.Category.Name,
+                            Description = p.Category.Description,
+                            Status = p.Category.Status,
+                            Delete = p.Category.Delete,
+                            CreateAt = p.Category.CreateAt,
+                            UpdateAt = p.Category.UpdateAt,
+                            DeleteAt = p.Category.DeleteAt,
+                            UpdateBy = p.Category.UpdateBy
+                        } : null
+                    })
                     .ToListAsync();
                 return products;
             }
@@ -453,9 +509,54 @@ namespace Pro219.DAL.Repository
         {
             try
             {
-                var product = await _context.Products.FindAsync(id);
-                if (product != null && product.Delete == true)
-                    return null;
+                var product = await _context.Products
+                    .AsNoTracking()
+                    .Where(p => p.Id == id
+                        && p.Delete == false
+                        && p.Brand.Delete == false && p.Brand.Status == 1
+                        && p.Category.Delete == false && p.Category.Status == 1)
+                    .Select(p => new Product
+                    {
+                        Id = p.Id,
+                        CategoryId = p.CategoryId,
+                        BrandId = p.BrandId,
+                        SaleId = p.SaleId,
+                        Name = p.Name,
+                        Description = p.Description,
+                        BasePrice = p.BasePrice,
+                        CreatedAt = p.CreatedAt,
+                        Status = p.Status,
+                        Delete = p.Delete,
+                        UpdateAt = p.UpdateAt,
+                        DeleteAt = p.DeleteAt,
+                        UpdateBy = p.UpdateBy,
+                        Brand = p.Brand != null ? new Brand
+                        {
+                            Id = p.Brand.Id,
+                            Name = p.Brand.Name,
+                            Description = p.Brand.Description,
+                            Status = p.Brand.Status,
+                            Delete = p.Brand.Delete,
+                            CreateAt = p.Brand.CreateAt,
+                            UpdateAt = p.Brand.UpdateAt,
+                            DeleteAt = p.Brand.DeleteAt,
+                            UpdateBy = p.Brand.UpdateBy
+                        } : null,
+                        Category = p.Category != null ? new Category
+                        {
+                            Id = p.Category.Id,
+                            ParentCategoryId = p.Category.ParentCategoryId,
+                            Name = p.Category.Name,
+                            Description = p.Category.Description,
+                            Status = p.Category.Status,
+                            Delete = p.Category.Delete,
+                            CreateAt = p.Category.CreateAt,
+                            UpdateAt = p.Category.UpdateAt,
+                            DeleteAt = p.Category.DeleteAt,
+                            UpdateBy = p.Category.UpdateBy
+                        } : null
+                    })
+                    .FirstOrDefaultAsync();
                 return product;
             }
             catch (Exception)
@@ -523,7 +624,7 @@ namespace Pro219.DAL.Repository
                 {
                     product.UpdateBy = updateBy;
                 }
-               
+
 
                 var updatedProduct = _context.Products.Update(product).Entity;
                 await _context.SaveChangesAsync();
@@ -537,12 +638,101 @@ namespace Pro219.DAL.Repository
         public async Task<List<Product>> GetTopProductAsync()
         {
             return await _context.Products
-                .Include(p => p.ProductImages)
-                .Include(p => p.ProductVariants)
-                    .ThenInclude(v => v.Color)
-                .Where(p => p.Delete == false && p.Status == 1)
+                .AsNoTracking()
+                .Where(p => p.Delete == false && p.Status == 1
+                    && p.Brand.Delete == false && p.Brand.Status == 1
+                    && p.Category.Delete == false && p.Category.Status == 1)
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(8)
+                .Select(p => new Product
+                {
+                    Id = p.Id,
+                    CategoryId = p.CategoryId,
+                    BrandId = p.BrandId,
+                    SaleId = p.SaleId,
+                    Name = p.Name,
+                    Description = p.Description,
+                    BasePrice = p.BasePrice,
+                    CreatedAt = p.CreatedAt,
+                    Status = p.Status,
+                    Delete = p.Delete,
+                    UpdateAt = p.UpdateAt,
+                    DeleteAt = p.DeleteAt,
+                    UpdateBy = p.UpdateBy,
+                    Brand = p.Brand != null ? new Brand
+                    {
+                        Id = p.Brand.Id,
+                        Name = p.Brand.Name,
+                        Description = p.Brand.Description,
+                        Status = p.Brand.Status,
+                        Delete = p.Brand.Delete,
+                        CreateAt = p.Brand.CreateAt,
+                        UpdateAt = p.Brand.UpdateAt,
+                        DeleteAt = p.Brand.DeleteAt,
+                        UpdateBy = p.Brand.UpdateBy
+                    } : null,
+                    Category = p.Category != null ? new Category
+                    {
+                        Id = p.Category.Id,
+                        ParentCategoryId = p.Category.ParentCategoryId,
+                        Name = p.Category.Name,
+                        Description = p.Category.Description,
+                        Status = p.Category.Status,
+                        Delete = p.Category.Delete,
+                        CreateAt = p.Category.CreateAt,
+                        UpdateAt = p.Category.UpdateAt,
+                        DeleteAt = p.Category.DeleteAt,
+                        UpdateBy = p.Category.UpdateBy
+                    } : null,
+                    ProductImages = p.ProductImages
+                        .Where(pi => pi.Delete != true)
+                        .Select(pi => new ProductImage
+                        {
+                            Id = pi.Id,
+                            ProductId = pi.ProductId,
+                            ProductVariantId = pi.ProductVariantId,
+                            ImageUrl = pi.ImageUrl,
+                            IsMain = pi.IsMain,
+                            Delete = pi.Delete,
+                            CreateAt = pi.CreateAt,
+                            UpdateAt = pi.UpdateAt,
+                            DeleteAt = pi.DeleteAt,
+                            Status = pi.Status,
+                            UpdateBy = pi.UpdateBy
+                        }).ToList(),
+                    ProductVariants = p.ProductVariants
+                        .Where(pv => pv.Delete != true)
+                        .Select(pv => new ProductVariant
+                        {
+                            Id = pv.Id,
+                            ProductId = pv.ProductId,
+                            ColorId = pv.ColorId,
+                            SizeId = pv.SizeId,
+                            SKU = pv.SKU,
+                            StockQuantity = pv.StockQuantity,
+                            Price = pv.Price,
+                            ArrivalTime = pv.ArrivalTime,
+                            IsActive = pv.IsActive,
+                            Delete = pv.Delete,
+                            CreateAt = pv.CreateAt,
+                            UpdateAt = pv.UpdateAt,
+                            DeleteAt = pv.DeleteAt,
+                            Status = pv.Status,
+                            UpdateBy = pv.UpdateBy,
+                            Color = pv.Color != null ? new Color
+                            {
+                                Id = pv.Color.Id,
+                                Name = pv.Color.Name,
+                                HexCode = pv.Color.HexCode,
+                                Delete = pv.Color.Delete,
+                                CreateAt = pv.Color.CreateAt,
+                                UpdateAt = pv.Color.UpdateAt,
+                                DeleteAt = pv.Color.DeleteAt,
+                                Status = pv.Color.Status,
+                                UpdateBy = pv.Color.UpdateBy
+                            } : null
+                        }).ToList()
+                })
                 .ToListAsync();
         }
 
@@ -565,10 +755,100 @@ namespace Pro219.DAL.Repository
                 return new List<Product>();
 
             var products = await _context.Products
-                .Where(p => topProductIds.Contains(p.Id))
-                .Include(p => p.ProductImages)
-                .Include(p => p.ProductVariants)
-                    .ThenInclude(v => v.Color)
+                .AsNoTracking()
+                .Where(p => topProductIds.Contains(p.Id)
+                    && p.Delete == false
+                    && p.Brand.Delete == false && p.Brand.Status == 1
+                    && p.Category.Delete == false && p.Category.Status == 1)
+                .Select(p => new Product
+                {
+                    Id = p.Id,
+                    CategoryId = p.CategoryId,
+                    BrandId = p.BrandId,
+                    SaleId = p.SaleId,
+                    Name = p.Name,
+                    Description = p.Description,
+                    BasePrice = p.BasePrice,
+                    CreatedAt = p.CreatedAt,
+                    Status = p.Status,
+                    Delete = p.Delete,
+                    UpdateAt = p.UpdateAt,
+                    DeleteAt = p.DeleteAt,
+                    UpdateBy = p.UpdateBy,
+                    Brand = p.Brand != null ? new Brand
+                    {
+                        Id = p.Brand.Id,
+                        Name = p.Brand.Name,
+                        Description = p.Brand.Description,
+                        Status = p.Brand.Status,
+                        Delete = p.Brand.Delete,
+                        CreateAt = p.Brand.CreateAt,
+                        UpdateAt = p.Brand.UpdateAt,
+                        DeleteAt = p.Brand.DeleteAt,
+                        UpdateBy = p.Brand.UpdateBy
+                    } : null,
+                    Category = p.Category != null ? new Category
+                    {
+                        Id = p.Category.Id,
+                        ParentCategoryId = p.Category.ParentCategoryId,
+                        Name = p.Category.Name,
+                        Description = p.Category.Description,
+                        Status = p.Category.Status,
+                        Delete = p.Category.Delete,
+                        CreateAt = p.Category.CreateAt,
+                        UpdateAt = p.Category.UpdateAt,
+                        DeleteAt = p.Category.DeleteAt,
+                        UpdateBy = p.Category.UpdateBy
+                    } : null,
+                    ProductImages = p.ProductImages
+                        .Where(pi => pi.Delete != true)
+                        .Select(pi => new ProductImage
+                        {
+                            Id = pi.Id,
+                            ProductId = pi.ProductId,
+                            ProductVariantId = pi.ProductVariantId,
+                            ImageUrl = pi.ImageUrl,
+                            IsMain = pi.IsMain,
+                            Delete = pi.Delete,
+                            CreateAt = pi.CreateAt,
+                            UpdateAt = pi.UpdateAt,
+                            DeleteAt = pi.DeleteAt,
+                            Status = pi.Status,
+                            UpdateBy = pi.UpdateBy
+                        }).ToList(),
+                    ProductVariants = p.ProductVariants
+                        .Where(pv => pv.Delete != true)
+                        .Select(pv => new ProductVariant
+                        {
+                            Id = pv.Id,
+                            ProductId = pv.ProductId,
+                            ColorId = pv.ColorId,
+                            SizeId = pv.SizeId,
+                            SKU = pv.SKU,
+                            StockQuantity = pv.StockQuantity,
+                            Price = pv.Price,
+                            ArrivalTime = pv.ArrivalTime,
+                            IsActive = pv.IsActive,
+                            Delete = pv.Delete,
+                            CreateAt = pv.CreateAt,
+                            UpdateAt = pv.UpdateAt,
+                            DeleteAt = pv.DeleteAt,
+                            Status = pv.Status,
+                            UpdateBy = pv.UpdateBy,
+                            Color = pv.Color != null ? new Color
+                            {
+                                Id = pv.Color.Id,
+                                Name = pv.Color.Name,
+                                HexCode = pv.Color.HexCode,
+                                Delete = pv.Color.Delete,
+                                CreateAt = pv.Color.CreateAt,
+                                UpdateAt = pv.Color.UpdateAt,
+                                DeleteAt = pv.Color.DeleteAt,
+                                Status = pv.Color.Status,
+                                UpdateBy = pv.Color.UpdateBy
+                            } : null
+                        }).ToList()
+                })
                 .ToListAsync();
 
             return products;
@@ -579,18 +859,112 @@ namespace Pro219.DAL.Repository
             try
             {
                 var product = await _context.Products
-                    .Include(p => p.ProductImages)
-
-                    .Include(p => p.ProductVariants.Where(v => v.Delete != true && v.IsActive == true))
-                        .ThenInclude(v => v.Color)
-
-                    .Include(p => p.ProductVariants.Where(v => v.Delete != true && v.IsActive == true))
-                        .ThenInclude(v => v.Size)
-
-                    .FirstOrDefaultAsync(p => p.Id == id);
-
-                if (product != null && product.Delete == true)
-                    return null;
+                    .AsNoTracking()
+                    .Where(p => p.Id == id
+                        && p.Delete == false
+                        && p.Brand.Delete == false && p.Brand.Status == 1
+                        && p.Category.Delete == false && p.Category.Status == 1)
+                    .Select(p => new Product
+                    {
+                        Id = p.Id,
+                        CategoryId = p.CategoryId,
+                        BrandId = p.BrandId,
+                        SaleId = p.SaleId,
+                        Name = p.Name,
+                        Description = p.Description,
+                        BasePrice = p.BasePrice,
+                        CreatedAt = p.CreatedAt,
+                        Status = p.Status,
+                        Delete = p.Delete,
+                        UpdateAt = p.UpdateAt,
+                        DeleteAt = p.DeleteAt,
+                        UpdateBy = p.UpdateBy,
+                        Brand = p.Brand != null ? new Brand
+                        {
+                            Id = p.Brand.Id,
+                            Name = p.Brand.Name,
+                            Description = p.Brand.Description,
+                            Status = p.Brand.Status,
+                            Delete = p.Brand.Delete,
+                            CreateAt = p.Brand.CreateAt,
+                            UpdateAt = p.Brand.UpdateAt,
+                            DeleteAt = p.Brand.DeleteAt,
+                            UpdateBy = p.Brand.UpdateBy
+                        } : null,
+                        Category = p.Category != null ? new Category
+                        {
+                            Id = p.Category.Id,
+                            ParentCategoryId = p.Category.ParentCategoryId,
+                            Name = p.Category.Name,
+                            Description = p.Category.Description,
+                            Status = p.Category.Status,
+                            Delete = p.Category.Delete,
+                            CreateAt = p.Category.CreateAt,
+                            UpdateAt = p.Category.UpdateAt,
+                            DeleteAt = p.Category.DeleteAt,
+                            UpdateBy = p.Category.UpdateBy
+                        } : null,
+                        ProductImages = p.ProductImages
+                            .Where(pi => pi.Delete != true)
+                            .Select(pi => new ProductImage
+                            {
+                                Id = pi.Id,
+                                ProductId = pi.ProductId,
+                                ProductVariantId = pi.ProductVariantId,
+                                ImageUrl = pi.ImageUrl,
+                                IsMain = pi.IsMain,
+                                Delete = pi.Delete,
+                                CreateAt = pi.CreateAt,
+                                UpdateAt = pi.UpdateAt,
+                                DeleteAt = pi.DeleteAt,
+                                Status = pi.Status,
+                                UpdateBy = pi.UpdateBy
+                            }).ToList(),
+                        ProductVariants = p.ProductVariants
+                            .Where(v => v.Delete != true && v.IsActive == true)
+                            .Select(pv => new ProductVariant
+                            {
+                                Id = pv.Id,
+                                ProductId = pv.ProductId,
+                                ColorId = pv.ColorId,
+                                SizeId = pv.SizeId,
+                                SKU = pv.SKU,
+                                StockQuantity = pv.StockQuantity,
+                                Price = pv.Price,
+                                ArrivalTime = pv.ArrivalTime,
+                                IsActive = pv.IsActive,
+                                Delete = pv.Delete,
+                                CreateAt = pv.CreateAt,
+                                UpdateAt = pv.UpdateAt,
+                                DeleteAt = pv.DeleteAt,
+                                Status = pv.Status,
+                                UpdateBy = pv.UpdateBy,
+                                Color = pv.Color != null ? new Color
+                                {
+                                    Id = pv.Color.Id,
+                                    Name = pv.Color.Name,
+                                    HexCode = pv.Color.HexCode,
+                                    Delete = pv.Color.Delete,
+                                    CreateAt = pv.Color.CreateAt,
+                                    UpdateAt = pv.Color.UpdateAt,
+                                    DeleteAt = pv.Color.DeleteAt,
+                                    Status = pv.Color.Status,
+                                    UpdateBy = pv.Color.UpdateBy
+                                } : null,
+                                Size = pv.Size != null ? new Size
+                                {
+                                    Id = pv.Size.Id,
+                                    Name = pv.Size.Name,
+                                    Delete = pv.Size.Delete,
+                                    CreateAt = pv.Size.CreateAt,
+                                    UpdateAt = pv.Size.UpdateAt,
+                                    DeleteAt = pv.Size.DeleteAt,
+                                    Status = pv.Size.Status,
+                                    UpdateBy = pv.Size.UpdateBy
+                                } : null
+                            }).ToList()
+                    })
+                    .FirstOrDefaultAsync();
 
                 return product;
             }
@@ -604,7 +978,9 @@ namespace Pro219.DAL.Repository
         {
             var productListDto = await _context.Products
                 // 1. Lọc sản phẩm
-                .Where(p => p.Delete == false && p.Status == 1)
+                .Where(p => p.Delete == false && p.Status == 1
+                    && p.Brand.Delete == false && p.Brand.Status == 1
+                    && p.Category.Delete == false && p.Category.Status == 1)
 
                 // 2. Sử dụng Select để ÁNH XẠ sang DTO
                 .Select(p => new ProductDetailDto
@@ -690,7 +1066,9 @@ namespace Pro219.DAL.Repository
         {
             var productListDto = await _context.Products
                 // 1. Lọc sản phẩm
-                .Where(p => p.Delete == false && p.Status == 1 && p.Id == id)
+                .Where(p => p.Delete == false && p.Status == 1 && p.Id == id
+                    && p.Brand.Delete == false && p.Brand.Status == 1
+                    && p.Category.Delete == false && p.Category.Status == 1)
 
                 // 2. Sử dụng Select để ÁNH XẠ sang DTO
                 .Select(p => new ProductDetailDto

@@ -22,7 +22,109 @@ namespace Pro219.DAL.Repository
             try
             {
                 var variants = await _context.ProductVariants
-                    .Where(x => x.Delete != true)
+                    .AsNoTracking()
+                    .Where(x => x.Delete != true
+                        && x.Product.Delete != true && x.Product.Status == 1
+                        && x.Product.Brand.Delete != true && x.Product.Brand.Status == 1
+                        && x.Product.Category.Delete != true && x.Product.Category.Status == 1
+                        && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))
+                        && (x.SizeId == null || (x.Size.Delete != true && x.Size.Status == 1)))
+                    .Select(pv => new ProductVariant
+                    {
+                        Id = pv.Id,
+                        ProductId = pv.ProductId,
+                        ColorId = pv.ColorId,
+                        SizeId = pv.SizeId,
+                        SKU = pv.SKU,
+                        StockQuantity = pv.StockQuantity,
+                        Price = pv.Price,
+                        ArrivalTime = pv.ArrivalTime,
+                        IsActive = pv.IsActive,
+                        Delete = pv.Delete,
+                        CreateAt = pv.CreateAt,
+                        UpdateAt = pv.UpdateAt,
+                        DeleteAt = pv.DeleteAt,
+                        Status = pv.Status,
+                        UpdateBy = pv.UpdateBy,
+                        Product = pv.Product != null ? new Product
+                        {
+                            Id = pv.Product.Id,
+                            CategoryId = pv.Product.CategoryId,
+                            BrandId = pv.Product.BrandId,
+                            SaleId = pv.Product.SaleId,
+                            Name = pv.Product.Name,
+                            Description = pv.Product.Description,
+                            BasePrice = pv.Product.BasePrice,
+                            CreatedAt = pv.Product.CreatedAt,
+                            Status = pv.Product.Status,
+                            Delete = pv.Product.Delete,
+                            UpdateAt = pv.Product.UpdateAt,
+                            DeleteAt = pv.Product.DeleteAt,
+                            UpdateBy = pv.Product.UpdateBy,
+                            Brand = pv.Product.Brand != null ? new Brand
+                            {
+                                Id = pv.Product.Brand.Id,
+                                Name = pv.Product.Brand.Name,
+                                Description = pv.Product.Brand.Description,
+                                Status = pv.Product.Brand.Status,
+                                Delete = pv.Product.Brand.Delete,
+                                CreateAt = pv.Product.Brand.CreateAt,
+                                UpdateAt = pv.Product.Brand.UpdateAt,
+                                DeleteAt = pv.Product.Brand.DeleteAt,
+                                UpdateBy = pv.Product.Brand.UpdateBy
+                            } : null,
+                            Category = pv.Product.Category != null ? new Category
+                            {
+                                Id = pv.Product.Category.Id,
+                                ParentCategoryId = pv.Product.Category.ParentCategoryId,
+                                Name = pv.Product.Category.Name,
+                                Description = pv.Product.Category.Description,
+                                Status = pv.Product.Category.Status,
+                                Delete = pv.Product.Category.Delete,
+                                CreateAt = pv.Product.Category.CreateAt,
+                                UpdateAt = pv.Product.Category.UpdateAt,
+                                DeleteAt = pv.Product.Category.DeleteAt,
+                                UpdateBy = pv.Product.Category.UpdateBy
+                            } : null
+                        } : null,
+                        Color = pv.Color != null ? new Color
+                        {
+                            Id = pv.Color.Id,
+                            Name = pv.Color.Name,
+                            HexCode = pv.Color.HexCode,
+                            Delete = pv.Color.Delete,
+                            CreateAt = pv.Color.CreateAt,
+                            UpdateAt = pv.Color.UpdateAt,
+                            DeleteAt = pv.Color.DeleteAt,
+                            Status = pv.Color.Status,
+                            UpdateBy = pv.Color.UpdateBy
+                        } : null,
+                        Size = pv.Size != null ? new Size
+                        {
+                            Id = pv.Size.Id,
+                            Name = pv.Size.Name,
+                            Delete = pv.Size.Delete,
+                            CreateAt = pv.Size.CreateAt,
+                            UpdateAt = pv.Size.UpdateAt,
+                            DeleteAt = pv.Size.DeleteAt,
+                            Status = pv.Size.Status,
+                            UpdateBy = pv.Size.UpdateBy
+                        } : null
+                    })
+                    .ToListAsync();
+                return variants;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<List<ProductVariant>> GetAllProductVariantsRaw()
+        {
+            try
+            {
+                var variants = await _context.ProductVariants
                     .ToListAsync();
                 return variants;
             }
@@ -36,9 +138,98 @@ namespace Pro219.DAL.Repository
         {
             try
             {
-                var variant = await _context.ProductVariants.FindAsync(id);
-                if (variant != null && variant.Delete == true)
-                    return null;
+                var variant = await _context.ProductVariants
+                    .AsNoTracking()
+                    .Where(x => x.Id == id
+                        && x.Delete != true
+                        && x.Product.Delete != true && x.Product.Status == 1
+                        && x.Product.Brand.Delete != true && x.Product.Brand.Status == 1
+                        && x.Product.Category.Delete != true && x.Product.Category.Status == 1
+                        && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))
+                        && (x.SizeId == null || (x.Size.Delete != true && x.Size.Status == 1)))
+                    .Select(pv => new ProductVariant
+                    {
+                        Id = pv.Id,
+                        ProductId = pv.ProductId,
+                        ColorId = pv.ColorId,
+                        SizeId = pv.SizeId,
+                        SKU = pv.SKU,
+                        StockQuantity = pv.StockQuantity,
+                        Price = pv.Price,
+                        ArrivalTime = pv.ArrivalTime,
+                        IsActive = pv.IsActive,
+                        Delete = pv.Delete,
+                        CreateAt = pv.CreateAt,
+                        UpdateAt = pv.UpdateAt,
+                        DeleteAt = pv.DeleteAt,
+                        Status = pv.Status,
+                        UpdateBy = pv.UpdateBy,
+                        Product = pv.Product != null ? new Product
+                        {
+                            Id = pv.Product.Id,
+                            CategoryId = pv.Product.CategoryId,
+                            BrandId = pv.Product.BrandId,
+                            SaleId = pv.Product.SaleId,
+                            Name = pv.Product.Name,
+                            Description = pv.Product.Description,
+                            BasePrice = pv.Product.BasePrice,
+                            CreatedAt = pv.Product.CreatedAt,
+                            Status = pv.Product.Status,
+                            Delete = pv.Product.Delete,
+                            UpdateAt = pv.Product.UpdateAt,
+                            DeleteAt = pv.Product.DeleteAt,
+                            UpdateBy = pv.Product.UpdateBy,
+                            Brand = pv.Product.Brand != null ? new Brand
+                            {
+                                Id = pv.Product.Brand.Id,
+                                Name = pv.Product.Brand.Name,
+                                Description = pv.Product.Brand.Description,
+                                Status = pv.Product.Brand.Status,
+                                Delete = pv.Product.Brand.Delete,
+                                CreateAt = pv.Product.Brand.CreateAt,
+                                UpdateAt = pv.Product.Brand.UpdateAt,
+                                DeleteAt = pv.Product.Brand.DeleteAt,
+                                UpdateBy = pv.Product.Brand.UpdateBy
+                            } : null,
+                            Category = pv.Product.Category != null ? new Category
+                            {
+                                Id = pv.Product.Category.Id,
+                                ParentCategoryId = pv.Product.Category.ParentCategoryId,
+                                Name = pv.Product.Category.Name,
+                                Description = pv.Product.Category.Description,
+                                Status = pv.Product.Category.Status,
+                                Delete = pv.Product.Category.Delete,
+                                CreateAt = pv.Product.Category.CreateAt,
+                                UpdateAt = pv.Product.Category.UpdateAt,
+                                DeleteAt = pv.Product.Category.DeleteAt,
+                                UpdateBy = pv.Product.Category.UpdateBy
+                            } : null
+                        } : null,
+                        Color = pv.Color != null ? new Color
+                        {
+                            Id = pv.Color.Id,
+                            Name = pv.Color.Name,
+                            HexCode = pv.Color.HexCode,
+                            Delete = pv.Color.Delete,
+                            CreateAt = pv.Color.CreateAt,
+                            UpdateAt = pv.Color.UpdateAt,
+                            DeleteAt = pv.Color.DeleteAt,
+                            Status = pv.Color.Status,
+                            UpdateBy = pv.Color.UpdateBy
+                        } : null,
+                        Size = pv.Size != null ? new Size
+                        {
+                            Id = pv.Size.Id,
+                            Name = pv.Size.Name,
+                            Delete = pv.Size.Delete,
+                            CreateAt = pv.Size.CreateAt,
+                            UpdateAt = pv.Size.UpdateAt,
+                            DeleteAt = pv.Size.DeleteAt,
+                            Status = pv.Size.Status,
+                            UpdateBy = pv.Size.UpdateBy
+                        } : null
+                    })
+                    .FirstOrDefaultAsync();
                 return variant;
             }
             catch (Exception)
@@ -51,10 +242,23 @@ namespace Pro219.DAL.Repository
         {
             try
             {
-                var variant = await _context.ProductVariants.FindAsync(id);
-                if (variant == null || variant.Delete == true)
-                    return 0;
-                return variant.StockQuantity;
+                var variant = await _context.ProductVariants
+                    .Include(pv => pv.Product)
+                        .ThenInclude(p => p.Brand)
+                    .Include(pv => pv.Product)
+                        .ThenInclude(p => p.Category)
+                    .Include(pv => pv.Color)
+                    .Include(pv => pv.Size)
+                    .Where(x => x.Id == id
+                        && x.Delete != true
+                        && x.Product.Delete != true && x.Product.Status == 1
+                        && x.Product.Brand.Delete != true && x.Product.Brand.Status == 1
+                        && x.Product.Category.Delete != true && x.Product.Category.Status == 1
+                        && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))
+                        && (x.SizeId == null || (x.Size.Delete != true && x.Size.Status == 1)))
+                    .Select(x => x.StockQuantity)
+                    .FirstOrDefaultAsync();
+                return variant;
             }
             catch (Exception)
             {
@@ -67,7 +271,96 @@ namespace Pro219.DAL.Repository
             try
             {
                 var variants = await _context.ProductVariants
-                    .Where(x => x.ProductId == productId && x.Delete != true)
+                    .AsNoTracking()
+                    .Where(x => x.ProductId == productId
+                        && x.Delete != true
+                        && x.Product.Delete != true && x.Product.Status == 1
+                        && x.Product.Brand.Delete != true && x.Product.Brand.Status == 1
+                        && x.Product.Category.Delete != true && x.Product.Category.Status == 1
+                        && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))
+                        && (x.SizeId == null || (x.Size.Delete != true && x.Size.Status == 1)))
+                    .Select(pv => new ProductVariant
+                    {
+                        Id = pv.Id,
+                        ProductId = pv.ProductId,
+                        ColorId = pv.ColorId,
+                        SizeId = pv.SizeId,
+                        SKU = pv.SKU,
+                        StockQuantity = pv.StockQuantity,
+                        Price = pv.Price,
+                        ArrivalTime = pv.ArrivalTime,
+                        IsActive = pv.IsActive,
+                        Delete = pv.Delete,
+                        CreateAt = pv.CreateAt,
+                        UpdateAt = pv.UpdateAt,
+                        DeleteAt = pv.DeleteAt,
+                        Status = pv.Status,
+                        UpdateBy = pv.UpdateBy,
+                        Product = pv.Product != null ? new Product
+                        {
+                            Id = pv.Product.Id,
+                            CategoryId = pv.Product.CategoryId,
+                            BrandId = pv.Product.BrandId,
+                            SaleId = pv.Product.SaleId,
+                            Name = pv.Product.Name,
+                            Description = pv.Product.Description,
+                            BasePrice = pv.Product.BasePrice,
+                            CreatedAt = pv.Product.CreatedAt,
+                            Status = pv.Product.Status,
+                            Delete = pv.Product.Delete,
+                            UpdateAt = pv.Product.UpdateAt,
+                            DeleteAt = pv.Product.DeleteAt,
+                            UpdateBy = pv.Product.UpdateBy,
+                            Brand = pv.Product.Brand != null ? new Brand
+                            {
+                                Id = pv.Product.Brand.Id,
+                                Name = pv.Product.Brand.Name,
+                                Description = pv.Product.Brand.Description,
+                                Status = pv.Product.Brand.Status,
+                                Delete = pv.Product.Brand.Delete,
+                                CreateAt = pv.Product.Brand.CreateAt,
+                                UpdateAt = pv.Product.Brand.UpdateAt,
+                                DeleteAt = pv.Product.Brand.DeleteAt,
+                                UpdateBy = pv.Product.Brand.UpdateBy
+                            } : null,
+                            Category = pv.Product.Category != null ? new Category
+                            {
+                                Id = pv.Product.Category.Id,
+                                ParentCategoryId = pv.Product.Category.ParentCategoryId,
+                                Name = pv.Product.Category.Name,
+                                Description = pv.Product.Category.Description,
+                                Status = pv.Product.Category.Status,
+                                Delete = pv.Product.Category.Delete,
+                                CreateAt = pv.Product.Category.CreateAt,
+                                UpdateAt = pv.Product.Category.UpdateAt,
+                                DeleteAt = pv.Product.Category.DeleteAt,
+                                UpdateBy = pv.Product.Category.UpdateBy
+                            } : null
+                        } : null,
+                        Color = pv.Color != null ? new Color
+                        {
+                            Id = pv.Color.Id,
+                            Name = pv.Color.Name,
+                            HexCode = pv.Color.HexCode,
+                            Delete = pv.Color.Delete,
+                            CreateAt = pv.Color.CreateAt,
+                            UpdateAt = pv.Color.UpdateAt,
+                            DeleteAt = pv.Color.DeleteAt,
+                            Status = pv.Color.Status,
+                            UpdateBy = pv.Color.UpdateBy
+                        } : null,
+                        Size = pv.Size != null ? new Size
+                        {
+                            Id = pv.Size.Id,
+                            Name = pv.Size.Name,
+                            Delete = pv.Size.Delete,
+                            CreateAt = pv.Size.CreateAt,
+                            UpdateAt = pv.Size.UpdateAt,
+                            DeleteAt = pv.Size.DeleteAt,
+                            Status = pv.Size.Status,
+                            UpdateBy = pv.Size.UpdateBy
+                        } : null
+                    })
                     .ToListAsync();
                 return variants;
             }
@@ -123,7 +416,7 @@ namespace Pro219.DAL.Repository
             }
         }
 
-        public async Task<ProductVariant> DeleteProductVariant(int id,string? updateBy = null)
+        public async Task<ProductVariant> DeleteProductVariant(int id, string? updateBy = null)
         {
             try
             {
@@ -138,7 +431,7 @@ namespace Pro219.DAL.Repository
                 {
                     variant.UpdateBy = updateBy;
                 }
-               
+
 
                 var updatedVariant = _context.ProductVariants.Update(variant).Entity;
                 await _context.SaveChangesAsync();
