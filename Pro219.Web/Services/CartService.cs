@@ -1,4 +1,5 @@
-﻿using Pro219.DAL.Models;
+﻿using Newtonsoft.Json.Linq;
+using Pro219.DAL.Models;
 using Pro219.Web.Constants;
 using Pro219.Web.DTOs;
 
@@ -138,5 +139,30 @@ namespace Pro219.Web.Services
                 return ServiceResult<CartItem>.Failure(result, errorMess, response.StatusCode.ToString());
             }
         }
+
+        public async Task<bool> MergeCart(List<AddCartModel> addCartModel, string token)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Cart/UpdateCartFromGuestLogin");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
+
+            request.Content = JsonContent.Create(addCartModel);
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        } 
     }
 }
