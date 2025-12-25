@@ -836,6 +836,8 @@ namespace Pro219.API.Controllers
         [HttpGet("GetByOrderCode/{orderCode}")]
         public async Task<ActionResult<Order>> GetOrderByOrderCode(string orderCode)
         {
+            string userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            string userId = User.FindFirst(ClaimTypes.SerialNumber)?.Value;
             try
             {
                 var result = await orderRepository.GetOrderByOrderCode(orderCode);
@@ -844,9 +846,7 @@ namespace Pro219.API.Controllers
                     return NotFound(Constant.ErrorCode.DataNotFound);
                 }
                 else
-                {
-                    string userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-                    string userId = User.FindFirst(ClaimTypes.SerialNumber)?.Value;
+                {                  
                     var order = await orderRepository.GetOrderByOrderCode(orderCode);
                     if (order == null)
                     {
@@ -1199,6 +1199,8 @@ namespace Pro219.API.Controllers
         [HttpGet("get-all-by-key-word")]
         public async Task<ActionResult<List<Order>>> GetAllByKeyword([FromQuery] string keyword)
         {
+            string userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            string userId = User.FindFirst(ClaimTypes.SerialNumber)?.Value;
             try
             {
                 var result = await orderRepository.GetAllByKeyword(keyword);
@@ -1206,7 +1208,35 @@ namespace Pro219.API.Controllers
                 {
                     return Ok(new List<Order>());
                 }
-                return Ok(result);
+                else
+                {
+                  
+
+                    foreach(var order in result.ToList())
+                    {
+                        if (order.CustomerId != -1 && string.IsNullOrEmpty(userId) && order.CustomerId != null)
+                        {
+                            result.Remove(order);
+                            continue;
+                        }
+                        if (userRole != null && userRole == "Customer")
+                        {
+                            if (order.CustomerId == -1 || order.CustomerId.ToString() != userId)
+                            {
+                                result.Remove(order);
+                                continue;
+                            }
+                        }
+                        if (string.IsNullOrEmpty(userId) && order.CustomerId != -1 && order.CustomerId != null || string.IsNullOrEmpty(userRole) && order.CustomerId != -1 && order.CustomerId != null)
+                        {
+                            result.Remove(order);
+                            continue;
+                        }
+                    }
+                  
+                } 
+                    
+                    return Ok(result);
             }
             catch (Exception ex)
             {
