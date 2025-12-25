@@ -39,8 +39,9 @@
                     }
                 </MudSelect>
             </div>
-            <div>
-                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="flex h-14 w-full items-center gap-2"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+            <div class="flex items-center gap-2">
+                <MudButton Variant="Variant.Outlined" OnClick="OnSearch" Class="flex h-14 w-full items-center gap-2"><MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-2" /> Tìm kiếm</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="flex h-14 w-full items-center gap-2"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" /> Đặt lại</MudButton>
             </div>
         </div>
     </div>
@@ -62,8 +63,8 @@
                 <MudTd DataLabel="Ảnh"><MudImage Src="@_productImages.FirstOrDefault(pi => pi.ProductId == context.Id && pi.ProductVariantId == null)?.ImageUrl" Width="100" /></MudTd>
                 <MudTd DataLabel="Ảnh">@context.Name</MudTd>
                 <MudTd DataLabel="Giá mặc định">@context.BasePrice.ToString("C", vietnameseCulture)</MudTd>
-                <MudTd DataLabel="Danh mục">@_categories.FirstOrDefault(x => x.Id == context.CategoryId)?.Name</MudTd>
-                <MudTd DataLabel="Thương hiệu">@_brands.FirstOrDefault(x => x.Id == context.BrandId)?.Name</MudTd>
+                <MudTd DataLabel="Danh mục">@(context.Category?.Name ?? "")</MudTd>
+                <MudTd DataLabel="Thương hiệu">@(context.Brand?.Name ?? "")</MudTd>
                 <MudTd DataLabel="Mô tả">@context.Description</MudTd>
                 <MudTd DataLabel="Trạng thái">@((context.Status == Constant.StatusDefault.Active) ? "Hoạt Động" : "Không Hoạt Động")</MudTd>
                 <MudTd DataLabel="Thao tác">
@@ -119,7 +120,7 @@
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Sản Phẩm", href: "#", disabled: true),
+    new("Sản Phẩm", href: "#", disabled: true),
     ];
 
     protected override async Task OnInitializedAsync()
@@ -140,7 +141,7 @@
 
     async Task LoadData()
     {
-        var resProduct = await _productService.GetAll();
+        var resProduct = await _productService.GetAll(_searchValue, _searchCategory, _searchBrand);
         var dataProduct = resProduct.Data;
         if (resProduct.IsSuccess && dataProduct != null)
         {
@@ -169,40 +170,24 @@
         }
     }
 
-        private async Task onChangeSearch(string value)
+    private void onChangeSearch(string value)
     {
         _searchValue = value;
-
-        if (string.IsNullOrEmpty(value))
-        {
-            // await LoadData();
-            return;
-        }
-
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
-
-        try
-        {
-            await Task.Delay(700, _cts.Token);
-
-            _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
-        }
-        catch (TaskCanceledException)
-        {
-        }
     }
 
-    private async Task OnChangeCategory(int value)
+    private void OnChangeCategory(int value)
     {
         _searchCategory = value;
-        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
     }
 
-    private async Task OnChangeBrand(int value)
+    private void OnChangeBrand(int value)
     {
         _searchBrand = value;
-        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+    }
+
+    private async Task OnSearch()
+    {
+        await LoadData();
     }
 
     private async Task OnReset()
@@ -211,7 +196,7 @@
         _searchCategory = 0;
         _searchBrand = 0;
 
-        // TODO: call api
+        await LoadData();
     }
 
     void HandleRedirect(int id, bool isProductVariant)

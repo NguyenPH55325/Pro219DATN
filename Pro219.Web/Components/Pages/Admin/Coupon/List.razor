@@ -16,27 +16,28 @@
                                 AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
             </div>
             <div>
-                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Loại giảm giá" Value="@_searchDiscountTpe" ValueChanged="OnChangeDiscountType">
-                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
-                    <MudSelectItem Value="1">Phần trăm</MudSelectItem>
-                    <MudSelectItem Value="2">Cố định</MudSelectItem>
+                <MudSelect T="string" Variant="Variant.Outlined" Placeholder="Loại giảm giá" Value="@_searchDiscountTpe" ValueChanged="OnChangeDiscountType">
+                    <MudSelectItem T="string" Value="@("all")">Tất cả</MudSelectItem>
+                    <MudSelectItem T="string" Value="@(Constant.DiscountTypePercent)">Phần trăm</MudSelectItem>
+                    <MudSelectItem T="string" Value="@(Constant.DiscountTypeFixed)">Cố định</MudSelectItem>
                 </MudSelect>
             </div>
             <div>
-                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Loại áp dụng" Value="@_searchDiscountAmountType" ValueChanged="OnChangeDiscountAmountType">
-                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
-                    <MudSelectItem Value="1">Hóa đơn</MudSelectItem>
-                    <MudSelectItem Value="2">Phí vận chuyển</MudSelectItem>
+                <MudSelect T="byte" Variant="Variant.Outlined" Placeholder="Loại áp dụng" Value="@_searchDiscountAmountType" ValueChanged="OnChangeDiscountAmountType">
+                    <MudSelectItem T="byte" Value="0">Tất cả</MudSelectItem>
+                    <MudSelectItem T="byte" Value="1">Hóa đơn</MudSelectItem>
+                    <MudSelectItem T="byte" Value="2">Phí vận chuyển</MudSelectItem>
                 </MudSelect>
-            </div
+            </div>
             <div>
                 <MudDatePicker Variant="Variant.Outlined" Placeholder="Ngày bắt đầu" Date="@_startDate" DateChanged="OnChangeStartDate" MaxDate="@_maxStartDate" />
             </div>
             <div>
                 <MudDatePicker Variant="Variant.Outlined" Placeholder="Ngày bắt đầu" Date="@_endDate" DateChanged="OnChangeEndDate" MinDate="@_minEndDate" />
             </div>
-            <div>
-                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+            <div class="flex items-center gap-2">
+                <MudButton Variant="Variant.Outlined" OnClick="OnSearch" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-2" /> Tìm kiếm</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" /> Đặt lại</MudButton>
             </div>
         </div>
     </div>
@@ -118,17 +119,16 @@
 </div>
 
 @code {
-    private CancellationTokenSource? _cts;
     private List<DAL.Models.DiscountCode> _discountCodes = [];
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Large, FullWidth = true };
 
     private string _searchValue = string.Empty;
-    private int _searchDiscountTpe = 0;
-    private int _searchDiscountAmountType = 0;
-    private DateTime? _startDate = DateTime.Now.AddDays(-14);
+    private string _searchDiscountTpe = "all";
+    private byte _searchDiscountAmountType = 0;
+    private DateTime? _startDate = DateTime.Now.AddYears(-1);
     private DateTime? _endDate = DateTime.Now;
     private DateTime? _maxStartDate = DateTime.Now;
-    private DateTime? _minEndDate = DateTime.Now.AddDays(-14);
+    private DateTime? _minEndDate = DateTime.Now.AddYears(-1);
     private bool _loading = true;
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
@@ -156,7 +156,7 @@
 
     async Task LoadData()
     {
-        var res = await _couponService.GetAll();
+        var res = await _couponService.GetAll(_searchValue, _searchDiscountTpe, _searchDiscountAmountType, _startDate, _endDate);
         var data = res.Data;
         if (res.IsSuccess && data.Count > 0)
         {
@@ -168,64 +168,45 @@
     private async Task onChangeSearch(string value)
     {
         _searchValue = value;
-
-        if (string.IsNullOrEmpty(value))
-        {
-            // await LoadData();
-            return;
-        }
-
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
-
-        try
-        {
-            await Task.Delay(700, _cts.Token);
-
-            _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
-        }
-        catch (TaskCanceledException)
-        {
-        }
     }
 
-    private async Task OnChangeDiscountType(int value)
+    private async Task OnSearch()
     {
-        _searchDiscountTpe = value;
-        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
-    }
-
-    private async Task OnChangeDiscountAmountType(int value)
-    {
-        _searchDiscountAmountType = value;
-        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
-    }
-
-    private async Task OnChangeStartDate(DateTime? value)
-    {
-        _startDate = value;
-        _minEndDate = value;
-        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
-    }
-
-    private async Task OnChangeEndDate(DateTime? value)
-    {
-        _endDate = value;
-        _maxStartDate = value;
-        _snackbar.Add($"Đang tìm kiếm: {value}", Severity.Info);
+        await LoadData();
     }
 
     private async Task OnReset()
     {
         _searchValue = string.Empty;
-        _searchDiscountTpe = 0;
+        _searchDiscountTpe = "all";
         _searchDiscountAmountType = 0;
-        _startDate = DateTime.Now.AddDays(-14);
+        _startDate = DateTime.Now.AddYears(-1);
         _endDate = DateTime.Now;
         _maxStartDate = DateTime.Now;
-        _minEndDate = DateTime.Now.AddDays(-14);
+        _minEndDate = DateTime.Now.AddYears(-1);
+        await LoadData();
+    }
 
-        // TODO: call api
+    private void OnChangeDiscountType(string value)
+    {
+        _searchDiscountTpe = value;
+    }
+
+    private void OnChangeDiscountAmountType(byte value)
+    {
+        _searchDiscountAmountType = value;
+    }
+
+    private void OnChangeStartDate(DateTime? value)
+    {
+        _startDate = value;
+        _minEndDate = value;
+    }
+
+    private void OnChangeEndDate(DateTime? value)
+    {
+        _endDate = value;
+        _maxStartDate = value;
     }
 
     async Task OpenDialogDelete(int id)

@@ -241,7 +241,7 @@ namespace Pro219.API.Controllers
                 }
 
                 var allProductVariants = await productVariantRepository.GetAllProductVariants();
-                var allProducts = await productRepository.GetAllProducts();
+                var allProducts = await productRepository.GetAllProducts(null, null, null);
                 var allProductImages = await productImageRepository.GetAllProductImages();
                 var allSizes = await sizeRepository.GetAllSizes(null);
                 var allColors = await colorRepository.GetAllColors(null);
@@ -297,7 +297,7 @@ namespace Pro219.API.Controllers
             try
             {
                 var allProductVariants = await productVariantRepository.GetAllProductVariants();
-                var allProducts = await productRepository.GetAllProducts();
+                var allProducts = await productRepository.GetAllProducts(null, null, null);
                 var allProductImages = await productImageRepository.GetAllProductImages();
                 var allSizes = await sizeRepository.GetAllSizes(null);
                 var allColors = await colorRepository.GetAllColors(null);

@@ -3,8 +3,10 @@ using Pro219.DAL.Context;
 using Pro219.DAL.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Pro219.DAL.Repository
 {
@@ -446,16 +448,30 @@ namespace Pro219.DAL.Repository
             }
         }
 
-        public async Task<List<Product>> GetAllProducts()
+        public async Task<List<Product>> GetAllProducts(string? keyword = null, int? categoryId = null, int? brandId = null)
         {
             try
             {
-                var products = await _context.Products
-                    .AsNoTracking()
-                    .Where(x => x.Delete != true
-                        && x.Brand.Delete != true && x.Brand.Status == 1
-                        && x.Category.Delete != true && x.Category.Status == 1)
-                    .Select(p => new Product
+                var query = _context.Products
+                            .Include(p => p.Brand)
+                            .Include(p => p.Category)
+                            .Where(p => p.Delete == false
+                                && p.Brand.Delete == false && p.Brand.Status == 1
+                                && p.Category.Delete == false && p.Category.Status == 1);
+
+                if(!string.IsNullOrEmpty(keyword))
+                {
+                    query = query.Where(p => p.Name.ToLower().Contains(keyword.ToLower()));
+                }
+                if(categoryId != null && categoryId > 0)
+                {
+                    query = query.Where(p => p.CategoryId == categoryId);
+                }
+                if (brandId != null && brandId > 0)
+                {
+                    query = query.Where(p => p.BrandId == brandId);
+                }
+                var products = await query.Select(p => new Product
                     {
                         Id = p.Id,
                         CategoryId = p.CategoryId,
@@ -719,7 +735,7 @@ namespace Pro219.DAL.Repository
                             DeleteAt = pv.DeleteAt,
                             Status = pv.Status,
                             UpdateBy = pv.UpdateBy,
-                            Color = pv.Color != null ? new Color
+                            Color = pv.Color != null ? new DAL.Models.Color
                             {
                                 Id = pv.Color.Id,
                                 Name = pv.Color.Name,
@@ -835,7 +851,7 @@ namespace Pro219.DAL.Repository
                             DeleteAt = pv.DeleteAt,
                             Status = pv.Status,
                             UpdateBy = pv.UpdateBy,
-                            Color = pv.Color != null ? new Color
+                            Color = pv.Color != null ? new DAL.Models.Color
                             {
                                 Id = pv.Color.Id,
                                 Name = pv.Color.Name,
@@ -939,7 +955,7 @@ namespace Pro219.DAL.Repository
                                 DeleteAt = pv.DeleteAt,
                                 Status = pv.Status,
                                 UpdateBy = pv.UpdateBy,
-                                Color = pv.Color != null ? new Color
+                                Color = pv.Color != null ? new DAL.Models.Color
                                 {
                                     Id = pv.Color.Id,
                                     Name = pv.Color.Name,
@@ -951,7 +967,7 @@ namespace Pro219.DAL.Repository
                                     Status = pv.Color.Status,
                                     UpdateBy = pv.Color.UpdateBy
                                 } : null,
-                                Size = pv.Size != null ? new Size
+                                Size = pv.Size != null ? new DAL.Models.Size
                                 {
                                     Id = pv.Size.Id,
                                     Name = pv.Size.Name,

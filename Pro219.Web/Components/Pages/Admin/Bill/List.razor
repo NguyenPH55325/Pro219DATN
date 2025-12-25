@@ -14,8 +14,9 @@
                 <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
                               AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
             </div>
-            <div>
-                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+            <div class="flex items-center gap-2">
+                <MudButton Variant="Variant.Outlined" OnClick="OnSearch" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-2" /> Tìm kiếm</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" /> Đặt lại</MudButton>
             </div>
         </div>
     </div>
@@ -92,7 +93,6 @@
 </div>
 
 @code {
-    private CancellationTokenSource? _cts;
     private List<DAL.Models.Order> _orders = [];
     private List<DAL.Models.Address> _addresses = [];
 
@@ -131,36 +131,21 @@
     private async Task onChangeSearch(string value)
     {
         _searchValue = value;
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
-        await Task.Delay(700, _cts.Token);
+    }
 
-        if (string.IsNullOrEmpty(value))
-        {
-            await LoadData();
-            return;
-        }
-
-
-        try
-        {
-            await LoadData();
-        }
-        catch (TaskCanceledException)
-        {
-        }
+    private async Task OnSearch()
+    {
+        await LoadData();
     }
 
     private async Task OnReset()
     {
         _searchValue = string.Empty;
-        await Task.Delay(700, _cts.Token);
         await LoadData();
     }
 
     private async Task DowloadPDF(int id)
     {
-        // Hiển thị loading nếu cần (tùy chọn)
         _loading = true;
 
         var result = await _orderService.GetInvoicePdf(id);
@@ -168,7 +153,6 @@
         if (result.IsSuccess)
         {
             var base64 = Convert.ToBase64String(result.Data);
-            // Lấy mã đơn hàng để đặt tên file cho chuyên nghiệp
             var orderCode = _orders.FirstOrDefault(o => o.OrderId == id)?.OrderCode ?? id.ToString();
 
             await JS.InvokeVoidAsync("downloadFile", "application/pdf", base64, $"hoadon_{orderCode}.pdf");
@@ -187,13 +171,13 @@
     private Color GetOrderStatusColor(byte? Status) =>
     Status switch
     {
-        Constant.OrderStatus.StatusPending => Color.Dark, // Đang chờ xử lý (1) - Xanh dương
-        Constant.OrderStatus.StatusConfirm => Color.Info,    // Đã xác nhận (2) - Xanh nhạt
-        Constant.OrderStatus.StatusCanceledByUser => Color.Error, // Đã hủy bởi người dùng (3) - Đỏ
-        Constant.OrderStatus.StatusShipping => Color.Primary, // Đang giao hàng (4) - Tím
-        Constant.OrderStatus.StatusShippingDone => Color.Tertiary, // Đã giao hàng (5) - Xanh lá
-        Constant.OrderStatus.StatusShippingFailed => Color.Error, // Giao hàng thất bại (6) - Đỏ
-        Constant.OrderStatus.StatusDone => Color.Success, // Hoàn thành (7) - Xám/Đen
+        Constant.OrderStatus.StatusPending => Color.Dark,
+        Constant.OrderStatus.StatusConfirm => Color.Info,
+        Constant.OrderStatus.StatusCanceledByUser => Color.Error,
+        Constant.OrderStatus.StatusShipping => Color.Primary,
+        Constant.OrderStatus.StatusShippingDone => Color.Tertiary,
+        Constant.OrderStatus.StatusShippingFailed => Color.Error,
+        Constant.OrderStatus.StatusDone => Color.Success,
         _ => Color.Dark
     };
 }
