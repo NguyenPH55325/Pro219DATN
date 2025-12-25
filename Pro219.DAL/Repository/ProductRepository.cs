@@ -1165,6 +1165,136 @@ namespace Pro219.DAL.Repository
             return productListDto;
         }
 
+        public async Task<List<SearchCombineProductDto>> SearchCombineProduct(
+            int? page = null,
+            int? pageSize = null,
+            int? brandId = null,
+            int? sizeId = null,
+            int? colorId = null,
+            string? sortOrder = null,
+            bool? getDeleted = null)
+        {
+            try
+            {
+                var query = _context.ProductVariants
+                    .AsNoTracking()
+                    .Include(pv => pv.Product)
+                        .ThenInclude(p => p.Brand)
+                    .Include(pv => pv.Product)
+                        .ThenInclude(p => p.Category)
+                    .Include(pv => pv.Color)
+                    .Include(pv => pv.Size)
+                    .AsQueryable();
+
+                // Apply getDeleted filter logic
+                if (getDeleted.HasValue)
+                {
+                    if (getDeleted.Value == false)
+                    {
+                        // When getDeleted = false: filter by Delete != true and Status == 1
+                        query = query.Where(pv => pv.Delete != true
+                            && pv.Product.Delete != true && pv.Product.Status == 1
+                            && pv.Product.Brand.Delete != true && pv.Product.Brand.Status == 1
+                            && pv.Product.Category.Delete != true && pv.Product.Category.Status == 1
+                            && (pv.ColorId == null || (pv.Color.Delete != true && pv.Color.Status == 1))
+                            && (pv.SizeId == null || (pv.Size.Delete != true && pv.Size.Status == 1)));
+                    }
+                    // When getDeleted = true: get all data including deleted, skip status check
+                    // No additional filtering needed
+                }
+                // If getDeleted is null: return all data (no filtering)
+
+                // Apply brand filter
+                if (brandId.HasValue && brandId.Value > 0)
+                {
+                    query = query.Where(pv => pv.Product.BrandId == brandId.Value);
+                }
+
+                // Apply color filter
+                if (colorId.HasValue && colorId.Value > 0)
+                {
+                    query = query.Where(pv => pv.ColorId == colorId.Value);
+                }
+
+                // Apply size filter
+                if (sizeId.HasValue && sizeId.Value > 0)
+                {
+                    query = query.Where(pv => pv.SizeId == sizeId.Value);
+                }
+
+                // Apply sorting
+                switch (sortOrder?.ToLower())
+                {
+                    case "name_asc":
+                    case "az":
+                        query = query.OrderBy(pv => pv.Product.Name);
+                        break;
+                    case "name_desc":
+                    case "za":
+                        query = query.OrderByDescending(pv => pv.Product.Name);
+                        break;
+                    case "price_asc":
+                    case "price_increase":
+                        query = query.OrderBy(pv => pv.Price);
+                        break;
+                    case "price_desc":
+                    case "price_decrease":
+                        query = query.OrderByDescending(pv => pv.Price);
+                        break;
+                    default:
+                        query = query.OrderByDescending(pv => pv.Product.CreatedAt);
+                        break;
+                }
+
+                // Select to DTO
+                var resultQuery = query.Select(pv => new SearchCombineProductDto
+                {
+                    ProductId = pv.ProductId,
+                    ProductVariantId = pv.Id,
+                    ProductName = pv.Product.Name,
+                    ColorId = pv.ColorId,
+                    ColorName = pv.Color != null ? pv.Color.Name : null,
+                    SizeId = pv.SizeId,
+                    SizeName = pv.Size != null ? pv.Size.Name : null,
+                    BrandId = pv.Product.BrandId,
+                    BrandName = pv.Product.Brand.Name,
+                    Quantity = pv.StockQuantity,
+                    UnitPrice = pv.Price
+                })
+                .AsQueryable();
+
+                // Apply pagination
+                if (page.HasValue && pageSize.HasValue && page > 0 && pageSize > 0)
+                {
+                    resultQuery = resultQuery
+                        .Skip((page.Value - 1) * pageSize.Value)
+                        .Take(pageSize.Value);
+                }
+
+                var result = await resultQuery.ToListAsync();
+                return result;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public class SearchCombineProductDto
+        {
+            public int ProductId { get; set; }
+            public int ProductVariantId { get; set; }
+            public string ProductName { get; set; }
+            public int? ColorId { get; set; }
+            public string? ColorName { get; set; }
+            public int? SizeId { get; set; }
+            public string? SizeName { get; set; }
+            public int BrandId { get; set; }
+            public string BrandName { get; set; }
+            public int Quantity { get; set; }
+            public decimal UnitPrice { get; set; }
+        }
+
         public class ProductDetailDto
         {
             public int Id { get; set; }
