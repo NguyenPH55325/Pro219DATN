@@ -95,6 +95,31 @@ namespace Pro219.API.Controllers
             }
         }
 
+        [HttpGet("SearchCombineProduct")]
+        public async Task<ActionResult<List<SearchCombineProductDto>>> SearchCombineProduct(
+            [FromQuery] int? page = null,
+            [FromQuery] int? pageSize = null,
+            [FromQuery] int? brandId = null,
+            [FromQuery] int? sizeId = null,
+            [FromQuery] int? colorId = null,
+            [FromQuery] string? sortOrder = null,
+            [FromQuery] bool? getDeleted = null)
+        {
+            try
+            {
+                var result = await productRepository.SearchCombineProduct(page, pageSize, brandId, sizeId, colorId, sortOrder, getDeleted);
+                if (result == null)
+                {
+                    return Ok(new List<SearchCombineProductDto>());
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+
         [HttpGet("GetAll")]
         public async Task<ActionResult<List<Product>>> GetAllProducts()
         {
