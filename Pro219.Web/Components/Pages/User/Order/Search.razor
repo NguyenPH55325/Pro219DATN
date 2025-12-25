@@ -98,6 +98,7 @@
     private GetMeResponseDTO _me = new GetMeResponseDTO();
 
     private string _searchOrder = string.Empty;
+    private string _token = string.Empty;
     private bool _loading = true;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -105,6 +106,7 @@
         if (firstRender)
         {
             var resultMe = await localStorage.GetItemAsStringAsync(Constant.UserInfoLocalStorage);
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
 
             if (!string.IsNullOrEmpty(resultMe))
             {
@@ -115,7 +117,7 @@
 
     private async Task LoadData()
     {
-        var resOrder = await _orderService.GetAllByKeyword(_searchOrder);
+        var resOrder = await _orderService.GetAllByKeyword(_searchOrder, _token);
         var resAsddress = await _addressService.GetAll();
         if (resOrder.IsSuccess && resOrder.Data.Count() > 0)
         {

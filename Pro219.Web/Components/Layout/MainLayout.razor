@@ -53,6 +53,7 @@
         var token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
         var expired = await localStorage.GetItemAsStringAsync(Constant.TokenExpiredLocalStorage);
         var FirstLogin = await localStorage.GetItemAsStringAsync(Constant.UserFirstLoginLocalStorage);
+        var cartItemGuest = await localStorage.GetItemAsStringAsync(Constant.CartItemKey);
 
         if (!string.IsNullOrEmpty(FirstLogin))
         {
@@ -128,11 +129,20 @@
                     await localStorage.SetItemAsStringAsync(Constant.AuthCartIdLocalStorage, userCart.Data.Id.ToString());
                 }
 
-                await _cartStateService.LoadCartDetailsAsync();
-
                 var userInfoJson = JsonSerializer.Serialize(getMe);
                 await localStorage.SetItemAsStringAsync(Constant.UserInfoLocalStorage, userInfoJson);
                 _currentUserInfo = getMe;
+
+                if(!string.IsNullOrEmpty(cartItemGuest))
+                {
+                    var deserializedData = JsonSerializer.Deserialize<List<AddCartModel>>(cartItemGuest);
+                    if (deserializedData != null)
+                    {
+                        var resCartItem = await _cartService.MergeCart(deserializedData, token);
+                        await localStorage.RemoveItemAsync(Constant.CartItemKey);
+                    }
+                }
+                await _cartStateService.LoadCartDetailsAsync();
                 StateHasChanged();
             }
         } else

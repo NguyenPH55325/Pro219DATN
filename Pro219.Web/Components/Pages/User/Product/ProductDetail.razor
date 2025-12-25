@@ -40,11 +40,11 @@ else
                 <h1 class="mb-2 text-base font-medium">@_product?.Name</h1>
                 @if (IsOutOfStock())
                 {
-                    <span class="text-sm font-medium text-red-500">Hết hàng</span>
+                    <span class="text-sm font-medium text-red-500">Hết hàng (@_quantityShow sản phẩm)</span>
                 }
                 else
                 {
-                    <span class="text-sm font-medium text-green-600">Còn hàng</span>
+                    <span class="text-sm font-medium text-green-600">Còn hàng (@_quantityShow sản phẩm)</span>
                 }
 
                 <MudDivider Class="!my-2.5 !border-dotted" />
@@ -77,9 +77,10 @@ else
                             @foreach (var size in _product.AvailableSizes)
                             {
                                 var isAvaliable = IsSizeAvailableForColor(size.Id);
+                                var className = isAvaliable ? "!border-black bg-black opacity-50 !cursor-default" : "";
                                 <button @onclick="() => SelectSize(size.Id)"
                                         disabled="@isAvaliable"
-                                        class="flex h-9 w-9 items-center justify-center border @(GetSizeClass(size.Id))">
+                                        class="flex h-9 w-9 items-center justify-center border-solid border @(GetSizeClass(size.Id)) @(className)">
                                     @size.Name
                                 </button>
                             }
@@ -184,7 +185,7 @@ else
     private int _selectedSizeId= 0;
     private int _quantity = 1;
     private decimal _currentPrice = 0;
-
+    private string _quantityShow = "0";
 
     private bool _disableAction => _foundVariant == null || _foundVariant.StockQuantity < 1;
 
@@ -214,6 +215,8 @@ else
                 {
                     _images.AddRange(item.VariantImageUrls.ToList());
                 }
+
+                _quantityShow = res.Data.Variants.Sum(pv => pv.StockQuantity).ToString();
             }
             _currentPrice = _product.BasePrice;
             var _resReview = await _reviewService.GetByProductId(_product.Id);
@@ -238,7 +241,14 @@ else
         _selectedColorId = color.Id;
         _images.Clear();
 
-        if(_product.Variants != null && _product.Variants.Any())
+        var obj = _product?.Variants.FirstOrDefault(v =>
+                                v.ColorId == _selectedColorId);
+        if (obj != null)
+        {
+            _quantityShow = obj.StockQuantity.ToString();
+        }
+
+        if(_product.Variants != null && _product.Variants.Any())                                                                                                                                    
         {
             var detail = _product.Variants.Where(pv => pv.ColorId == color.Id).FirstOrDefault();
 
@@ -292,6 +302,8 @@ else
             }
 
             if (_foundVariant?.StockQuantity < _quantity) _quantity = 1;
+
+            _quantityShow = _foundVariant.StockQuantity.ToString();
         }
     }
 
@@ -333,7 +345,7 @@ else
     {
         int maxStock = _foundVariant?.StockQuantity ?? 99;
         if (_quantity < maxStock) _quantity++;
-        else _snackbar.Add($"Chỉ còn {maxStock} sản phẩm trong kho", Severity.Warning);
+        else _snackbar.Add($"Chỉ còn {maxStock} sản phẩm", Severity.Warning);
     }
 
     private void DecreaseQuantity()
@@ -375,7 +387,14 @@ else
                     var hasProductCurrent = cartCurrentJson.FirstOrDefault(x => x.VariantId == _foundVariant.Id);
 
                     if (hasProductCurrent != null) {
-                        hasProductCurrent.Quantity += _quantity;
+                        var currentQuantity = hasProductCurrent.Quantity;
+                        if ((currentQuantity + _quantity) > _foundVariant.StockQuantity)
+                        {
+                            _snackbar.Add("Số lượng đạt tối đa", Severity.Error);
+                            return;
+                        }
+                        var newQuantity = currentQuantity + _quantity;
+                        hasProductCurrent.Quantity = newQuantity;
                         await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(cartCurrentJson));
                     }
                     else
@@ -402,7 +421,8 @@ else
                 await _cartStateService.LoadCartDetailsAsync();
             } else
             {
-                _snackbar.Add("Thêm vào giỏ hàng thất bại", Severity.Error);
+                var mess = string.IsNullOrEmpty(result.ErrorMessage) ? "Có lỗi xảy ra. Vui lòng thử lại" : result.ErrorMessage;
+                _snackbar.Add(mess, Severity.Error);
             }
         }
     }
@@ -441,6 +461,11 @@ else
 
                     if (hasProductCurrent != null)
                     {
+                        if ((hasProductCurrent.Quantity += _quantity) > _foundVariant.StockQuantity)
+                        {
+                            _snackbar.Add("Số lượng đạt tối đa", Severity.Error);
+                            return;
+                        }
                         hasProductCurrent.Quantity += _quantity;
                         await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(cartCurrentJson));
                     }
@@ -471,7 +496,8 @@ else
             }
             else
             {
-                _snackbar.Add("Có lỗi xảy ra", Severity.Error);
+                var mess = string.IsNullOrEmpty(result.ErrorMessage) ? "Có lỗi xảy ra. Vui lòng thử lại" : result.ErrorMessage;
+                _snackbar.Add(mess, Severity.Error);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json.Linq;
 using Pro219.API.DTOs;
 using Pro219.DAL.Models;
 using Pro219.Web.Constants;
@@ -295,11 +296,19 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<List<Order>>> GetAllByKeyword(string keyword)
+        public async Task<ServiceResult<List<Order>>> GetAllByKeyword(string keyword, string token)
         {
-            var queryParams = new Dictionary<string, string?> { { "keyword", keyword } };
-            string url = QueryHelpers.AddQueryString("/Order/get-all-by-key-word", queryParams!);
-            var response = await _httpClient.GetAsync(url);
+            var url = string.IsNullOrEmpty(keyword) ? "/Order/get-all-by-key-word" : $"/Order/get-all-by-key-word?keyword={keyword}";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
+
+            var response = await _httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)
                 {
                     var result = await response.Content.ReadFromJsonAsync<List<Order>>();
