@@ -843,6 +843,34 @@ namespace Pro219.API.Controllers
                 {
                     return NotFound(Constant.ErrorCode.DataNotFound);
                 }
+                else
+                {
+                    string userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+                    string userId = User.FindFirst(ClaimTypes.SerialNumber)?.Value;
+                    var order = await orderRepository.GetOrderByOrderCode(orderCode);
+                    if (order == null)
+                    {
+                        return NotFound(Constant.ErrorCode.DataNotFound);
+                    }
+                    if (order.CustomerId != -1 && string.IsNullOrEmpty(userId) && order.CustomerId != null)
+                    {
+                        return Forbid();
+                    }
+
+                    if (userRole != null && userRole == "Customer")
+                    {
+                        if (order.CustomerId == -1 || order.CustomerId.ToString() != userId)
+                        {
+                            return Forbid();
+                        }
+                    }
+                    if (string.IsNullOrEmpty(userId) && order.CustomerId != -1 && order.CustomerId !=null || string.IsNullOrEmpty(userRole) && order.CustomerId != -1 && order.CustomerId != null)
+                    {
+                        return Forbid();
+                    }
+
+                } 
+                    
                 return Ok(result);
             }
             catch (Exception ex)
