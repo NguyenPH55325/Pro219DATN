@@ -14,9 +14,19 @@ namespace Pro219.Web.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ServiceResult<List<DiscountCode>>> GetAll()
+        public async Task<ServiceResult<List<DiscountCode>>> GetAll(string? code = null, string? discountType = null, byte? type = null, DateTime? startDate = null, DateTime? endDate = null)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, "/DiscountCode/GetAll");
+            var queryParams = new Dictionary<string, string?>();
+
+            if (!string.IsNullOrEmpty(code)) queryParams.Add("code", code);
+            if (!string.IsNullOrEmpty(discountType) && discountType != "all") queryParams.Add("discountType", discountType);
+            if (type.HasValue && type > 0) queryParams.Add("type", type.Value.ToString());
+            if (startDate.HasValue) queryParams.Add("startDate", startDate.Value.ToString("o"));
+            if (endDate.HasValue) queryParams.Add("endDate", endDate.Value.ToString("o"));
+
+            var uri = QueryHelpers.AddQueryString("/DiscountCode/GetAll", queryParams);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
 
             var response = await _httpClient.SendAsync(request);
 

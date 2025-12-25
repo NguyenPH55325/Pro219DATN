@@ -1,10 +1,12 @@
 ﻿// Pro219.Web/Services/ProductService.cs
 using Azure;
+using Microsoft.AspNetCore.WebUtilities;
 using Pro219.DAL.Models;
 using Pro219.Web.Constants;
 using Pro219.Web.DTOs;
 using System.Net.Http.Json;
 using static MudBlazor.Icons.Custom;
+using static Pro219.Web.Constants.Constant;
 using static System.Net.WebRequestMethods;
 
 namespace Pro219.Web.Services
@@ -18,9 +20,17 @@ namespace Pro219.Web.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ServiceResult<List<Product>>> GetAll()
+        public async Task<ServiceResult<List<Product>>> GetAll(string? keyword = null, int? categoryId = null, int? brandId = null)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, "/Product/GetAll");
+            var queryParams = new Dictionary<string, string?>();
+
+            if (!string.IsNullOrEmpty(keyword)) queryParams.Add("keyword", keyword);
+            if (categoryId.HasValue && categoryId > 0) queryParams.Add("categoryId", categoryId.Value.ToString());
+            if (brandId.HasValue && brandId > 0) queryParams.Add("brandId", brandId.Value.ToString());
+
+            var uri = QueryHelpers.AddQueryString("/Product/GetAll", queryParams);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
 
             var response = await _httpClient.SendAsync(request);
 

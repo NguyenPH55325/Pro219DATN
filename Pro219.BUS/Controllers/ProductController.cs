@@ -96,11 +96,11 @@ namespace Pro219.API.Controllers
         }
 
         [HttpGet("GetAll")]
-        public async Task<ActionResult<List<Product>>> GetAllProducts()
+        public async Task<ActionResult<List<Product>>> GetAllProducts(string? keyword = null, int? categoryId = null, int? brandId = null)
         {
             try
             {
-                var result = await productRepository.GetAllProducts();
+                var result = await productRepository.GetAllProducts(keyword, categoryId, brandId);
                 if (result == null)
                 {
                     return Ok(new List<Product>());

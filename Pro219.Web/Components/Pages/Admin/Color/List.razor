@@ -15,8 +15,9 @@
                 <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
                               AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
             </div>
-            <div>
-                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" /> Đặt lại bộ lọc</MudButton>
+            <div class="flex items-center gap-2">
+                <MudButton Variant="Variant.Outlined" OnClick="OnSearch" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-2" /> Tìm kiếm</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" /> Đặt lại</MudButton>
             </div>
         </div>
     </div>
@@ -71,7 +72,6 @@
 @code {
     private List<DAL.Models.Color> _lstColor = [];
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Large, FullWidth = true }; 
-    private CancellationTokenSource? _cts;
     private bool _loading = true;
     private string _searchValue = string.Empty;
 
@@ -111,24 +111,17 @@
     private async Task onChangeSearch(string value)
     {
         _searchValue = value;
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
-        await Task.Delay(700, _cts.Token);
+    }
 
-        if (string.IsNullOrEmpty(value))
-        {
-            await LoadData();
-            return;
-        }
+    private async Task OnSearch()
+    {
+        await LoadData();
+    }
 
-
-        try
-        {
-            await LoadData();
-        }
-        catch (TaskCanceledException)
-        {
-        }
+    private async Task OnReset()
+    {
+        _searchValue = string.Empty;
+        await LoadData();
     }
 
     async Task OpenDialogDelete(int id)
@@ -146,12 +139,5 @@
             await LoadData();
             StateHasChanged();
         }
-    }
-
-    private async Task OnReset()
-    {
-        _searchValue = string.Empty;
-        await Task.Delay(700, _cts.Token);
-        await LoadData();
     }
 }
