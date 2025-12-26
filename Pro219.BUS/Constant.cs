@@ -24,6 +24,7 @@
             public const string DatabaseError = "database_error";
 
             public const string OutOfStock = "out_of_stock";
+            public const string ProductInActiveOrder = "product_in_active_order";
 
         }
 

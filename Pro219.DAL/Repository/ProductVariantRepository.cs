@@ -424,6 +424,23 @@ namespace Pro219.DAL.Repository
 
                 if (variant == null) return null;
 
+                var hasActiveOrder = await _context.OrderItems
+                    .Include(oi => oi.Order)
+                    .Include(oi => oi.ProductVariant)
+                    .Where(oi => oi.ProductVariant.Id == id
+                        && oi.Order.Status.HasValue
+                        && (oi.Order.Status.Value == 0
+                            || oi.Order.Status.Value == 1
+                            || oi.Order.Status.Value == 2
+                            || oi.Order.Status.Value == 4
+                            || oi.Order.Status.Value == 5))
+                    .AnyAsync();
+
+                if (hasActiveOrder)
+                {
+                    return null;
+                }
+
                 variant.Delete = true;
                 variant.DeleteAt = DateTime.Now;
                 variant.UpdateAt = DateTime.Now;

@@ -227,11 +227,19 @@ namespace Pro219.API.Controllers
         {
             try
             {
+                // Check if product exists first
+                var product = await productRepository.GetProductById(id);
+                if (product == null)
+                {
+                    return NotFound(Constant.ErrorCode.DataNotFound);
+                }
+
                 var updateBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var result = await productRepository.DeleteProduct(id, updateBy);
                 if (result == null)
                 {
-                    return NotFound(Constant.ErrorCode.DataNotFound);
+                    // Product exists but cannot be deleted (likely in active order)
+                    return BadRequest(Constant.ErrorCode.ProductInActiveOrder);
                 }
 
                 return Ok(result);
