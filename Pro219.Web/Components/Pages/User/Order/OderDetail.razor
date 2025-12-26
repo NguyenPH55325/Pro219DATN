@@ -5,12 +5,12 @@
 @layout MainLayout
 
 
-<section class="mx-auto max-w-[1440px] p-8">
+<section class="mx-auto max-w-[1440px] p-8 sm:px-0">
     <div>
         <div class="mb-2 flex items-center justify-between gap-4">
             <div class="flex flex-col">
-                <div class="flex items-center gap-2">
-                    <h1 class="text-xl font-bold uppercase md:text-2xl lg:text-3xl">Chi tiết hóa đơn</h1>
+                <div class="flex items-center gap-4">
+                    <h1 class="text-xl font-bold uppercase md:text-2xl lg:text-3xl">Chi tiết đơn hàng</h1>
                     <span class="@GetOrderStatusClass(_orderDetail?.Status) rounded-full px-3 py-1 text-sm font-medium text-white">
                         @GetOrderStatusMessage(_orderDetail?.Status)
                     </span>
@@ -19,19 +19,21 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Error" OnClick="CancelOrder" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusPending)">Hủy hóa đơn</MudButton>
+                <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Error" OnClick="CancelOrder" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusPending)">Hủy đơn hàng</MudButton>
                 <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Info" OnClick="ReCheckout" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusNoCheckout)">Thanh toán</MudButton>
             </div>
         </div>
     </div>
 
-    <div class="mt-6 px-6">
+    <div class="mt-6 px-2 lg:px-6">
+        <h2 class="text-xl font-medium">Thông tin đơn hàng</h2>
+        <MudDivider Class="my-4" />
         <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Mã hóa đơn:</span>
+            <div class="flex items-center gap-1.5 sm:flex-col sm:items-start lg:gap-4">
+                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Mã đơn hàng:</span>
                 <span class="text-sm font-medium">@_orderDetail?.OrderCode <MudIcon Class="ml-1.5 cursor-pointer" Icon="@Icons.Material.Filled.ContentCopy" @onclick="@(() => CopyToClipboard(_orderDetail.OrderCode))"/></span>
             </div>
-            <div class="flex gap-4">
+            <div class="flex gap-1.5 sm:flex-col lg:gap-4">
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Địa chỉ nhận hàng:</span>
                 <div class="text-sm">
                 @{
@@ -48,42 +50,25 @@
                 }
                 </div>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-1.5 sm:flex-col sm:items-start lg:gap-4">
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Phương thức thanh toán:</span>
                 <span class="text-sm font-medium">@(_orderDetail?.PaymentMethodId == Constant.PaymentMethod.CashBack ? "Tiền mặt" : "Chuyển khoản")</span>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-1.5 sm:flex-col sm:items-start lg:gap-4">
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Trạng thái thanh toán:</span>
                 <span class="text-sm font-medium">@_orderDetail?.PaymentStatus</span>
             </div>
-            <div class="flex items-center gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Tổng tiền sản phẩm:</span>
-                <span class="text-sm">@_orderDetail?.TotalAmount.ToString("C", vietnameseCulture)</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Phí giao hàng:</span>
-                <span class="text-sm">@_orderDetail?.ShippingFee.ToString("C", vietnameseCulture)</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Giảm giá:</span>
-                <span class="text-sm">@_orderDetail?.DiscountAmount.ToString("C", vietnameseCulture)</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Tổng tiền thanh toán:</span>
-                <span class="text-sm">@_orderDetail?.FinalAmount.ToString("C", vietnameseCulture)</span>
-            </div
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-1.5 sm:flex-col sm:items-start lg:gap-4">
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Ghi chú:</span>
                 <span class="text-sm">@_orderDetail?.Note</span>
             </div>
-            <div class="flex gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Lịch sử hóa đơn:</span>
-                <span class="whitespace-pre-wrap text-sm">@GetHistoryOrder(_orderDetail?.StatusHistory)</span>
-            </div>
+            
         </div>
     </div>
 
-        <div class="mt-6 px-6">
+    <div class="mt-6 px-2 lg:px-6">
+        <h2 class="text-xl font-medium">Thông tin sản phẩm mua</h2>
+        <MudDivider Class="my-4" />
         @if (_orderDetail != null && _orderDetail.Items.Any())
         {
             <MudTable Bordered Elevation="0" ContainerClass="border border-solid border-slate-300" Items="@_orderDetail.Items" Loading="@_loading" Class="w-full" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
@@ -160,6 +145,32 @@
         {
             <p>Không có sản phẩm nào.</p>
         }
+
+        <div class="mt-6 flex justify-between gap-2 sm:flex-col">
+            <div class="flex flex-col gap-2">
+                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Lịch sử đơn hàng:</span>
+                <span class="whitespace-pre-wrap text-sm">@GetHistoryOrder(_orderDetail?.StatusHistory)</span>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <div class="flex w-[25rem] items-center gap-4 sm:w-full">
+                    <span class="w-full max-w-[170px] flex-shrink-0 text-sm font-bold">Tổng tiền sản phẩm:</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.TotalAmount.ToString("C", vietnameseCulture)</span>
+                </div>
+                <div class="flex w-[25rem] items-center gap-4 sm:w-full">
+                    <span class="w-full max-w-[170px] flex-shrink-0 text-sm font-bold">Phí giao hàng:</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.ShippingFee.ToString("C", vietnameseCulture)</span>
+                </div>
+                <div class="flex w-[25rem] items-center gap-4 sm:w-full">
+                    <span class="w-full max-w-[170px] flex-shrink-0 text-sm font-bold">Giảm giá:</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.DiscountAmount.ToString("C", vietnameseCulture)</span>
+                </div>
+                <div class="flex w-[25rem] items-center gap-4 sm:w-full">
+                    <span class="w-full max-w-[170px] flex-shrink-0 text-sm font-bold">Tổng tiền thanh toán:</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.FinalAmount.ToString("C", vietnameseCulture)</span>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -171,9 +182,7 @@
     private Timer? _timer;
 
     private Pro219.Web.DTOs.OrderDetailDTO _orderDetail = null;
-    private List<DAL.Models.ProductVariant> _productVariants = [];
     private List<DAL.Models.ProductImage> _productImages = [];
-    private List<DAL.Models.Product> _products = [];
     private bool _loading = true;
     private bool _isDialogOpen = false;
     private string _token = string.Empty;
@@ -205,6 +214,11 @@
         if (resOrderDetail.IsSuccess && resOrderDetail.Data != null)
         {
             _orderDetail = resOrderDetail.Data;
+        }
+        var resProductImages = await _productImageService.GetAll();
+        if (resProductImages.IsSuccess && resProductImages.Data.Count() > 0)
+        {
+            _productImages = resProductImages.Data;
         }
     }
 
