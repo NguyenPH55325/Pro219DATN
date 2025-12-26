@@ -20,18 +20,14 @@ else
                     @if (_images.Any()) {
                         @foreach (var item in _images)
                         { 
-                            <MudCarouselItem>
-                                <div class="d-flex" style="height:100%">
-                                    <img src="@item" alt="image" class="mx-auto my-auto h-full w-full object-contain" />
-                                </div>
+                            <MudCarouselItem Class="items-center">
+                                    <img src="@item" alt="image" class="aspect-square w-full object-cover" />
                             </MudCarouselItem>
                         }
                     } else
                     {
-                        <MudCarouselItem>
-                            <div class="d-flex" style="height:100%">
-                                <img src="@Constant.DefaultImages" alt="image" class="mx-auto my-auto h-full w-full object-contain" />
-                            </div>
+                        <MudCarouselItem Class="items-center">
+                                <img src="@Constant.DefaultImages" alt="image" class="aspect-square w-full object-cover" />
                         </MudCarouselItem>
                     }
                 </MudCarousel>
