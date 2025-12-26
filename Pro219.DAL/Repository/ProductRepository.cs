@@ -1182,6 +1182,7 @@ namespace Pro219.DAL.Repository
         }
 
         public async Task<List<SearchCombineProductDto>> SearchCombineProduct(
+            string? keyword = null,
             int? page = null,
             int? pageSize = null,
             int? brandId = null,
@@ -1202,12 +1203,12 @@ namespace Pro219.DAL.Repository
                     .Include(pv => pv.Size)
                     .AsQueryable();
 
-                // Apply getDeleted filter logic
+                
                 if (getDeleted.HasValue)
                 {
                     if (getDeleted.Value == false)
                     {
-                        // When getDeleted = false: filter by Delete != true and Status == 1
+                        
                         query = query.Where(pv => pv.Delete != true
                             && pv.Product.Delete != true && pv.Product.Status == 1
                             && pv.Product.Brand.Delete != true && pv.Product.Brand.Status == 1
@@ -1215,24 +1216,25 @@ namespace Pro219.DAL.Repository
                             && (pv.ColorId == null || (pv.Color.Delete != true && pv.Color.Status == 1))
                             && (pv.SizeId == null || (pv.Size.Delete != true && pv.Size.Status == 1)));
                     }
-                    // When getDeleted = true: get all data including deleted, skip status check
-                    // No additional filtering needed
+                   
                 }
-                // If getDeleted is null: return all data (no filtering)
 
-                // Apply brand filter
+                if(keyword!=null && keyword.Trim().Length > 0)
+                {
+                    var loweredKeyword = keyword.Trim().ToLower();
+                    query = query.Where(pv => pv.Product.Name.ToLower().Contains(loweredKeyword)) ;
+                }
+               
                 if (brandId.HasValue && brandId.Value > 0)
                 {
                     query = query.Where(pv => pv.Product.BrandId == brandId.Value);
                 }
 
-                // Apply color filter
                 if (colorId.HasValue && colorId.Value > 0)
                 {
                     query = query.Where(pv => pv.ColorId == colorId.Value);
                 }
 
-                // Apply size filter
                 if (sizeId.HasValue && sizeId.Value > 0)
                 {
                     query = query.Where(pv => pv.SizeId == sizeId.Value);

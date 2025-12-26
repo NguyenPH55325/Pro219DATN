@@ -98,6 +98,26 @@ namespace Pro219.DAL.Repository
             }
         }
 
+        public async Task<List<OrderItem>> AddOrderItem(List<OrderItem> listOrderItem)
+        {
+            try
+            {
+
+                foreach (var orderItem in listOrderItem)
+                {
+                    orderItem.CreateAt = DateTime.Now;
+                    orderItem.Delete = false;
+                    var addedOrderItem = _context.OrderItems.Add(orderItem).Entity;
+                    await _context.SaveChangesAsync();
+                }
+                return listOrderItem;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public async Task<OrderItem> UpdateOrderItem(OrderItem orderItem)
         {
             try

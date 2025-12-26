@@ -97,6 +97,7 @@ namespace Pro219.API.Controllers
 
         [HttpGet("SearchCombineProduct")]
         public async Task<ActionResult<List<SearchCombineProductDto>>> SearchCombineProduct(
+            [FromQuery] string? keyword = null,
             [FromQuery] int? page = null,
             [FromQuery] int? pageSize = null,
             [FromQuery] int? brandId = null,
@@ -107,7 +108,7 @@ namespace Pro219.API.Controllers
         {
             try
             {
-                var result = await productRepository.SearchCombineProduct(page, pageSize, brandId, sizeId, colorId, sortOrder, getDeleted);
+                var result = await productRepository.SearchCombineProduct(keyword, page, pageSize, brandId, sizeId, colorId, sortOrder, getDeleted);
                 if (result == null)
                 {
                     return Ok(new List<SearchCombineProductDto>());

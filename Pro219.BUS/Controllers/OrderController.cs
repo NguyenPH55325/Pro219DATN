@@ -174,7 +174,7 @@ namespace Pro219.API.Controllers
         }
 
         [HttpPost("checkout-pos")]
-        public async Task<ActionResult<CheckoutDTO>> GetCheckoutForPOS([FromBody] CheckoutParamsDTO checkoutParam, string? phoneNumber = null, decimal discountAmount = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note = "")
+        public async Task<ActionResult<CheckoutDTO>> GetCheckoutForPOS([FromBody] CheckoutParamsDTO checkoutParam, string? phoneNumber = null, decimal discountAmount = 0, decimal shippingFee = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note = "")
         {
             if (checkoutParam == null || checkoutParam.ListItemCheckout == null || !checkoutParam.ListItemCheckout.Any())
             {
@@ -228,6 +228,38 @@ namespace Pro219.API.Controllers
                     }
                 }
             }
+            Address newAddressFromUser = null;
+            if(checkoutParam.isNewAddress == true & checkoutParam.AddressDTO!=null)
+            {
+                AddressRepository addressRepo  = new AddressRepository();
+                var address = new Address
+                {
+                    CustomerId = checkoutParam.AddressDTO.CustomerId,
+                    FullName = checkoutParam.AddressDTO.FullName,
+                    Phone = checkoutParam.AddressDTO.Phone,
+                    Street = checkoutParam.AddressDTO.Street,
+                    City = checkoutParam.AddressDTO.City,
+                    District = checkoutParam.AddressDTO.District,
+                    CityName = checkoutParam.AddressDTO.CityName,
+                    DistrictName = checkoutParam.AddressDTO.DistrictName,
+                    StreetName = checkoutParam.AddressDTO.StreetName,
+                    OtherInfo = checkoutParam.AddressDTO.OtherInfo,
+                    IsDefault = checkoutParam.AddressDTO.IsDefault,
+                    CreateAt = DateTime.Now,
+                    Delete = false,
+                    Status = 1
+                };
+               var re = await  addressRepo.AddAddress(address);
+                if(re == null)
+                {
+                    return BadRequest("Tạo địa chỉ mới thất bại");
+                }
+                else
+                {
+                    newAddressFromUser = re;
+                }
+            }
+
             CustomerRepository customerRepository = new CustomerRepository();
             Customer currentCustomer = customerRepository.FindCustomerByEmailAndPhone("", phoneNumber).Result;
             if (currentCustomer == null)
@@ -247,7 +279,7 @@ namespace Pro219.API.Controllers
 
             decimal totalPrice = checkoutParam.ListItemCheckout.Sum(p => p.UnitPrice * p.Quantity);
             decimal finalAmount = 0;
-            finalAmount = (totalPrice - discountAmount);
+            finalAmount = (totalPrice - discountAmount)+shippingFee;
             int ordCode = new Random().Next(1, int.MaxValue);
             Order order = new Order();
             try
@@ -303,6 +335,15 @@ namespace Pro219.API.Controllers
                 order.DiscountId = discountId == null ? null : (int)discountId;
                 order.PaymentMethodId = PaymentMethodTypeId;
                 order.CustomerType = currentCustomer.FullName == null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;
+                if(newAddressFromUser != null && checkoutParam.isNewAddress ==true)
+                {
+                    order.ShippingAddressId = newAddressFromUser.Id;
+                }
+                else if (checkoutParam.isNewAddress ==false && checkoutParam.shippingAddressId!= -1)
+                {
+                    order.ShippingAddressId = checkoutParam.shippingAddressId;
+                }
+
                 var result = await orderRepository.AddOrder(order);
 
 

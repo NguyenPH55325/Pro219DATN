@@ -116,6 +116,30 @@ namespace Pro219.API.Controllers
             }
         }
 
+        [HttpPost("AddList")]
+        public async Task<ActionResult<List<OrderItem>>> AddOrderItem([FromBody] List<OrderItem> listOrderItem)
+        {
+            try
+            {
+                if (listOrderItem == null)
+                {
+                    return BadRequest(Constant.ErrorCode.DataRequired);
+                }
+
+                var result = await orderItemRepository.AddOrderItem(listOrderItem);
+                if (result == null)
+                {
+                    return StatusCode(500, Constant.ErrorCode.DatabaseError);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+
         [HttpPut("Update")]
         public async Task<ActionResult<OrderItem>> UpdateOrderItem([FromBody] OrderItem orderItem)
         {
