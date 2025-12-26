@@ -6,50 +6,55 @@
 
 
 <section class="mx-auto max-w-[1440px] p-8">
-    <h1 class="text-xl font-bold uppercase md:text-2xl lg:text-3xl">Chi tiết đơn hàng</h1>
+    <div>
+        <div class="mb-2 flex items-center justify-between gap-4">
+            <div class="flex flex-col">
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl font-bold uppercase md:text-2xl lg:text-3xl">Chi tiết hóa đơn</h1>
+                    <span class="@GetOrderStatusClass(_orderDetail?.Status) rounded-full px-3 py-1 text-sm font-medium text-white">
+                        @GetOrderStatusMessage(_orderDetail?.Status)
+                    </span>
+                </div>
+                <span class="text-sm font-medium text-slate-500">Ngày đặt hàng: @_orderDetail?.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Error" OnClick="CancelOrder" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusPending)">Hủy hóa đơn</MudButton>
+                <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Info" OnClick="ReCheckout" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusNoCheckout)">Thanh toán</MudButton>
+            </div>
+        </div>
+    </div>
 
     <div class="mt-6 px-6">
-        <div>
+        <div class="flex flex-col gap-2">
             <div class="flex items-center gap-4">
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Mã hóa đơn:</span>
-                <span class="text-sm">@_orderDetail?.OrderCode</span>
+                <span class="text-sm font-medium">@_orderDetail?.OrderCode <MudIcon Class="ml-1.5 cursor-pointer" Icon="@Icons.Material.Filled.ContentCopy" @onclick="@(() => CopyToClipboard(_orderDetail.OrderCode))"/></span>
             </div>
-            <div class="flex items-center gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Ngày đặt hàng:</span>
-                <span class="text-sm">@_orderDetail?.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</span>
-            </div>
-            <div class="flex items-center gap-4">
+            <div class="flex gap-4">
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Địa chỉ nhận hàng:</span>
                 <div class="text-sm">
                 @{
                     @if (_orderDetail != null && _orderDetail.Address != null)
                     {   
-                        <span class="text-sm font-medium">
+                        <p class="text-sm font-medium">@_orderDetail.Address?.Name <span>@((!string.IsNullOrEmpty(_orderDetail.Address?.Phone) ? " - " : ""))@_orderDetail.Address?.Phone</span></p>
+                        <p class="text-sm font-medium">
                             @_orderDetail.Address.OtherInfo@((!string.IsNullOrEmpty(_orderDetail.Address.OtherInfo) && (!string.IsNullOrEmpty(_orderDetail.Address.Street) || !string.IsNullOrEmpty(_orderDetail.Address.District) || !string.IsNullOrEmpty(_orderDetail.Address.City)) ? ", " : ""))
                                 @_orderDetail.Address.Street@((!string.IsNullOrEmpty(_orderDetail.Address.Street) && (!string.IsNullOrEmpty(_orderDetail.Address.District) || !string.IsNullOrEmpty(_orderDetail.Address.City)) ? ", " : ""))
                             @_orderDetail.Address.District@((!string.IsNullOrEmpty(_orderDetail.Address.District) && !string.IsNullOrEmpty(_orderDetail.Address.City) ? ", " : ""))
                             @_orderDetail.Address.City
-                        </span>
-                            <span class="text-sm font-medium">(@_orderDetail.Address?.Name <span class="text-slate-500">@((!string.IsNullOrEmpty(_orderDetail.Address?.Phone) ? " - " : ""))@_orderDetail.Address?.Phone</span>)</span>
+                        </p>
                     }
                 }
                 </div>
             </div>
             <div class="flex items-center gap-4">
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Phương thức thanh toán:</span>
-                <span class="text-sm">@(_orderDetail?.PaymentMethodId == Constant.PaymentMethod.CashBack ? "Tiền mặt" : "Chuyển khoản")</span>
+                <span class="text-sm font-medium">@(_orderDetail?.PaymentMethodId == Constant.PaymentMethod.CashBack ? "Tiền mặt" : "Chuyển khoản")</span>
             </div>
             <div class="flex items-center gap-4">
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Trạng thái thanh toán:</span>
-                <span class="text-sm">@_orderDetail?.PaymentStatus</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Trạng thái hóa đơn:</span>
-                <span class="text-sm">@_orderDetail?.OrderStatus</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Chi tiết:</span>
-                <span class="text-sm">@_orderDetail?.Note</span>
+                <span class="text-sm font-medium">@_orderDetail?.PaymentStatus</span>
             </div>
             <div class="flex items-center gap-4">
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Tổng tiền sản phẩm:</span>
@@ -67,22 +72,21 @@
                 <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Tổng tiền thanh toán:</span>
                 <span class="text-sm">@_orderDetail?.FinalAmount.ToString("C", vietnameseCulture)</span>
             </div
+            <div class="flex items-center gap-4">
+                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Ghi chú:</span>
+                <span class="text-sm">@_orderDetail?.Note</span>
+            </div>
             <div class="flex gap-4">
-                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Lịch sử đơn hàng:</span>
+                <span class="w-full max-w-[200px] flex-shrink-0 text-sm font-bold">Lịch sử hóa đơn:</span>
                 <span class="whitespace-pre-wrap text-sm">@GetHistoryOrder(_orderDetail?.StatusHistory)</span>
             </div>
-        </div>
-        <div class="flex items-center gap-4">
-            <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Error" OnClick="CancelOrder" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusPending)">Hủy đơn hàng</MudButton>
-            <MudButton Class="mt-6" Variant="Variant.Filled" Color="Color.Info" OnClick="ReCheckout" hidden="@(_orderDetail?.Status != Constant.OrderStatus.StatusNoCheckout)">Thanh toán</MudButton>
         </div>
     </div>
 
         <div class="mt-6 px-6">
         @if (_orderDetail != null && _orderDetail.Items.Any())
         {
-            <div>
-                <MudTable Bordered Items="@_orderDetail.Items" Loading="@_loading" Class="w-full" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
+            <MudTable Bordered Elevation="0" ContainerClass="border border-solid border-slate-300" Items="@_orderDetail.Items" Loading="@_loading" Class="w-full" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
                     <HeaderContent>
                         <MudTh hidden><MudTableSortLabel SortLabel="OrderItemId" T="string" hidden>OrderItemId</MudTableSortLabel></MudTh>
                         <MudTh><MudTableSortLabel SortLabel="Ảnh" T="string">Ảnh</MudTableSortLabel></MudTh>
@@ -120,7 +124,7 @@
                             } else
                             {
                                 if(_orderDetail?.Status != Constant.OrderStatus.StatusDone) {
-                                    <span class="font-bold text-yellow-300">Đơn hàng chưa hoàn thành</span>
+                                    <span class="font-bold text-yellow-300">Hóa đơn chưa hoàn thành</span>
                                 } else
                                 {
                                     <span class="font-bold text-green-600">Đã đánh giá</span>
@@ -152,10 +156,9 @@
                         <MudTablePager hidden HidePageNumber HidePagination HideRowsPerPage  />
                     </PagerContent>
                 </MudTable>
-            </div>
         } else
         {
-            <p>Không có đơn hàng nào.</p>
+            <p>Không có sản phẩm nào.</p>
         }
     </div>
 </section>
@@ -188,7 +191,7 @@
         await LoadData();
         _loading = false;
 
-        _timer = new Timer(3500);
+        _timer = new Timer(3000);
         _timer.Elapsed += async (sender, e) => await RefreshData();
         _timer.AutoReset = true;
         _timer.Enabled = true;
@@ -198,15 +201,10 @@
 
     async Task LoadData()
     {
-        var resOrderDetail = await _orderService.GetById(id);
+        var resOrderDetail = await _orderService.GetOrderDetailById(id);
         if (resOrderDetail.IsSuccess && resOrderDetail.Data != null)
         {
-            var resOrderDetailWithAny = await _orderService.GetOrderDetailByUserId(resOrderDetail.Data.OrderCode);
-
-            if (resOrderDetailWithAny.IsSuccess && resOrderDetailWithAny.Data != null)
-            {
-                _orderDetail = resOrderDetailWithAny.Data;
-            }
+            _orderDetail = resOrderDetail.Data;
         }
     }
 
@@ -219,7 +217,7 @@
     {
         if (_orderDetail == null)
         {
-            _snackbar.Add("Đơn hàng không tồn tại", Severity.Error);
+            _snackbar.Add("Hóa đơn không tồn tại", Severity.Error);
             return;
         }
         var token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
@@ -281,6 +279,28 @@
         }
     }
 
+    private string GetOrderStatusMessage(byte? status)
+    {
+        if (!status.HasValue)
+            return "Không xác định";
+
+        var statusItem = Constant.OrderStatusArray.FirstOrDefault(s => s.id == status.Value);
+        return statusItem?.label ?? "Không xác định";
+    }
+
+    private string GetOrderStatusClass(byte? status) =>
+        status switch
+        {
+            Constant.OrderStatus.StatusPending => "bg-gray-400", 
+            Constant.OrderStatus.StatusConfirm => "bg-blue-500",
+            Constant.OrderStatus.StatusCanceledByUser => "bg-red-500",
+            Constant.OrderStatus.StatusShipping => "bg-gray-700",
+            Constant.OrderStatus.StatusShippingDone => "bg-green-500",
+            Constant.OrderStatus.StatusShippingFailed => "bg-red-500",
+            Constant.OrderStatus.StatusDone => "bg-green-500",
+            _ => "bg-gray-400"
+        };
+
     string GetHistoryOrder(List<StatusHistoryEntry> histories)
     {
         if (histories == null || histories.Count == 0) return "";
@@ -310,5 +330,10 @@
     {
         _timer?.Stop();
         _timer?.Dispose();
+    }
+
+    private async Task CopyToClipboard(string code)
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", code);
     }
 }

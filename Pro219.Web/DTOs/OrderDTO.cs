@@ -17,9 +17,19 @@ namespace Pro219.Web.DTOs
         public string? Note { get; set; }
         public byte? Status { get; set; }
         public int CustomerId { get; set; }
+        public OrderDetailCustomerDTO? Customer { get; set; }
         public OrderDetailAddressDTO? Address { get; set; }
         public List<OrderDetailItemDTO> Items { get; set; } = new List<OrderDetailItemDTO>();
         public List<StatusHistoryEntry>? StatusHistory { get; set; }
+    }
+
+    public class OrderDetailCustomerDTO
+    {
+        public string FullName { get; set; } = string.Empty;
+
+        public string? PhoneNumber { get; set; }
+
+        public string? Email { get; set; }
     }
 
     public class OrderDetailAddressDTO
