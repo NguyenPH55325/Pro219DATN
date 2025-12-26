@@ -115,6 +115,70 @@ namespace Pro219.API.Controllers
             }
         }
 
+        [HttpGet("GetDetailById/{id}")]
+        public async Task<ActionResult<OrderDetailDTO>> GetOrderDetailById(int id)
+        {
+            try
+            {
+                var order = await orderRepository.GetOrderDetailById(id);
+                if (order == null)
+                {
+                    return NotFound(Constant.ErrorCode.DataNotFound);
+                }
+
+                var orderDetailDto = new OrderDetailDTO
+                {
+                    OrderId = order.OrderId,
+                    OrderDate = order.OrderDate,
+                    OrderCode = order.OrderCode,
+                    FinalAmount = order.FinalAmount,
+                    TotalAmount = order.TotalAmount,
+                    ShippingFee = order.ShippingFee,
+                    PaymentMethodId = order.PaymentMethodId,
+                    OrderStatus = order.OrderStatus,
+                    PaymentStatus = order.PaymentStatus,
+                    DiscountAmount = order.DiscountAmount,
+                    Status = order.Status,
+                    Note = order.Notes,
+                    CustomerId = order.CustomerId,
+                    Customer = order.Customer == null ? null : new OrderDetailCustomerDTO
+                    {
+                        FullName = order.Customer.FullName,
+                        Email = order.Customer.Email,
+                        PhoneNumber = order.Customer.PhoneNumber,
+                    },
+                    Address = order.ShippingAddress == null ? null : new OrderDetailAddressDTO
+                    {
+                        Name = order.ShippingAddress.FullName,
+                        Phone = order.ShippingAddress.Phone,
+                        Street = order.ShippingAddress.StreetName,
+                        City = order.ShippingAddress.CityName,
+                        District = order.ShippingAddress.DistrictName,
+                        OtherInfo = order.ShippingAddress.OtherInfo ?? ""
+                    },
+                    Items = order.OrderItems.Select(oi => new OrderDetailItemDTO
+                    {
+                        OrderItemId = oi.OrderItemId,
+                        ProductVariantId = oi.ProductVariantId,
+                        ProductId = oi.ProductVariant?.Product?.Id,
+                        ProductName = oi.ProductVariant?.Product?.Name ?? string.Empty,
+                        Color = oi.ProductVariant?.Color?.Name,
+                        Size = oi.ProductVariant?.Size?.Name,
+                        Quantity = oi.Quantity,
+                        UnitPrice = oi.UnitPrice,
+                        IsReviewed = oi.IsReviewed,
+                    }).ToList()
+                };
+                orderDetailDto.StatusHistory = ParseStatusHistory(order.StatusHistory);
+
+                return Ok(orderDetailDto);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+
         [HttpGet("CustomerOrderDetail/{orderCode}")]
         public async Task<ActionResult<OrderDetailDTO>> GetOrderDetail(string orderCode)
         {
@@ -141,6 +205,12 @@ namespace Pro219.API.Controllers
                     Status = order.Status,
                     Note = order.Notes,
                     CustomerId = order.CustomerId,
+                    Customer = order.Customer == null ? null : new OrderDetailCustomerDTO
+                    {
+                        FullName = order.Customer.FullName,
+                        Email = order.Customer.Email,
+                        PhoneNumber = order.Customer.PhoneNumber,
+                    },
                     Address = order.ShippingAddress == null ? null : new OrderDetailAddressDTO
                     {
                         Name = order.ShippingAddress.FullName,

@@ -170,6 +170,25 @@ namespace Pro219.Web.Services
             }
         }
 
+        public async Task<ServiceResult<Pro219.Web.DTOs.OrderDetailDTO>> GetOrderDetailById(int id)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/GetDetailById/{id}");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<Pro219.Web.DTOs.OrderDetailDTO>();
+                return ServiceResult<Pro219.Web.DTOs.OrderDetailDTO>.Success(result);
+            }
+            else
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var errorMess = Constant.Errors[result];
+                return ServiceResult<Pro219.Web.DTOs.OrderDetailDTO>.Failure(result, errorMess, response.StatusCode.ToString());
+            }
+        }
+
         public async Task<ServiceResult<Pro219.Web.DTOs.OrderDetailDTO>> GetOrderDetailByUserId(string orderCode)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/CustomerOrderDetail/{orderCode}");

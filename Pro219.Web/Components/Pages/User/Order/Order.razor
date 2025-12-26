@@ -164,13 +164,13 @@
     private string GetOrderStatusClass(byte? status) =>
         status switch
         {
-            Constant.OrderStatus.StatusPending => "bg-gray-400", // Chờ xác nhận (1) - Màu xám
-            Constant.OrderStatus.StatusConfirm => "bg-blue-500", // Xác nhận (2) - Màu xanh dương
-            Constant.OrderStatus.StatusCanceledByUser => "bg-red-500", // Đã hủy bởi người dùng (3) - Màu đỏ
-            Constant.OrderStatus.StatusShipping => "bg-gray-700", // Đang giao hàng (4) - Màu xám đậm
-            Constant.OrderStatus.StatusShippingDone => "bg-green-500", // Đã giao hàng (5) - Màu xanh lá
-            Constant.OrderStatus.StatusShippingFailed => "bg-red-500", // Giao hàng thất bại (6) - Màu đỏ
-            Constant.OrderStatus.StatusDone => "bg-green-500", // Hoàn thành (7) - Màu xanh lá
+            Constant.OrderStatus.StatusPending => "bg-gray-400", 
+            Constant.OrderStatus.StatusConfirm => "bg-blue-500",
+            Constant.OrderStatus.StatusCanceledByUser => "bg-red-500",
+            Constant.OrderStatus.StatusShipping => "bg-gray-700",
+            Constant.OrderStatus.StatusShippingDone => "bg-green-500",
+            Constant.OrderStatus.StatusShippingFailed => "bg-red-500",
+            Constant.OrderStatus.StatusDone => "bg-green-500",
             _ => "bg-gray-400"
         };
 }

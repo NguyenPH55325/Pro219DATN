@@ -69,12 +69,42 @@ namespace Pro219.DAL.Repository
             }
         }
 
+        public async Task<Order> GetOrderDetailById(int id) 
+        {
+            try
+            {
+                var order = await _context.Orders
+                    .Include(o => o.Customer)
+                    .Include(o => o.ShippingAddress)
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.ProductVariant)
+                            .ThenInclude(pv => pv.Product)
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.ProductVariant)
+                            .ThenInclude(pv => pv.Color)
+                    .Include(o => o.OrderItems)
+                        .ThenInclude(oi => oi.ProductVariant)
+                            .ThenInclude(pv => pv.Size)
+                    .FirstOrDefaultAsync(x => x.OrderId == id && x.Delete != true);
+
+                if (order != null && order.Delete == true)
+                    return null;
+
+                return order;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public async Task<Order> GetOrderDetailByCode(string code)
         {
             try
             {
                 var order = await _context.Orders
                     .Include(o => o.ShippingAddress)
+                    .Include(o => o.Customer)
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.ProductVariant)
                             .ThenInclude(pv => pv.Product)
