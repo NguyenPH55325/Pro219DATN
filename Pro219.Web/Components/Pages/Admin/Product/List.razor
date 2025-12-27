@@ -46,7 +46,7 @@
         </div>
     </div>
     <div class="mt-6 w-full overscroll-x-auto rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <MudTable Bordered Items="@_products" Loading="@_loading" Class="w-full" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true" Height="calc(100lvh - 16.5rem)">
+        <MudTable Bordered Items="@_products" CellClass="min-w-60" Loading="@_loading" Class="w-full" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
             <HeaderContent>
                 <MudTh hidden><MudTableSortLabel SortLabel="Id" T="string" hidden>STT</MudTableSortLabel></MudTh>
                 <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Ảnh" T="string">Ảnh</MudTableSortLabel></MudTh>

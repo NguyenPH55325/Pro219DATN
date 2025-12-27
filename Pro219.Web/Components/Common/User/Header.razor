@@ -78,13 +78,13 @@
                         <div class="absolute -right-[4.75rem] -top-[1.5rem] h-screen w-screen cursor-pointer bg-transparent" @onclick="HandleShowMenuChild"></div>
                         <ul class="absolute right-0 top-[120%] border border-slate-200 bg-white p-2 shadow-lg">
                             <li>
-                                <a href="@RouterConst.User.Profile" class="block w-full whitespace-nowrap px-1.5 py-2 text-sm font-medium text-[#666666] hover:text-black">Thông tin tài khoản</a>
+                                <a href="@RouterConst.User.Profile" @onclick="@(() => handleRedirect())" class="block w-full whitespace-nowrap px-1.5 py-2 text-sm font-medium text-[#666666] hover:text-black">Thông tin tài khoản</a>
                             </li>
                             <li>
-                                <a href="@RouterConst.User.Orders" class="block w-full whitespace-nowrap px-1.5 py-2 text-sm font-medium text-[#666666] hover:text-black">Đơn hàng</a>
+                                <a href="@RouterConst.User.Orders" @onclick="@(() => handleRedirect())" class="block w-full whitespace-nowrap px-1.5 py-2 text-sm font-medium text-[#666666] hover:text-black">Đơn hàng</a>
                             </li>
                             <li>
-                                <a href="#" class="block w-full whitespace-nowrap px-1.5 py-2 text-sm font-medium text-[#666666] hover:text-black">Yêu Thích</a>
+                                <a href="#" @onclick="@(() => handleRedirect())" class="block w-full whitespace-nowrap px-1.5 py-2 text-sm font-medium text-[#666666] hover:text-black">Yêu Thích</a>
                             </li>
                             <MudDivider />
                             <li>
@@ -279,12 +279,12 @@
         { "k", term }, 
         { "page", Constant.Pagination.DefaultPage.ToString() }
     };
-    
-    string basePath = RouterConst.User.SearchByKeyword;
 
-    string newUrl = QueryHelpers.AddQueryString(basePath, queryParams!);
+        string basePath = RouterConst.User.SearchByKeyword;
 
-    navigation.NavigateTo(newUrl, forceLoad: false);
+        string newUrl = QueryHelpers.AddQueryString(basePath, queryParams!);
+
+        navigation.NavigateTo(newUrl, forceLoad: false);
     }
 
     async Task Logout()
@@ -292,6 +292,15 @@
         _isShowMenuChild = false;
 
         await OnLoggedOut.InvokeAsync();
+    }
+
+    public void handleRedirect(string? path = null)
+    {
+        if(!string.IsNullOrEmpty(path))
+        {
+            navigation.NavigateTo(path);
+        }
+        _isShowMenuChild = false;
     }
 
     public RenderFragment<List<CategoryDTO>> RenderMenuItems => categories => (__builder) =>
