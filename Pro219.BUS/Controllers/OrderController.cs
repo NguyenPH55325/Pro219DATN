@@ -926,6 +926,24 @@ namespace Pro219.API.Controllers
             }
         }
 
+        [HttpGet("get-order-sale-counter")]
+        public async Task<ActionResult<List<Order>>> GetAllOrderSaleCounter()
+        {
+            try
+            {
+                var result = await orderRepository.GetAllSaleCounter();
+                if (result == null)
+                {
+                    return Ok(new List<Order>());
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+
         [HttpGet("GetById/{id}")]
         public async Task<ActionResult<Order>> GetOrderById(int id)
         {

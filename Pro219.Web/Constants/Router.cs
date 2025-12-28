@@ -112,6 +112,9 @@
 
             // Statistical
             public const string Statistical = "/admin/statistical";
+
+            // Sale counter
+            public const string SaleCounter = "/admin/sale-counter";
         }
     }
 }

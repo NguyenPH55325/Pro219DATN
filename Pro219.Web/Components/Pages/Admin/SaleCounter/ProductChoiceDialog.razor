@@ -1,0 +1,421 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Style="font-size: 18px; font-weight: bold; text-transform: uppercase">Danh sách khách hàng</MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="mb-6 grid w-full grid-cols-3 gap-x-6 gap-y-4">
+            <div>
+                <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" @bind-Value="@_searchValue"
+                              AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" Immediate=true></MudTextField>
+            </div>            
+            <div>
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Thương hiệu" @bind-Value="@_searchBrand">
+                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
+                    @if (_brands.Any())
+                    {
+                        @foreach (var item in _brands)
+                        {
+                            <MudSelectItem Value="item.Id">@item.Name</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </div>
+            <div>
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Màu" @bind-Value="@_searchColor">
+                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
+                    @if (_colors.Any())
+                    {
+                        @foreach (var item in _colors)
+                        {
+                            <MudSelectItem Value="item.Id">@item.Name</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </div>
+            <div>
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Kích cỡ" @bind-Value="@_searchSize">
+                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
+                    @if (_sizes.Any())
+                    {
+                        @foreach (var item in _sizes)
+                        {
+                            <MudSelectItem Value="item.Id">@item.Name</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </div>
+            <div class="flex items-center gap-2">
+                <MudButton Variant="Variant.Outlined" OnClick="OnSearch" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-2" /> Tìm kiếm</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" /> Đặt lại</MudButton>
+            </div>
+        </div>
+        <MudTable Bordered Items="@_customers" Loading="@_loading" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true" Height="400px">
+            <HeaderContent>
+                <MudTh Class="whitespace-nowrap" hidden><MudTableSortLabel SortLabel="Id" T="string" hidden>STT</MudTableSortLabel></MudTh>
+                <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Ảnh" T="string">Ảnh</MudTableSortLabel></MudTh>
+                <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Tên" T="string">Tên</MudTableSortLabel></MudTh>
+                <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Thương hiệu" T="string">Thương hiệu</MudTableSortLabel></MudTh>
+                <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Kích cỡ" T="string">Kích cỡ</MudTableSortLabel></MudTh>
+                <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Màu" T="string">Màu</MudTableSortLabel></MudTh>
+                <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Số lượng" T="string">Số lượng Còn lại</MudTableSortLabel></MudTh>
+                <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Giá" T="string">Giá</MudTableSortLabel></MudTh>
+                <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Số lượng chọn" T="string">Số lượng chọn</MudTableSortLabel></MudTh>
+                <MudTh Class="whitespace-nowrap"><MudTableSortLabel SortLabel="Thao tác" T="string">Thao tác</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Ảnh">
+                    @{
+                        var obj = _proImages.FirstOrDefault(pi => pi.ProductVariantId == context.ProductVariantId && pi.ProductVariantId == null);
+                        var url = obj != null ? obj.ImageUrl : Constant.DefaultImages;
+                        <MudImage Src="@url" Width="100" />
+                    }
+                </MudTd>
+                <MudTd DataLabel="Tên">@context.ProductName</MudTd>
+                <MudTd DataLabel="Thương hiệu">@context.BrandName</MudTd>
+                <MudTd DataLabel="Kích cỡ">@context.SizeName</MudTd>
+                <MudTd DataLabel="Màu">@context.ColorName</MudTd>
+                <MudTd DataLabel="Số lượng">@context.Quantity</MudTd>
+                <MudTd DataLabel="Giá">@context.UnitPrice.ToString("C", vietnameseCulture)</MudTd>
+                <MudTd DataLabel="Số lượng chọn">
+                    <div class="my-4 flex">
+                        <MudIconButton Class="!flex !h-[1.875rem] !w-[1.875rem] !cursor-pointer !items-center !justify-center" @onclick="@(() => DecreaseQuantity(context.ProductVariantId))" Icon="@Icons.Material.Filled.Remove" Size="Size.Small" Disabled="@(GetQuantity(context.ProductVariantId) <= 1)" />
+
+                        <span class="flex h-[1.875rem] w-10 items-baseline justify-center border bg-gray-50 p-1">@GetQuantity(context.ProductVariantId)</span>
+
+                        <MudIconButton Class="!flex !h-[1.875rem] !w-[1.875rem] !cursor-pointer !items-center !justify-center" @onclick="@(() => IncreaseQuantity(context.ProductVariantId, context.Quantity))" Icon="@Icons.Material.Filled.Add" Size="Size.Small" Disabled="@(GetQuantity(context.ProductVariantId) >= context.Quantity)" />
+                    </div>
+                </MudTd>
+                <MudTd DataLabel="Thao tác">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => SelectProduct(context.ProductVariantId, GetQuantity(context.ProductVariantId), context.UnitPrice, context.ProductName))">Chọn</MudButton>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>Không có dữ liệu.</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <div class="flex w-full flex-col gap-3">
+                    @{
+                        for (var i = 0; i < 5; i++)
+                        {
+                            <div class="flex items-center justify-between gap-2">
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                            </div>
+                        }
+                    }
+                </div>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="MudBlazor.Color.Surface" OnClick="Cancel">Đóng</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public int OrderId { get; set; } = 0;
+
+    private List<CombineProductDTO> _customers = [];
+    private List<DAL.Models.ProductImage> _proImages = [];
+    private List<DAL.Models.Brand> _brands = [];
+    private List<DAL.Models.Color> _colors = [];
+    private List<DAL.Models.Size> _sizes = [];
+
+    private string _searchValue = string.Empty;
+    private int _searchBrand = 0;
+    private int _searchColor = 0;
+    private int _searchSize = 0;
+    private int _quantityChoose = 1; 
+    private Dictionary<int, int> _selectedQuantities = new();
+    private bool _loading = true;
+
+    CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadData();
+        }
+        catch (Exception e)
+        {
+            _loading = false;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    async Task LoadData()
+    {
+        var res = await _productService.GetAllProductOfSaleCounter(_searchValue, _searchBrand, _searchSize, _searchColor);
+        var data = res.Data;
+        if (res.IsSuccess)
+        {
+            _customers = data;
+        }
+
+        var resBrand = await _brandService.GetAll(null);
+        var dataBrand = resBrand.Data;
+        if (resBrand.IsSuccess && dataBrand != null)
+        {
+            _brands = dataBrand;
+        }
+
+        var resColor = await _colorService.GetAll(null);
+        var dataColor = resColor.Data;
+        if (resColor.IsSuccess && dataColor.Any())
+        {
+            _colors = dataColor;
+        }
+
+        var resSize = await _sizeService.GetAll(null);
+        var dataSize = resSize.Data;
+        if (resSize.IsSuccess && dataSize.Any())
+        {
+            _sizes = dataSize;
+        }
+
+        var resImage = await _productImageService.GetAll();
+        var dataImage = resImage.Data;
+        if (resImage.IsSuccess && resImage != null)
+        {
+            _proImages = dataImage;
+        }
+        StateHasChanged();
+    }
+
+    private async Task OnSearch()
+    {
+        await LoadData();
+    }
+
+    private async Task OnReset()
+    {
+        _searchValue = string.Empty;
+        _searchBrand = 0;
+        _searchColor = 0;
+        _searchSize = 0;
+        await LoadData();
+    }
+
+    private int GetQuantity(int variantId)
+    {
+        if (!_selectedQuantities.ContainsKey(variantId))
+        {
+            _selectedQuantities[variantId] = 1; // Mặc định là 1
+        }
+        return _selectedQuantities[variantId];
+    }
+
+    private void IncreaseQuantity(int variantId, int stockQuantity)
+    {
+        var current = GetQuantity(variantId);
+        if (current < stockQuantity)
+        {
+            _selectedQuantities[variantId] = current + 1;
+        }
+        else
+        {
+            _snackbar.Add($"Chỉ còn {stockQuantity} sản phẩm", Severity.Warning);
+        }
+    }
+
+    private void DecreaseQuantity(int variantId)
+    {
+        var current = GetQuantity(variantId);
+        if (current > 1)
+        {
+            _selectedQuantities[variantId] = current - 1;
+        }
+    }
+
+    async Task SelectProduct(int productVariantId,int quantity, decimal unitPrice, string nameProduct)
+    {
+        var newOrderItem = new CheckoutListItem()
+        {
+            ProductVariantId = productVariantId,
+            Quantity = quantity,
+            UnitPrice = unitPrice,
+            ProductName = nameProduct,
+            Subtotal = quantity * unitPrice,
+        };
+
+        var orderTemp = await localStorage.GetItemAsStringAsync(Constant.OrderPOSTemp);
+
+        var lstOrderTemp = new List<OrderTempPOS>();
+        var lstItems = new List<CheckoutListItem>();
+        if(string.IsNullOrEmpty(orderTemp))
+        {
+            lstItems.Add(newOrderItem);
+            var temp = new OrderTempPOS
+                {
+                    OrderId = OrderId,
+                    ListItem = lstItems,
+                    discountObj = null,
+                };
+            lstOrderTemp.Add(temp);
+            await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(lstOrderTemp));
+        } else
+        {
+            var deserializedData = JsonSerializer.Deserialize<List<OrderTempPOS>>(orderTemp);
+
+            if(deserializedData != null && deserializedData.Any())
+            {
+                var orderTempById = deserializedData.FirstOrDefault(x => x.OrderId == OrderId);
+
+                if(orderTempById != null)
+                {
+                    if (orderTempById.ListItem.Any())
+                    {
+                        var hasProduct = orderTempById.ListItem.FirstOrDefault(x => x.ProductVariantId == productVariantId);
+
+                        if(hasProduct != null)
+                        {
+                            var currentQuantity = hasProduct.Quantity;
+                            var totalQuantity = currentQuantity + quantity;
+                            var subTotal = hasProduct.UnitPrice * totalQuantity;
+                            hasProduct.Quantity = totalQuantity;
+                            hasProduct.Subtotal = subTotal;
+
+                            if (orderTempById.discountObj != null)
+                            {
+                                decimal amount = 0;
+                                var totalAmount = orderTempById.ListItem.Sum(x => x.Subtotal) ?? 0;
+                                if (orderTempById.discountObj.DiscountType == Constant.DiscountTypePercent)
+                                {
+                                    amount = totalAmount * (orderTempById.discountObj.Value / 100);
+                                    if (orderTempById.discountObj.maxValueUse.HasValue && amount > orderTempById.discountObj.maxValueUse.Value)
+                                    {
+                                        amount = orderTempById.discountObj.maxValueUse.Value;
+                                    }
+                                }
+                                else
+                                {
+                                    if (orderTempById.discountObj.Value > totalAmount)
+                                    {
+                                        amount = totalAmount;
+                                    }
+                                    else
+                                    {
+                                        amount = orderTempById.discountObj.Value;
+                                    }
+                                }
+                                orderTempById.discountObj.DiscountAmount = amount;
+                            }
+
+                        
+                            await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+                        } else
+                        {
+                            var currentListItem = orderTempById.ListItem;
+                            currentListItem.Add(newOrderItem);
+                            orderTempById.ListItem = currentListItem;
+
+                             if (orderTempById.discountObj != null)
+                            {
+                                decimal amount = 0;
+                                var totalAmount = orderTempById.ListItem.Sum(x => x.Subtotal) ?? 0;
+                                if (orderTempById.discountObj.DiscountType == Constant.DiscountTypePercent)
+                                {
+                                    amount = totalAmount * (orderTempById.discountObj.Value / 100);
+                                    if (orderTempById.discountObj.maxValueUse.HasValue && amount > orderTempById.discountObj.maxValueUse.Value)
+                                    {
+                                        amount = orderTempById.discountObj.maxValueUse.Value;
+                                    }
+                                }
+                                else
+                                {
+                                    if (orderTempById.discountObj.Value > totalAmount)
+                                    {
+                                        amount = totalAmount;
+                                    }
+                                    else
+                                    {
+                                        amount = orderTempById.discountObj.Value;
+                                    }
+                                }
+                                orderTempById.discountObj.DiscountAmount = amount;
+                            }
+
+                        
+                            await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+                        }
+                    } else
+                    {
+                        lstItems.Add(newOrderItem);
+                        orderTempById.ListItem = lstItems;
+
+                        if (orderTempById.discountObj != null)
+                        {
+                            decimal amount = 0;
+                            var totalAmount = orderTempById.ListItem.Sum(x => x.Subtotal) ?? 0;
+                            if (orderTempById.discountObj.DiscountType == Constant.DiscountTypePercent)
+                            {
+                                amount = totalAmount * (orderTempById.discountObj.Value / 100);
+                                if (orderTempById.discountObj.maxValueUse.HasValue && amount > orderTempById.discountObj.maxValueUse.Value)
+                                {
+                                    amount = orderTempById.discountObj.maxValueUse.Value;
+                                }
+                            }
+                            else
+                            {
+                                if (orderTempById.discountObj.Value > totalAmount)
+                                {
+                                    amount = totalAmount;
+                                }
+                                else
+                                {
+                                    amount = orderTempById.discountObj.Value;
+                                }
+                            }
+                            orderTempById.discountObj.DiscountAmount = amount;
+                        }
+
+                    
+                        await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+                    }
+                } else
+                {
+                    lstItems.Add(newOrderItem);
+                    var temp = new OrderTempPOS
+                        {
+                            OrderId = OrderId,
+                            ListItem = lstItems,
+                            discountObj = null,
+                        };
+                    deserializedData.Add(temp);
+                
+                    await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+                }
+            } else
+            {
+                lstItems.Add(newOrderItem);
+                var temp = new OrderTempPOS
+                    {
+                        OrderId = OrderId,
+                        ListItem = lstItems,
+                        discountObj = null,
+                    };
+                deserializedData.Add(temp);
+            
+                await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+            }
+        }
+
+        MudDialog.Close(DialogResult.Ok(true));
+        _snackbar.Add($"Đã chọn sản phẩm {nameProduct}", Severity.Success);
+
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

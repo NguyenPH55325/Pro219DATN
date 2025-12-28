@@ -101,6 +101,46 @@ namespace Pro219.Web.Services
             }
         }
 
+        public async Task<ServiceResult<List<CombineProductDTO>>> GetAllProductOfSaleCounter(
+            string? keyword = null,
+            int? brandId = null,
+            int? sizeId = null,
+            int? colorId = null)
+        {
+            var baseUrl = "/Product/SearchCombineProduct";
+            var queryParams = new Dictionary<string, string>();
+
+            if (!string.IsNullOrWhiteSpace(keyword)) queryParams.Add("keyword", keyword);
+            if (brandId > 0) queryParams.Add("brandId", brandId.ToString());
+            if (sizeId > 0) queryParams.Add("sizeId", sizeId.ToString());
+            if (colorId > 0) queryParams.Add("colorId", colorId.ToString());
+
+            var url = QueryHelpers.AddQueryString(baseUrl, queryParams);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<List<CombineProductDTO>>();
+                return ServiceResult<List<CombineProductDTO>>.Success(result);
+            }
+            else
+            {
+                var errorCode = await response.Content.ReadAsStringAsync();
+
+                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                     ? Constant.Errors[errorCode ?? ""]
+                                     : $"Lỗi không xác định: {response.ReasonPhrase}";
+
+                return ServiceResult<List<CombineProductDTO>>.Failure(
+                    errorCode,
+                    errorMess,
+                    response.StatusCode.ToString()
+                );
+            }
+        }
+
         public async Task<ServiceResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>> GetAllByCategory(
             int categoryId,
             int page,

@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
+﻿using Azure;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json.Linq;
 using Pro219.API.DTOs;
 using Pro219.DAL.Models;
+using Pro219.Web.Components.Pages.User.Order;
+using Pro219.Web.Components.Pages.User.Search;
 using Pro219.Web.Constants;
 using Pro219.Web.DTOs;
+using System;
 
 namespace Pro219.Web.Services
 {
@@ -72,7 +76,7 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<List<Order>>> GetAll(string? keyword)
+        public async Task<ServiceResult<List<DAL.Models.Order>>> GetAll(string? keyword)
         {
             var queryParams = new Dictionary<string, string?>();
 
@@ -88,8 +92,8 @@ namespace Pro219.Web.Services
             var response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<List<Order>>();
-                return ServiceResult<List<Order>>.Success(result);
+                var result = await response.Content.ReadFromJsonAsync<List<DAL.Models.Order>>();
+                return ServiceResult<List<DAL.Models.Order>>.Success(result);
             }
             else
             {
@@ -99,18 +103,18 @@ namespace Pro219.Web.Services
                 var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
                                     ? Constant.Errors[errorCode ?? ""]
                                     : result; 
-                return ServiceResult<List<Order>>.Failure(result, errorMess, response.StatusCode.ToString());
+                return ServiceResult<List<DAL.Models.Order>>.Failure(result, errorMess, response.StatusCode.ToString());
             }
         }
 
-        public async Task<ServiceResult<Order>> GetById(int id)
+        public async Task<ServiceResult<DAL.Models.Order>> GetById(int id)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/GetById/{id}");
             var response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<Order>();
-                return ServiceResult<Order>.Success(result);
+                var result = await response.Content.ReadFromJsonAsync<DAL.Models.Order>();
+                return ServiceResult<DAL.Models.Order>.Success(result);
             }
             else
             {
@@ -120,11 +124,11 @@ namespace Pro219.Web.Services
                 var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
                                     ? Constant.Errors[errorCode ?? ""]
                                     : result; 
-                return ServiceResult<Order>.Failure(result, errorMess, response.StatusCode.ToString());
+                return ServiceResult<DAL.Models.Order>.Failure(result, errorMess, response.StatusCode.ToString());
             }
         }
 
-        public async Task<ServiceResult<List<Order>>> GetAllByCustomerId(int id)
+        public async Task<ServiceResult<List<DAL.Models.Order>>> GetAllByCustomerId(int id)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/GetByCustomerId/{id}");
 
@@ -132,8 +136,8 @@ namespace Pro219.Web.Services
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<List<Order>>();
-                return ServiceResult<List<Order>>.Success(result);
+                var result = await response.Content.ReadFromJsonAsync<List<DAL.Models.Order>>();
+                return ServiceResult<List<DAL.Models.Order>>.Success(result);
             }
             else
             {
@@ -143,7 +147,7 @@ namespace Pro219.Web.Services
                 var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
                                     ? Constant.Errors[errorCode ?? ""]
                                     : result; 
-                return ServiceResult<List<Order>>.Failure(result, errorMess, response.StatusCode.ToString());
+                return ServiceResult<List<DAL.Models.Order>>.Failure(result, errorMess, response.StatusCode.ToString());
             }
         }
 
@@ -208,7 +212,7 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<Order>> UpdateStatus(OrderUpdateSatusModel order, string token)
+        public async Task<ServiceResult<DAL.Models.Order>> UpdateStatus(OrderUpdateSatusModel order, string token)
         {
             try
             {
@@ -227,8 +231,8 @@ namespace Pro219.Web.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<Order>();
-                    return ServiceResult<Order>.Success(result);
+                    var result = await response.Content.ReadFromJsonAsync<DAL.Models.Order>();
+                    return ServiceResult<DAL.Models.Order>.Success(result);
                 }
                 else
                 {
@@ -236,23 +240,23 @@ namespace Pro219.Web.Services
                     var errorMess = Constant.Errors.ContainsKey(result ?? "") 
                         ? Constant.Errors[result ?? ""] 
                         : $"Lỗi không xác định: {response.ReasonPhrase} (Status: {response.StatusCode})";
-                    return ServiceResult<Order>.Failure(result, errorMess, response.StatusCode.ToString());
+                    return ServiceResult<DAL.Models.Order>.Failure(result, errorMess, response.StatusCode.ToString());
                 }
             }
             catch (Exception ex)
             {
-                return ServiceResult<Order>.Failure("EXCEPTION", $"Lỗi khi gọi API: {ex.Message}", "500");
+                return ServiceResult<DAL.Models.Order>.Failure("EXCEPTION", $"Lỗi khi gọi API: {ex.Message}", "500");
             }
         }
 
-        public async Task<ServiceResult<Order>> PaymentSuccess(int orderId)
+        public async Task<ServiceResult<DAL.Models.Order>> PaymentSuccess(int orderId)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/PaymentSuccess?orderId={orderId}");
             var response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<Order>();
-                return ServiceResult<Order>.Success(result);
+                var result = await response.Content.ReadFromJsonAsync<DAL.Models.Order>();
+                return ServiceResult<DAL.Models.Order>.Success(result);
             }
             else
             {
@@ -262,18 +266,18 @@ namespace Pro219.Web.Services
                 var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
                                     ? Constant.Errors[errorCode ?? ""]
                                     : result; 
-                return ServiceResult<Order>.Failure(result, errorMess, response.StatusCode.ToString());
+                return ServiceResult<DAL.Models.Order>.Failure(result, errorMess, response.StatusCode.ToString());
             }
         }
 
-        public async Task<ServiceResult<Order>> PaymentCanceled(int orderId)
+        public async Task<ServiceResult<DAL.Models.Order>> PaymentCanceled(int orderId)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/PaymentCanceled?orderId={orderId}");
             var response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<Order>();
-                return ServiceResult<Order>.Success(result);
+                var result = await response.Content.ReadFromJsonAsync<DAL.Models.Order>();
+                return ServiceResult<DAL.Models.Order>.Success(result);
             }
             else
             {
@@ -283,7 +287,78 @@ namespace Pro219.Web.Services
                 var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
                                     ? Constant.Errors[errorCode ?? ""]
                                     : result; 
-                return ServiceResult<Order>.Failure(result, errorMess, response.StatusCode.ToString());
+                return ServiceResult<DAL.Models.Order>.Failure(result, errorMess, response.StatusCode.ToString());
+            }
+        }
+
+        public async Task<ServiceResult<List<DAL.Models.Order>>> GetAllSaleCounter()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/Order/get-order-sale-counter");
+
+            var response = await _httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<List<DAL.Models.Order>>();
+                return ServiceResult<List<DAL.Models.Order>>.Success(result);
+            }
+            else
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var errorCode = result;
+                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                    ? Constant.Errors[errorCode ?? ""]
+                                    : result;
+                return ServiceResult<List<DAL.Models.Order>>.Failure(result, errorMess, response.StatusCode.ToString());
+            }
+        }
+
+        public async Task<ServiceResult<DAL.Models.Order>> Create(DAL.Models.Order order)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Order/Add");
+
+            request.Content = JsonContent.Create(order);
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<DAL.Models.Order>();
+                return ServiceResult<DAL.Models.Order>.Success(result);
+            }
+            else
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var errorCode = result;
+
+                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                    ? Constant.Errors[errorCode ?? ""]
+                                    : result;
+                return ServiceResult<DAL.Models.Order>.Failure(result, errorMess, response.StatusCode.ToString());
+            }
+        }
+
+        public async Task<ServiceResult<DAL.Models.Order>> Update(DAL.Models.Order order, string token)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Order/Update");
+
+            request.Content = JsonContent.Create(order);
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<DAL.Models.Order>();
+                return ServiceResult<DAL.Models.Order>.Success(result);
+            }
+            else
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var errorCode = result;
+
+                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                    ? Constant.Errors[errorCode ?? ""]
+                                    : result;
+                return ServiceResult<DAL.Models.Order>.Failure(result, errorMess, response.StatusCode.ToString());
             }
         }
 
@@ -315,7 +390,7 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<List<Order>>> GetAllByKeyword(string keyword, string token)
+        public async Task<ServiceResult<List<DAL.Models.Order>>> GetAllByKeyword(string keyword, string token)
         {
             var url = string.IsNullOrEmpty(keyword) ? "/Order/get-all-by-key-word" : $"/Order/get-all-by-key-word?keyword={keyword}";
             var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -328,20 +403,71 @@ namespace Pro219.Web.Services
             }
 
             var response = await _httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<List<DAL.Models.Order>>();
+                return ServiceResult<List<DAL.Models.Order>>.Success(result);
+            }
+            else
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var errorCode = result;
+                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                    ? Constant.Errors[errorCode ?? ""]
+                                    : result; 
+                return ServiceResult<List<DAL.Models.Order>>.Failure(result, errorMess, response.StatusCode.ToString());
+            }
+        }
+
+        public async Task<ServiceResult<DAL.Models.OrderItem>> CreateOrderItem(DAL.Models.OrderItem orderItem)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("/OrderItem/Add", orderItem);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<List<Order>>();
-                    return ServiceResult<List<Order>>.Success(result);
+                    var result = await response.Content.ReadFromJsonAsync<DAL.Models.OrderItem>();
+                    return ServiceResult<DAL.Models.OrderItem>.Success(result);
                 }
                 else
                 {
                     var result = await response.Content.ReadAsStringAsync();
                     var errorCode = result;
+
                     var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
                                         ? Constant.Errors[errorCode ?? ""]
-                                        : result; 
-                    return ServiceResult<List<Order>>.Failure(result, errorMess, response.StatusCode.ToString());
+                                        : result;
+                    return ServiceResult<DAL.Models.OrderItem>.Failure(result, errorMess, response.StatusCode.ToString());
                 }
+            } catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+
+                return ServiceResult<DAL.Models.OrderItem>.Failure("Exception", ex.Message, "500");
+            }
+        }
+
+        public async Task<bool> DeleteOrder(int id)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"/Order/Delete/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return false;
+            }
         }
     }
 }

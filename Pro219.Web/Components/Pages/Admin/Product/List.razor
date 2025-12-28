@@ -16,7 +16,7 @@
                               AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
             </div>
             <div>
-                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Loại giảm giá" Value="@_searchCategory" ValueChanged="OnChangeCategory">
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Danh mục" Value="@_searchCategory" ValueChanged="OnChangeCategory">
                     <MudSelectItem Value="0">Tất cả</MudSelectItem>
                     @if (_categories.Any())
                     {
@@ -28,7 +28,7 @@
                 </MudSelect>
             </div>
             <div>
-                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Loại áp dụng" Value="@_searchBrand" ValueChanged="OnChangeBrand">
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Thương hiệu" Value="@_searchBrand" ValueChanged="OnChangeBrand">
                     <MudSelectItem Value="0">Tất cả</MudSelectItem>
                     @if (_brands.Any())
                     {

@@ -26,6 +26,7 @@
 
         <div class="max-h-[calc(100lvh-15.5rem)] flex flex-col gap-2 overflow-y-auto px-3">
             <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Home))" Class="@IsActiveMenu(RouterConst.Admin.Home)" Icon="@Icons.Material.Filled.Home">Trang chủ</MudNavLink>
+            <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.SaleCounter))" Class="@IsActiveMenu(RouterConst.Admin.SaleCounter)" Icon="@Icons.Material.Filled.Store">Bán tại quầy</MudNavLink>
             <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Product))" Class="@IsActiveMenu(RouterConst.Admin.Product)" Icon="@Icons.Material.Filled.AllInbox">Sản phẩm</MudNavLink>
             @*<MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.ProductVariant))" Class="@IsActiveMenu(RouterConst.Admin.ProductVariant)" Icon="@Icons.Material.Filled.AllInbox">Sản phẩm chi tiết</MudNavLink>*@
             <MudNavGroup Title="Thuộc tính" Expanded="false">
@@ -39,7 +40,6 @@
             <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Bill))" Class="@IsActiveMenu(RouterConst.Admin.Bill)" Icon="@Icons.Material.Filled.Payments">Hóa đơn</MudNavLink>
             <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Statistical))" Class="@IsActiveMenu(RouterConst.Admin.Statistical)" Icon="@Icons.Material.Filled.SsidChart">Thống kê</MudNavLink>
             <MudNavLink OnClick="@(() => HandleRedirect(RouterConst.Admin.Customer))" Class="@IsActiveMenu(RouterConst.Admin.Customer)" Icon="@Icons.Material.Filled.Group">Tài khoản khách hàng</MudNavLink>
-            @*<MudNavLink Icon="@Icons.Material.Filled.Group">Bán tại quầy</MudNavLink>*@
         </div>
     </MudNavMenu>
 
