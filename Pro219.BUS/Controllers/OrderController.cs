@@ -244,8 +244,11 @@ namespace Pro219.API.Controllers
         }
 
         [HttpPost("checkout-pos")]
-        public async Task<ActionResult<CheckoutDTO>> GetCheckoutForPOS([FromBody] CheckoutParamsDTO checkoutParam, string? phoneNumber = null, decimal discountAmount = 0, decimal shippingFee = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note = "")
+        public async Task<ActionResult<CheckoutDTO>> GetCheckoutForPOS([FromBody] CheckoutParamsDTO checkoutParam, string? phoneNumber = null, decimal discountAmount = 0, decimal shippingFee = 0, int? PaymentMethodTypeId = 2, int? discountId = null, string note = "" ,int? orderId = null)
         {
+
+            if (orderId == null)
+                return BadRequest("Hoá đơn không hợp lệ");
             if (checkoutParam == null || checkoutParam.ListItemCheckout == null || !checkoutParam.ListItemCheckout.Any())
             {
                 return BadRequest("Dữ liệu checkout không hợp lệ");
@@ -298,6 +301,18 @@ namespace Pro219.API.Controllers
                     }
                 }
             }
+
+            Order order;           
+
+            if (orderId!=null && orderId.HasValue)
+            {
+                order = await orderRepository.GetOrderById(orderId.Value);
+            }
+            else
+            {
+                order = new Order();
+            }
+
             Address newAddressFromUser = null;
             if(checkoutParam.isNewAddress == true & checkoutParam.AddressDTO!=null)
             {
@@ -351,7 +366,6 @@ namespace Pro219.API.Controllers
             decimal finalAmount = 0;
             finalAmount = (totalPrice - discountAmount)+shippingFee;
             int ordCode = new Random().Next(1, int.MaxValue);
-            Order order = new Order();
             try
             {
                 if (PaymentMethodTypeId == 1)
@@ -382,64 +396,58 @@ namespace Pro219.API.Controllers
                     order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
                 }
 
+                    order.OrderCode = "DH" + ordCode.ToString();
+                    order.TotalAmount = totalPrice;
+                    order.DiscountAmount = discountAmount;
+                    order.ShippingAddressId = null;
+                    order.Notes = note;
+                    order.FinalAmount = finalAmount;
+                    order.ShippingFee = 0;
+                    order.OrderDate = DateTime.Now;
+                    order.PaymentStatus = Constant.OrderStatus.PaymentPending;
+                    order.OrderStatus = "Đặt hàng"; // status = 1;
+                    order.DiscountId = discountId;
+                    order.Notes = currentCustomer.Id == -1 ? "Khách vãng lai" : "Khách hàng có tài khoản";
+                    order.CreateAt = DateTime.Now;
+                    order.LastUpdate = DateTime.Now;
+                    order.IsOrderPOS = true;
+                    order.UpdateBy = "System";
+                    order.Status = PaymentMethodTypeId == 2 ? Constant.OrderStatus.StatusWaitingForPayment : Constant.OrderStatus.StatusPending;
+                    order.CustomerId = currentCustomer.Id == -1 ? currentCustomer.Id : currentCustomer.Id;
+                    order.ShippingAddressId = null;
+                    order.DiscountId = discountId == null ? null : (int)discountId;
+                    order.PaymentMethodId = PaymentMethodTypeId;
+                    order.CustomerType = currentCustomer.FullName == null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;
+                    if (newAddressFromUser != null && checkoutParam.isNewAddress == true)
+                    {
+                        order.ShippingAddressId = newAddressFromUser.Id;
+                    }
+                    else if (checkoutParam.isNewAddress == false && checkoutParam.shippingAddressId != -1)
+                    {
+                        order.ShippingAddressId = checkoutParam.shippingAddressId;
+                    }
 
-                order.OrderCode = "DH" + ordCode.ToString();
-                order.TotalAmount = totalPrice;
-                order.DiscountAmount = discountAmount;
-                order.ShippingAddressId = null;
-                order.Notes = note;
-                order.FinalAmount = finalAmount;
-                order.ShippingFee = 0;
-                order.OrderDate = DateTime.Now;
-                order.PaymentStatus = Constant.OrderStatus.PaymentPending;
-                order.OrderStatus = "Đặt hàng"; // status = 1;
-                order.DiscountId = discountId;
-                order.Notes = currentCustomer.Id == -1 ? "Khách vãng lai" : "Khách hàng có tài khoản";
-                order.CreateAt = DateTime.Now;
-                order.LastUpdate = DateTime.Now;
-                order.IsOrderPOS = true;
-                order.UpdateBy = "System";
-                order.Status = PaymentMethodTypeId == 2 ? Constant.OrderStatus.StatusWaitingForPayment : Constant.OrderStatus.StatusPending;
-                order.CustomerId = currentCustomer.Id == -1 ? currentCustomer.Id : currentCustomer.Id;
-                order.ShippingAddressId = null;
-                order.DiscountId = discountId == null ? null : (int)discountId;
-                order.PaymentMethodId = PaymentMethodTypeId;
-                order.CustomerType = currentCustomer.FullName == null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;
-                if(newAddressFromUser != null && checkoutParam.isNewAddress ==true)
+                    if(orderId==null)
                 {
-                    order.ShippingAddressId = newAddressFromUser.Id;
-                }
-                else if (checkoutParam.isNewAddress ==false && checkoutParam.shippingAddressId!= -1)
-                {
-                    order.ShippingAddressId = checkoutParam.shippingAddressId;
-                }
-
-                var result = await orderRepository.AddOrder(order);
+                    var result = await orderRepository.AddOrder(order);
 
 
-                if (result == null)
-                {
-                    return BadRequest();
+                    if (result == null)
+                    {
+                        return BadRequest();
+                    }
+                    
                 }
                 else
                 {
-                    OrderItemRepository orderItemRepository = new OrderItemRepository();
-                    foreach (var product in checkoutParam.ListItemCheckout)
+                    var result = await orderRepository.UpdateOrder(order);
+                    if (result == null)
                     {
-                        OrderItem orderItem = new OrderItem();
-                        orderItem.OrderId = result.OrderId;
-                        orderItem.ProductVariantId = product.ProductVariantId;
-                        orderItem.Quantity = product.Quantity;
-                        orderItem.UnitPrice = product.UnitPrice;
-                        orderItem.Subtotal = product.UnitPrice * product.Quantity;
-                        orderItem.Delete = false;
-                        var resultItem = await orderItemRepository.AddOrderItem(orderItem);
-                        if (resultItem == null)
-                        {
-                            return BadRequest();
-                        }
+                        return BadRequest();
                     }
                 }
+               
+
             }
             catch (Exception ex)
             {
@@ -478,15 +486,25 @@ namespace Pro219.API.Controllers
                 if (createPayment.status == "PENDING")
                 {
                     checkoutDTO.URLPayment = createPayment.checkoutUrl;
-                    List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
-                    if (orderItemsList != null && orderItemsList.Any())
+                    OrderItemRepository orderItemRepository = new OrderItemRepository();
+                    foreach (var product in checkoutParam.ListItemCheckout)
                     {
-                        foreach (var orderItem in orderItemsList)
+                        OrderItem orderItem = new OrderItem();
+                        orderItem.OrderId = orderId.Value;
+                        orderItem.ProductVariantId = product.ProductVariantId;
+                        orderItem.Quantity = product.Quantity;
+                        orderItem.UnitPrice = product.UnitPrice;
+                        orderItem.Subtotal = product.UnitPrice * product.Quantity;
+                        orderItem.Delete = false;
+                        var resultItem = await orderItemRepository.AddOrderItem(orderItem);
+                        if (resultItem == null)
                         {
-                            var re = await productVariantRepository.DecreaseProductVariantQuantity(orderItem.ProductVariantId, orderItem.Quantity);
-                            if (re == false)
-                                return BadRequest("Số lượng kho không đủ");
+                            return BadRequest();
                         }
+
+                        var re = await productVariantRepository.DecreaseProductVariantQuantity(orderItem.ProductVariantId, orderItem.Quantity);
+                        if (re == false)
+                            return BadRequest("Số lượng kho không đủ");
                     }
                     order.PaymentExpiration = DateTime.Now.AddHours(24);
                     order.PaymentLink = createPayment.checkoutUrl;
