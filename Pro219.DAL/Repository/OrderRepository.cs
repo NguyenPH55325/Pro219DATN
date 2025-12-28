@@ -54,6 +54,24 @@ namespace Pro219.DAL.Repository
             }
         }
 
+        public async Task<List<Order>> GetAllSaleCounter()
+        {
+            try
+            {
+                var orders = await _context.Orders.Where(x => x.IsOrderPOS == true && x.Delete != true && x.Status == 99).ToListAsync();
+
+                if(orders.Count == 0)
+                {
+                    return new List<Order>();
+                }
+
+                return orders;
+
+            } catch (Exception) { 
+                return new List<Order>();
+            }
+        }
+
         public async Task<Order> GetOrderById(int id)
         {
             try

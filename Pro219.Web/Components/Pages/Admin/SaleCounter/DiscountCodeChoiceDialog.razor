@@ -1,0 +1,249 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Style="font-size: 18px; font-weight: bold; text-transform: uppercase">Danh sách khách hàng</MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="mb-6 grid w-full grid-cols-3 gap-x-6 gap-y-4">
+            <div>
+                <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
+                              AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
+            </div>
+            <div>
+                <MudSelect T="string" Variant="Variant.Outlined" Placeholder="Loại giảm giá" Value="@_searchDiscountTpe" ValueChanged="OnChangeDiscountType">
+                    <MudSelectItem T="string" Value="@("all")">Tất cả</MudSelectItem>
+                    <MudSelectItem T="string" Value="@(Constant.DiscountTypePercent)">Phần trăm</MudSelectItem>
+                    <MudSelectItem T="string" Value="@(Constant.DiscountTypeFixed)">Cố định</MudSelectItem>
+                </MudSelect>
+            </div>
+            <div class="flex items-center gap-2">
+                <MudButton Variant="Variant.Outlined" OnClick="OnSearch" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-2" /> Tìm kiếm</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" /> Đặt lại</MudButton>
+            </div>
+        </div>
+        <MudTable Bordered Items="@_discountCodes" CellClass="min-w-60" Loading="@_loading" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
+            <HeaderContent>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Code" T="DAL.Models.DiscountCode">Mã</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="DiscountType" T="DAL.Models.DiscountCode">Loại Giảm Giá</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Value" T="DAL.Models.DiscountCode">Giá Trị</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Giá trị giảm tối đa" T="DAL.Models.DiscountCode">Giá trị giảm tối đa</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap">Thao tác</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Code">@context.Code</MudTd>
+                <MudTd DataLabel="DiscountType">@(context.Status == 1 ? "Phần trăm (%)" : "Giá cố định")</MudTd>
+                <MudTd DataLabel="Value">@(FormatDiscountValue(context))</MudTd>
+                <MudTd DataLabel="MaxDiscountAmount">@(context.MaxDiscountAmount?.ToString("C", vietnameseCulture) ?? "0")</MudTd>
+                <MudTd DataLabel="Thao tác">
+                    <MudIconButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => SelectDiscount(context))">Chọn</MudIconButton>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>Không có dữ liệu.</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <div class="flex w-full flex-col gap-3">
+                    @{
+                        for (var i = 0; i < 5; i++)
+                        {
+                            <div class="flex items-center justify-between gap-2">
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                            </div>
+                        }
+                    }
+                </div>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="MudBlazor.Color.Surface" OnClick="Cancel">Đóng</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public int OrderId { get; set; } = 0;
+
+    [Parameter]
+    public decimal TotalProductAmount { get; set; } = 0;
+
+    private List<DAL.Models.DiscountCode> _discountCodes = [];
+
+    private string _searchValue = string.Empty;
+    private string _searchDiscountTpe = "all";
+    private bool _loading = true;
+    CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadData();
+        }
+        catch (Exception e)
+        {
+            _loading = false;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    async Task LoadData()
+    {
+        var res = await _couponService.GetAll(_searchValue, _searchDiscountTpe, null, null, null);
+        var data = res.Data;
+        if (res.IsSuccess && data.Count > 0)
+        {
+            _discountCodes = data.Where(x => x.Type == 1 && x.StartDate <= DateTime.Now && x.EndDate >= DateTime.Now).ToList();
+        }
+        StateHasChanged();
+    }
+
+    private async Task onChangeSearch(string value)
+    {
+        _searchValue = value;
+    }
+
+    private async Task OnSearch()
+    {
+        await LoadData();
+    }
+
+    private async Task OnReset()
+    {
+        _searchValue = string.Empty;
+        _searchDiscountTpe = "all";
+        await LoadData();
+    }
+
+    private void OnChangeDiscountType(string value)
+    {
+        _searchDiscountTpe = value;
+    }
+
+    private async Task SelectDiscount(DAL.Models.DiscountCode discount)
+    {
+        decimal amount = 0;
+        if (discount.DiscountType == Constant.DiscountTypePercent)
+        {
+            amount = TotalProductAmount * (discount.Value / 100);
+            if (discount.MaxDiscountAmount.HasValue && amount > discount.MaxDiscountAmount.Value)
+            {
+                amount = discount.MaxDiscountAmount.Value;
+            }
+        }
+        else
+        { 
+            if (discount.Value > TotalProductAmount)
+            {
+                amount = TotalProductAmount;
+            } else
+            {
+                amount = discount.Value;    
+            }
+        }
+
+        var newDiscount = new DiscountObj
+        {
+            Id = discount.DiscountId,
+            DiscountCode = discount.Code,
+            DiscountAmount = amount,
+            Value = discount.Value,
+            DiscountType = discount.DiscountType,
+        };
+
+        if (discount.MaxDiscountAmount.HasValue)
+        {
+            newDiscount.maxValueUse = discount.MaxDiscountAmount;
+        }
+
+        var orderTemp = await localStorage.GetItemAsStringAsync(Constant.OrderPOSTemp);
+
+        var lstOrderTemp = new List<OrderTempPOS>();
+        if (string.IsNullOrEmpty(orderTemp))
+        {
+            var temp = new OrderTempPOS
+                {
+                    OrderId = OrderId,
+                    ListItem = new List<CheckoutListItem>(),
+                    discountObj = newDiscount,
+                };
+            lstOrderTemp.Add(temp);
+            await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(lstOrderTemp));
+        }
+        else
+        {
+            var deserializedData = JsonSerializer.Deserialize<List<OrderTempPOS>>(orderTemp);
+
+            if (deserializedData != null && deserializedData.Any())
+            {
+                var orderTempById = deserializedData.FirstOrDefault(x => x.OrderId == OrderId);
+
+                if (orderTempById != null)
+                {
+                    orderTempById.discountObj = newDiscount;
+                    
+                    await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+
+                }
+                else
+                {
+                    var temp = new OrderTempPOS
+                        {
+                            OrderId = OrderId,
+                            ListItem = new List<CheckoutListItem>(),
+                            discountObj = newDiscount,
+                        };
+                    deserializedData.Add(temp);
+                    
+                    await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+                }
+            }
+            else
+            {
+                var temp = new OrderTempPOS
+                    {
+                        OrderId = OrderId,
+                        ListItem = new List<CheckoutListItem>(),
+                        discountObj = newDiscount,
+                    };
+                deserializedData.Add(temp);
+                
+                await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+            }
+        }
+
+        _snackbar.Add($"Đã áp dụng mã {discount.Code}", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    private string FormatDiscountValue(DAL.Models.DiscountCode discount)
+    {
+        if (discount.DiscountType == Constant.DiscountTypePercent)
+        {
+            return $"{discount.Value:N2}%";
+        }
+        else if (discount.DiscountType == Constant.DiscountTypeFixed)
+        {
+            return $"{discount.Value:N0} đ";
+        }
+        return discount.Value.ToString();
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

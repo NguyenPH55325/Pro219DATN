@@ -1,0 +1,147 @@
+﻿<MudDialog>
+    <TitleContent>
+        <MudText Style="font-size: 18px; font-weight: bold; text-transform: uppercase">Danh sách khách hàng</MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="mb-6 grid w-full grid-cols-3 gap-x-6 gap-y-4">
+            <div>
+                <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
+                              AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
+            </div>
+            <div class="flex items-center gap-2">
+                <MudButton Variant="Variant.Outlined" OnClick="OnSearch" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-2" /> Tìm kiếm</MudButton>
+                <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" /> Đặt lại</MudButton>
+            </div>
+        </div>
+        <MudTable Bordered Items="@_customers" Loading="@_loading" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
+            <HeaderContent>
+                <MudTh hidden><MudTableSortLabel SortLabel="Id" T="string" hidden>STT</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Tên" T="string">Tên</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Email" T="string">Email</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Số điện thoại" T="string">Số điện thoại</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Ngày sinh" T="string">Ngày sinh</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Trạng thái" T="string">Trạng thái</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Thao tác" T="string">Thao tác</MudTableSortLabel></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id" hidden>@context.Id</MudTd>
+                <MudTd DataLabel="Tên">@context.FullName</MudTd>
+                <MudTd DataLabel="Tên">@context.Email</MudTd>
+                <MudTd DataLabel="Tên">@context.PhoneNumber</MudTd>
+                <MudTd DataLabel="Tên">@(context.DateOfBirth != null ? context.DateOfBirth?.ToString("dd/MM/yyyy") : "")</MudTd>
+                <MudTd DataLabel="Trạng thái">@(context.Status == Convert.ToByte(Constant.StatusDefault.Active) ? "Hoạt Động" : "Không Hoạt Động")</MudTd>
+                <MudTd DataLabel="Thao tác">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => OnSubmit(context.Id, context.FullName))">Chọn</MudButton>
+                </MudTd>
+            </RowTemplate>
+            <NoRecordsContent>
+                <MudText>Không có dữ liệu.</MudText>
+            </NoRecordsContent>
+            <LoadingContent>
+                <div class="flex w-full flex-col gap-3">
+                    @{
+                        for (var i = 0; i < 5; i++)
+                        {
+                            <div class="flex items-center justify-between gap-2">
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                                <MudSkeleton Width="100%" Height="3rem" />
+                            </div>
+                        }
+                    }
+                </div>
+            </LoadingContent>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="MudBlazor.Color.Surface" OnClick="Cancel">Đóng</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public DAL.Models.Order Order { get; set; } = new DAL.Models.Order();
+
+    [Parameter]
+    public string Token { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    private List<DAL.Models.Customer> _customers = [];
+
+    private string _searchValue = string.Empty;
+    private string _token = string.Empty;
+    private bool _loading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadData();
+        }
+        catch (Exception e)
+        {
+            _loading = false;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    async Task LoadData()
+    {
+        var res = await _customerService.GetAll(_searchValue);
+        var data = res.Data;
+        if (res.IsSuccess && data != null)
+        {
+            _customers = data.Where(x => x.Id != -1).ToList();
+        }
+        StateHasChanged();
+    }
+
+    private void onChangeSearch(string value)
+    {
+        _searchValue = value;
+    }
+
+    private async Task OnSearch()
+    {
+        await LoadData();
+    }
+
+    private async Task OnReset()
+    {
+        _searchValue = string.Empty;
+        await LoadData();
+    }
+
+    async Task OnSubmit(int id, string name)
+    {
+        Order.CustomerId = id;
+        var result = await _orderService.Update(Order, Token);
+
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+            _snackbar.Add($"Đã chọn khách hàng {name}", Severity.Success);
+
+        }
+        else
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+            _snackbar.Add("Xóa thất bại", Severity.Error);
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

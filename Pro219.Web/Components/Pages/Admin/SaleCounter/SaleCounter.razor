@@ -1,0 +1,141 @@
+﻿@page "/admin/sale-counter"
+@layout AdminLayout
+
+<div class="p-6">
+    <div class="rounded-xl border border-slate-200 bg-white px-6 py-8 shadow-sm">
+        @*<div class="flex justify-end">
+            <MudButton Class="!items-center !bg-admin-default !text-white"><MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" /> Tạo hóa đơn</MudButton>
+        </div>
+
+        <MudDivider Class="my-6" />*@
+        @if(_loading)
+        {
+            <div class="h-[calc(100lvh-112px)] flex w-full items-center justify-center">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        } else
+        {
+            <div>
+                <MudDynamicTabs AddTab="@AddNewOrder" CloseTab="@RemoveOrder" Elevation="0" Rounded="true" Border="false" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                    @if (_orders.Any())
+                    {
+                        @for(var i = 0; i < _orders.Count(); i++)
+                        {
+                            bool canClose = _orders.Count > 1;
+                            var order = _orders[i];
+                            <MudTabPanel ID="order.OrderId" accesskey="@i" Text="@($"Hóa đơn {i + 1}")" ShowCloseIcon="@(canClose)">
+                                <OrderItem Token="@_token" Order="order" />
+                            </MudTabPanel>
+                        }
+                    }
+                </MudDynamicTabs>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private GuestCheckoutModel _model = new GuestCheckoutModel();
+    List<DAL.Models.Order> _orders = [];
+    List<ProvinceDTO> _provinces = [];
+    List<DistrictDTO> _districts = [];
+    List<WardDTO> _wards = [];
+
+    private int _selectedProvince = 0;
+    private int _selectedDistrict = 0;
+    private string _selectedWard = string.Empty;
+    private int _customerId = -1;
+    private bool _isShipping = false;
+    private decimal _shippingAmount = 0;
+    private int _paymentMethod = Constant.PaymentMethod.CashBack;
+    private string _token = string.Empty;
+    private bool _loading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadData();
+        } catch(Exception)
+        {
+
+        } finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        var resOrderSaleCounter = await _orderService.GetAllSaleCounter();
+        if (resOrderSaleCounter.IsSuccess && resOrderSaleCounter.Data != null)
+        {
+            _orders = resOrderSaleCounter.Data;
+        }
+        StateHasChanged();
+    }
+
+    private async Task AddNewOrder()
+    {
+        var order = new DAL.Models.Order
+        {
+            CustomerId = -1,
+            ShippingAddressId = -99,
+            PaymentMethodId = 1,
+            OrderCode = "DH" + new Random().Next(1, int.MaxValue),
+            CustomerType = 1,
+            IsOrderPOS = true,
+            OrderDate = DateTime.Now,
+            TotalAmount = 0,
+            DiscountAmount = 0,
+            FinalAmount = 0,
+            ShippingFee = 0,
+            PaymentStatus = "Chờ thanh toán",
+            OrderStatus = "Chờ xử lý",
+            LastUpdate = DateTime.Now,
+            Status = 99,
+        };
+
+        var result = await _orderService.Create(order);
+        await LoadData();
+    }
+
+    async Task RemoveOrder(MudTabPanel panel)
+    {
+        if(panel.ID is int orderId)
+        {
+            var result = await _orderService.DeleteOrder(orderId);
+
+            if(result)
+            {
+                var objOrderTemp = await localStorage.GetItemAsStringAsync(Constant.OrderPOSTemp);
+
+                if(!string.IsNullOrEmpty(objOrderTemp))
+                {
+                    var deserializedData = JsonSerializer.Deserialize<List<OrderTempPOS>>(objOrderTemp);
+                    if (deserializedData != null && deserializedData.Any())
+                    {
+                        var order = deserializedData.FirstOrDefault(x => x.OrderId == orderId);
+
+                        if(order != null)
+                        {
+                            deserializedData.Remove(order);
+
+                            await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+                        }
+                    }
+                }
+            }
+
+            await LoadData();
+            }
+        }
+    }
+}
