@@ -4,6 +4,7 @@ using Pro219.DAL.Models;
 using Pro219.DAL.Repository;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -14,10 +15,12 @@ namespace Pro219.API.Controllers
     public class OrderItemController : ControllerBase
     {
         OrderItemRepository orderItemRepository;
+        ProductVariantRepository productVariantRepository;
 
         public OrderItemController()
         {
             orderItemRepository = new OrderItemRepository();
+            productVariantRepository = new ProductVariantRepository();
         }
 
         [HttpGet("GetAll")]
@@ -115,6 +118,96 @@ namespace Pro219.API.Controllers
                 return StatusCode(500, Constant.ErrorCode.OtherError);
             }
         }
+
+        [HttpPost("AddWithDTO")]
+        public async Task<ActionResult<OrderItem>> AddOrderItemWithDTO([FromBody] OrderItemDTO orderItemDTO)
+        {
+            try
+            {
+                if (orderItemDTO == null)
+                {
+                    return BadRequest(Constant.ErrorCode.DataRequired);
+                }
+
+                if (orderItemDTO.OrderId <= 0 || orderItemDTO.ProductVariantId <= 0 || orderItemDTO.Quantity <= 0)
+                {
+                    return BadRequest(Constant.ErrorCode.InvalidData);
+                }
+
+                if (!orderItemDTO.UnitPrice.HasValue || orderItemDTO.UnitPrice.Value <= 0)
+                {
+                    return BadRequest(Constant.ErrorCode.InvalidData);
+                }
+
+                var productVariant = await productVariantRepository.GetProductVariantById(orderItemDTO.ProductVariantId);
+                if (productVariant == null)
+                {
+                    return NotFound(Constant.ErrorCode.DataNotFound);
+                }
+
+                var existingOrderItems = await orderItemRepository.GetOrderItemsByOrderId(orderItemDTO.OrderId);
+                if (existingOrderItems == null)
+                {
+                    existingOrderItems = new List<OrderItem>();
+                }
+
+                var existingOrderItem = existingOrderItems.FirstOrDefault(x => x.ProductVariantId == orderItemDTO.ProductVariantId);
+
+                if (existingOrderItem != null)
+                {
+
+                    int newTotalQuantity = existingOrderItem.Quantity + orderItemDTO.Quantity;
+
+                    if (newTotalQuantity > productVariant.StockQuantity)
+                    {
+                        return BadRequest(Constant.ErrorCode.OutOfStock);
+                    }
+
+                    existingOrderItem.Quantity = newTotalQuantity;
+                    existingOrderItem.Subtotal = existingOrderItem.UnitPrice * newTotalQuantity;
+                    existingOrderItem.UpdateBy = "System";
+
+                    var result = await orderItemRepository.UpdateOrderItem(existingOrderItem);
+                    if (result == null)
+                    {
+                        return StatusCode(500, Constant.ErrorCode.DatabaseError);
+                    }
+
+                    return Ok(result);
+                }
+                else
+                {
+                    if (orderItemDTO.Quantity > productVariant.StockQuantity)
+                    {
+                        return BadRequest(Constant.ErrorCode.OutOfStock);
+                    }
+
+                    var orderItem = new OrderItem
+                    {
+                        OrderId = orderItemDTO.OrderId,
+                        ProductVariantId = orderItemDTO.ProductVariantId,
+                        Quantity = orderItemDTO.Quantity,
+                        UnitPrice = orderItemDTO.UnitPrice.Value,
+                        Subtotal = orderItemDTO.Subtotal ?? (orderItemDTO.UnitPrice.Value * orderItemDTO.Quantity),
+                        UpdateBy = "System",
+                        Status = 1
+                    };
+
+                    var result = await orderItemRepository.AddOrderItem(orderItem);
+                    if (result == null)
+                    {
+                        return StatusCode(500, Constant.ErrorCode.DatabaseError);
+                    }
+
+                    return Ok(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+        
 
         [HttpPost("AddList")]
         public async Task<ActionResult<List<OrderItem>>> AddOrderItem([FromBody] List<OrderItem> listOrderItem)

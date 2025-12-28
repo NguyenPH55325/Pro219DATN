@@ -26,15 +26,15 @@ namespace Pro219.DAL.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Subtotal { get; set; }
 
-        public bool? Delete { get; set; }
+        public bool? Delete { get; set; } = false;
 
-        public DateTime? CreateAt { get; set; }
+        public DateTime? CreateAt { get; set; } = DateTime.Now;
 
         public DateTime? UpdateAt { get; set; }
 
         public DateTime? DeleteAt { get; set; }
 
-        public byte? Status { get; set; }
+        public byte? Status { get; set; } = 1;
 
         public bool? IsReviewed { get; set; } = false;
 
