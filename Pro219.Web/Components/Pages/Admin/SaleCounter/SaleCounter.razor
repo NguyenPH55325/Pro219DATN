@@ -24,7 +24,7 @@
                             bool canClose = _orders.Count > 1;
                             var order = _orders[i];
                             <MudTabPanel ID="order.OrderId" accesskey="@i" Text="@($"Hóa đơn {i + 1}")" ShowCloseIcon="@(canClose)">
-                                <OrderItem Token="@_token" Order="order" />
+                                <OrderItem RefreshData="@RefreshData" Token="@_token" Order="order" />
                             </MudTabPanel>
                         }
                     }
@@ -75,35 +75,28 @@
     private async Task LoadData()
     {
         var resOrderSaleCounter = await _orderService.GetAllSaleCounter();
-        if (resOrderSaleCounter.IsSuccess && resOrderSaleCounter.Data != null)
+        if (resOrderSaleCounter.IsSuccess)
         {
-            _orders = resOrderSaleCounter.Data;
+            if (resOrderSaleCounter.Data.Any())
+            {
+                _orders = resOrderSaleCounter.Data;
+            } else
+            {
+                await CreateInitialOrder();
+
+                var refreshRes = await _orderService.GetAllSaleCounter();
+                if (refreshRes.IsSuccess)
+                {
+                    _orders = refreshRes.Data;
+                }
+            }
         }
         StateHasChanged();
     }
 
     private async Task AddNewOrder()
     {
-        var order = new DAL.Models.Order
-        {
-            CustomerId = -1,
-            ShippingAddressId = -99,
-            PaymentMethodId = 1,
-            OrderCode = "DH" + new Random().Next(1, int.MaxValue),
-            CustomerType = 1,
-            IsOrderPOS = true,
-            OrderDate = DateTime.Now,
-            TotalAmount = 0,
-            DiscountAmount = 0,
-            FinalAmount = 0,
-            ShippingFee = 0,
-            PaymentStatus = "Chờ thanh toán",
-            OrderStatus = "Chờ xử lý",
-            LastUpdate = DateTime.Now,
-            Status = 99,
-        };
-
-        var result = await _orderService.Create(order);
+        await CreateInitialOrder();
         await LoadData();
     }
 
@@ -135,7 +128,35 @@
             }
 
             await LoadData();
-            }
         }
+    }
+
+    private async Task CreateInitialOrder()
+    {
+        var order = new DAL.Models.Order
+            {
+                CustomerId = -1,
+                ShippingAddressId = -99,
+                PaymentMethodId = 1,
+                OrderCode = "DH" + new Random().Next(1, int.MaxValue),
+                CustomerType = 1,
+                IsOrderPOS = true,
+                OrderDate = DateTime.Now,
+                TotalAmount = 0,
+                DiscountAmount = 0,
+                FinalAmount = 0,
+                ShippingFee = 0,
+                PaymentStatus = "Chờ thanh toán",
+                OrderStatus = "Chờ xử lý",
+                LastUpdate = DateTime.Now,
+                Status = 99,
+            };
+
+        await _orderService.Create(order);
+    }
+
+    async Task RefreshData()
+    {
+        await LoadData();
     }
 }

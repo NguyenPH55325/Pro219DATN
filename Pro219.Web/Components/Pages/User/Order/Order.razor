@@ -164,7 +164,8 @@
     private string GetOrderStatusClass(byte? status) =>
         status switch
         {
-            Constant.OrderStatus.StatusPending => "bg-gray-400", 
+            Constant.OrderStatus.StatusNoCheckout => "bg-gray-200",
+            Constant.OrderStatus.StatusPending => "bg-gray-400",
             Constant.OrderStatus.StatusConfirm => "bg-blue-500",
             Constant.OrderStatus.StatusCanceledByUser => "bg-red-500",
             Constant.OrderStatus.StatusShipping => "bg-gray-700",

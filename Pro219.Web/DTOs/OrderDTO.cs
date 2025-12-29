@@ -17,6 +17,8 @@ namespace Pro219.Web.DTOs
         public string? Note { get; set; }
         public byte? Status { get; set; }
         public int CustomerId { get; set; }
+        public bool IsPOS { get; set; }
+        public string PaymentLink { get; set; } = string.Empty;
         public OrderDetailCustomerDTO? Customer { get; set; }
         public OrderDetailAddressDTO? Address { get; set; }
         public List<OrderDetailItemDTO> Items { get; set; } = new List<OrderDetailItemDTO>();

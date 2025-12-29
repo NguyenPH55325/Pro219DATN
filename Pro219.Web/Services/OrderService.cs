@@ -20,6 +20,69 @@ namespace Pro219.Web.Services
             _httpClient = httpClient;
         }
 
+        public async Task<ServiceResult<Pro219.Web.DTOs.CheckoutDTO>> CheckoutPOS(CheckoutPOS checkoutPOS)
+        {
+            var lstItem = new List<CheckoutListItem>();
+
+            if(checkoutPOS != null && checkoutPOS.ListItemCheckout.Any()) 
+            { 
+                foreach(var item in checkoutPOS.ListItemCheckout)
+                {
+                    var obj = new CheckoutListItem
+                    {
+                        ProductName = item.ProductName,
+                        ProductVariantId = item.ProductVariantId,
+                        Quantity = item.Quantity,
+                        Subtotal = item.Subtotal,
+                        UnitPrice = item.UnitPrice,
+                    };
+                    lstItem.Add(obj);
+                }
+            }
+            var checkoutParam = new CheckoutPOSModel 
+            { 
+                AddressDTO = checkoutPOS.AddressDTO,
+                ListItemCheckout = lstItem,
+                isNewAddress = checkoutPOS.isNewAddress,
+                shippingAddressId = checkoutPOS.shippingAddressId != null && checkoutPOS.shippingAddressId > 0 ? checkoutPOS.shippingAddressId : -1,
+            };
+
+            var queryParams = new Dictionary<string, string?>
+            {
+                { "orderId", checkoutPOS.OrderId.ToString() },
+                { "discountAmount", checkoutPOS.DiscountAmount.ToString() },
+                { "shippingFee", checkoutPOS.ShippingFee.ToString() },
+                { "PaymentMethodTypeId", checkoutPOS.PaymentMethodTypeId.ToString() },
+            };
+
+            if (checkoutPOS.DiscountId > 0) queryParams.Add("discountId", checkoutPOS.DiscountId.ToString());
+            if (!string.IsNullOrEmpty(checkoutPOS.PhoneNumber)) queryParams.Add("phoneNumber", checkoutPOS.PhoneNumber);
+            if (!string.IsNullOrEmpty(checkoutPOS.Note)) queryParams.Add("note", checkoutPOS.Note);
+
+            var baseUrl = "/Order/checkout-pos";
+
+            string url = QueryHelpers.AddQueryString(baseUrl, queryParams!);
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+
+            request.Content = JsonContent.Create(checkoutParam);
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<Pro219.Web.DTOs.CheckoutDTO>();
+                return ServiceResult<Pro219.Web.DTOs.CheckoutDTO>.Success(result);
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                var errorMess = Constant.Errors.ContainsKey(errorMessage ?? "")
+                    ? Constant.Errors[errorMessage ?? ""]
+                    : $"Lỗi không xác định: {response.ReasonPhrase}";
+                return ServiceResult<Pro219.Web.DTOs.CheckoutDTO>.Failure(errorMessage, errorMess, response.StatusCode.ToString());
+            }
+        }
+
         public async Task<ServiceResult<Pro219.Web.DTOs.CheckoutDTO>> GetCheckoutUrl(
             string token,
             CheckoutModel checkoutBody,
@@ -249,9 +312,9 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<DAL.Models.Order>> PaymentSuccess(int orderId)
+        public async Task<ServiceResult<DAL.Models.Order>> PaymentSuccess(int orderId, bool pos = false)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/PaymentSuccess?orderId={orderId}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/PaymentSuccess?orderId={orderId}&pos={pos}");
             var response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
@@ -270,9 +333,9 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<DAL.Models.Order>> PaymentCanceled(int orderId)
+        public async Task<ServiceResult<DAL.Models.Order>> PaymentCanceled(int orderId, bool pos = false)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/PaymentCanceled?orderId={orderId}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/PaymentCanceled?orderId={orderId}&pos={pos}");
             var response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {

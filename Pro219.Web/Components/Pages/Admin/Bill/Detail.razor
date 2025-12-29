@@ -16,6 +16,10 @@
             </div>
 
             <div class="flex items-center gap-4">
+                @if(_orderDetail != null && _orderDetail.Status == 0 && _orderDetail.IsPOS == true) {
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary">Chuyển đổi thanh toán thành tiền mặt</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => navigation.NavigateTo(_orderDetail.PaymentLink))">Thanh toán</MudButton>
+                }
                 @if (_orderDetail != null && ShouldShowButtons())
                 {
                     @if (_orderDetail.Status == Constant.OrderStatus.StatusPending)
@@ -54,15 +58,23 @@
                     <div class="my-[1px] block self-stretch border-r border-slate-400" />
                     <div class="text-sm">
                         @{
-                            @if (_orderDetail != null && _orderDetail.Address != null)
+                            @if (_orderDetail != null)
                             {
-                                <p class="text-sm font-medium">@_orderDetail.Address?.Name <span>@((!string.IsNullOrEmpty(_orderDetail.Address?.Phone) ? " - " : ""))@_orderDetail.Address?.Phone</span></p>
-                                <p class="text-sm font-medium">
-                                    @_orderDetail.Address.OtherInfo@((!string.IsNullOrEmpty(_orderDetail.Address.OtherInfo) && (!string.IsNullOrEmpty(_orderDetail.Address.Street) || !string.IsNullOrEmpty(_orderDetail.Address.District) || !string.IsNullOrEmpty(_orderDetail.Address.City)) ? ", " : ""))
-                                    @_orderDetail.Address.Street@((!string.IsNullOrEmpty(_orderDetail.Address.Street) && (!string.IsNullOrEmpty(_orderDetail.Address.District) || !string.IsNullOrEmpty(_orderDetail.Address.City)) ? ", " : ""))
-                                    @_orderDetail.Address.District@((!string.IsNullOrEmpty(_orderDetail.Address.District) && !string.IsNullOrEmpty(_orderDetail.Address.City) ? ", " : ""))
-                                    @_orderDetail.Address.City
-                                </p>
+                                if (_orderDetail.Address != null) 
+                                {
+                                    <p class="text-sm font-medium">@_orderDetail.Address?.Name <span>@((!string.IsNullOrEmpty(_orderDetail.Address?.Phone) ? " - " : ""))@_orderDetail.Address?.Phone</span></p>
+                                    <p class="text-sm font-medium">
+                                        @_orderDetail.Address.OtherInfo@((!string.IsNullOrEmpty(_orderDetail.Address.OtherInfo) && (!string.IsNullOrEmpty(_orderDetail.Address.Street) || !string.IsNullOrEmpty(_orderDetail.Address.District) || !string.IsNullOrEmpty(_orderDetail.Address.City)) ? ", " : ""))
+                                        @_orderDetail.Address.Street@((!string.IsNullOrEmpty(_orderDetail.Address.Street) && (!string.IsNullOrEmpty(_orderDetail.Address.District) || !string.IsNullOrEmpty(_orderDetail.Address.City)) ? ", " : ""))
+                                        @_orderDetail.Address.District@((!string.IsNullOrEmpty(_orderDetail.Address.District) && !string.IsNullOrEmpty(_orderDetail.Address.City) ? ", " : ""))
+                                        @_orderDetail.Address.City
+                                    </p>
+                                } else 
+                                {
+                                    <span class="text-sm">@(_orderDetail.CustomerId == -1 && _orderDetail.IsPOS == true ? "Khách vãng lai mua tại quầy" : "")</span>
+                                }
+                            } else
+                            {
                             }
                         }
                     </div>
@@ -71,6 +83,16 @@
                     <label class="w-[11rem] flex-shrink-0 whitespace-pre-wrap text-base font-normal text-slate-600">Phương thức thanh toán</label>
                     <div class="my-[1px] block self-stretch border-r border-slate-400" />
                     <span class="w-full whitespace-pre-wrap break-words text-base font-normal text-slate-900 sm:max-w-[calc(100%-201px)]">@(_orderDetail?.PaymentMethodId == Constant.PaymentMethod.CashBack ? "Tiền mặt" : "Chuyển khoản")</span>
+                </div>
+                <div class="flex gap-5 bg-white px-4 py-4">
+                    <label class="w-[11rem] flex-shrink-0 whitespace-pre-wrap text-base font-normal text-slate-600">Khách Mua hàng</label>
+                    <div class="my-[1px] block self-stretch border-r border-slate-400" />
+                    <span class="w-full whitespace-pre-wrap break-words text-base font-normal text-slate-900 sm:max-w-[calc(100%-201px)]">@(_orderDetail?.CustomerId == -1 ? "Khách vãng lai" : "Khách Có tài khoản")</span>
+                </div>
+                <div class="flex gap-5 bg-white px-4 py-4">
+                    <label class="w-[11rem] flex-shrink-0 whitespace-pre-wrap text-base font-normal text-slate-600">Mua hàng</label>
+                    <div class="my-[1px] block self-stretch border-r border-slate-400" />
+                    <span class="w-full whitespace-pre-wrap break-words text-base font-normal text-slate-900 sm:max-w-[calc(100%-201px)]">@(_orderDetail?.IsPOS == true ? "Tại quầy" : "Online")</span>
                 </div>
                 <div class="flex gap-5 bg-white px-4 py-4">
                     <label class="w-[11rem] flex-shrink-0 whitespace-pre-wrap text-base font-normal text-slate-600">Trạng thái thanh toán</label>
@@ -334,6 +356,7 @@
     private string GetOrderStatusClass(byte? status) =>
         status switch
         {
+            Constant.OrderStatus.StatusNoCheckout => "bg-gray-200",
             Constant.OrderStatus.StatusPending => "bg-gray-400",
             Constant.OrderStatus.StatusConfirm => "bg-blue-500",
             Constant.OrderStatus.StatusCanceledByUser => "bg-red-500",

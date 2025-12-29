@@ -1,12 +1,13 @@
-﻿@page "/order/payment-cancelled"
-@layout MainLayout
+﻿@page "/admin/order/payment-cancelled"
+@layout AdminLayout
 
-<section class="mx-auto w-full max-w-[1032px] pb-10 pt-4">
+<section class="flex h-screen w-full items-center justify-center">
     <div class="flex w-full flex-col items-center justify-center gap-4 p-6 text-center">
         <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Class="!text-4xl" />
-        <h2 class="text-2xl font-bold text-red-600">Đơn hàng đã bị hủy!</h2>
+        <h2 class="text-2xl font-bold text-red-600">Thanh toán đã bị hủy!</h2>
         <div class="flex justify-center gap-3">
-            <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="@(() => navigation.NavigateTo(RouterConst.User.Home))">trang chủ</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Dark" OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.Bill))">Danh sách hóa đơn</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Dark" OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.SaleCounter))">Bán tại quầy</MudButton>
         </div>
     </div>
 </section>
@@ -30,7 +31,7 @@
         var token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage) ?? string.Empty;
         if (_orderId > 0)
         {
-            var result = await _orderService.PaymentCanceled(_orderId, false);
+            var result = await _orderService.PaymentCanceled(_orderId, true);
 
             if (int.TryParse(cartId, out _parsedCartId))
             {

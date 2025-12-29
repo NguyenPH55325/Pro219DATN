@@ -115,6 +115,10 @@
 
             // Sale counter
             public const string SaleCounter = "/admin/sale-counter";
+
+            // Payment Done
+            public const string PaymentSuccess = "/admin/order/payment-success";
+            public const string PaymentCancelled = "/admin/order/payment-cancelled";
         }
     }
 }
