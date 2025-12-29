@@ -10,6 +10,14 @@ namespace Pro219.Web.DTOs
         public CheckoutAddressModel? AddressDTO { get; set; }
     }
 
+    public class CheckoutPOSModel
+    {
+        public List<CheckoutListItem>? ListItemCheckout { get; set; } = new List<CheckoutListItem>();
+        public CheckoutAddressModel? AddressDTO { get; set; }
+        public bool? isNewAddress { get; set; } = false;
+        public int? shippingAddressId { get; set; } = -1;
+    }
+
     public class CheckoutListItem
     {
         public string ProductName { get; set; }

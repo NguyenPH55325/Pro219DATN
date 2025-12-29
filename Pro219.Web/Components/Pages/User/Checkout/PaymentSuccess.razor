@@ -34,7 +34,7 @@
         if (_orderId > 0)
         {
             _orderIdSuccess = _orderId;
-            var result = await _orderService.PaymentSuccess(_orderId);
+            var result = await _orderService.PaymentSuccess(_orderId, false);
             if (result.IsSuccess)
             {
                 _orderCodeSuccess = result.Data.OrderCode;

@@ -131,6 +131,7 @@
 
         public static class OrderStatus
         {
+            public const string OrderCheckoutPending = "Chờ thanh toán";
             public const string OrderStatusPending = "Đang chờ xử lý";
             public const string OrderStatusConfirm = "Đã xác nhận";
             public const string OrderStatusCanceledByUser = "Đã hủy";
@@ -157,6 +158,7 @@
 
         public static readonly OrderStatusItem[] OrderStatusArray = new OrderStatusItem[]
         {
+            new OrderStatusItem { id = OrderStatus.StatusNoCheckout, label = OrderStatus.OrderCheckoutPending },
             new OrderStatusItem { id = OrderStatus.StatusPending, label = OrderStatus.OrderStatusPending },
             new OrderStatusItem { id = OrderStatus.StatusConfirm, label = OrderStatus.OrderStatusConfirm },
             new OrderStatusItem { id = OrderStatus.StatusCanceledByUser, label = OrderStatus.OrderStatusCanceledByUser },

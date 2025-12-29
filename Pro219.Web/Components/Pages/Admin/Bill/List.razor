@@ -31,6 +31,8 @@
                 <MudTh><MudTableSortLabel SortLabel="Phương thức thanh toán" T="string">Phương thức thanh toán</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Trạng thái thanh toán" T="string">Trạng thái thanh toán</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Trạng thái hóa đơn" T="string">Trạng thái hóa đơn</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Khách mua hàng" T="string">Khách mua hàng</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel SortLabel="Mua hàng" T="string">Mua hàng</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel SortLabel="Chi tiết" T="string">Chi tiết</MudTableSortLabel></MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -52,15 +54,36 @@
                                     @address?.CityName
                                 </p>
                             </div>
+                        } else
+                        {
+                            <span>@(context.CustomerId == -1 && context.IsOrderPOS == true ? "Khách vãng lai mua tại quầy" : "")</span>
                         }
                     }
                 </MudTd>
                 <MudTd DataLabel="Phương thức thanh toán">@(context.PaymentMethodId == Constant.PaymentMethod.CashBack ? "Tiền mặt" : "Chuyển khoản")</MudTd>
                 <MudTd DataLabel="Trạng thái thanh toán">@context.PaymentStatus</MudTd>
                 <MudTd DataLabel="Trạng thái hóa đơn">
-                    <MudBadge Variant="Variant.Filled" Color="@(GetOrderStatusColor(context.Status))" Content="@context.OrderStatus" />
+                    <span class="@GetOrderStatusClass(context.Status) rounded-full px-3 py-1 text-sm font-medium text-white">
+                        @GetOrderStatusMessage(context.Status)
+                    </span>
                 </MudTd>
-                <MudTd DataLabel="Trạng thái hóa đơn">
+                <MudTd DataLabel="Khách mua hàng">
+                    @{
+                        var customerName = "Khách vãng lai";
+                        if(context.CustomerId != -1) {
+                            var objCus = _customers.FirstOrDefault(x => x.Id == context.CustomerId);
+
+                            if(objCus != null)
+                            {
+                                customerName = objCus.FullName;
+                            }
+                        }
+
+                        <span>@customerName</span>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Mua hàng">@(context.IsOrderPOS != null && context.IsOrderPOS == true ? "Tại quầy" : "Online")</MudTd>
+                <MudTd DataLabel="Thao tác">
                     <MudIconButton OnClick=@(() => navigation.NavigateTo(RouterConst.Admin.BillDetail.Replace(":id", context.OrderId.ToString()))) Icon="@Icons.Material.Filled.Menu" />
                     <MudIconButton OnClick=@(() => DowloadPDF(context.OrderId)) Icon="@Icons.Material.Filled.Download" Disabled="@(context.Status != Constant.OrderStatus.StatusDone)" />
                 </MudTd>
@@ -95,6 +118,7 @@
 @code {
     private List<DAL.Models.Order> _orders = [];
     private List<DAL.Models.Address> _addresses = [];
+    private List<DAL.Models.Customer> _customers = [];
 
     private string _searchValue = string.Empty;
     private bool _loading = true;
@@ -116,6 +140,7 @@
     {
         var resOrder = await _orderService.GetAll(_searchValue);
         var resAsddress = await _addressService.GetAll();
+        var resCustomers = await _customerService.GetAll(null);
 
         if(resOrder.IsSuccess && resOrder.Data.Count() > 0)
         {
@@ -125,6 +150,11 @@
         if (resAsddress.IsSuccess && resAsddress.Data.Count() > 0)
         {
             _addresses = resAsddress.Data;
+        }
+
+        if (resCustomers.IsSuccess && resCustomers.Data.Count() > 0)
+        {
+            _customers = resCustomers.Data;
         }
     }
 
@@ -168,16 +198,26 @@
         StateHasChanged();
     }
 
-    private Color GetOrderStatusColor(byte? Status) =>
-    Status switch
+    private string GetOrderStatusMessage(byte? status)
     {
-        Constant.OrderStatus.StatusPending => Color.Dark,
-        Constant.OrderStatus.StatusConfirm => Color.Info,
-        Constant.OrderStatus.StatusCanceledByUser => Color.Error,
-        Constant.OrderStatus.StatusShipping => Color.Primary,
-        Constant.OrderStatus.StatusShippingDone => Color.Tertiary,
-        Constant.OrderStatus.StatusShippingFailed => Color.Error,
-        Constant.OrderStatus.StatusDone => Color.Success,
-        _ => Color.Dark
-    };
+        if (!status.HasValue)
+            return "Không xác định";
+
+        var statusItem = Constant.OrderStatusArray.FirstOrDefault(s => s.id == status.Value);
+        return statusItem?.label ?? "Không xác định";
+    }
+
+    private string GetOrderStatusClass(byte? status) =>
+        status switch
+        {
+            Constant.OrderStatus.StatusNoCheckout => "bg-gray-200",
+            Constant.OrderStatus.StatusPending => "bg-gray-400",
+            Constant.OrderStatus.StatusConfirm => "bg-blue-500",
+            Constant.OrderStatus.StatusCanceledByUser => "bg-red-500",
+            Constant.OrderStatus.StatusShipping => "bg-gray-700",
+            Constant.OrderStatus.StatusShippingDone => "bg-green-500",
+            Constant.OrderStatus.StatusShippingFailed => "bg-red-500",
+            Constant.OrderStatus.StatusDone => "bg-green-500",
+            _ => "bg-gray-400"
+        };
 }

@@ -29,7 +29,7 @@ namespace Pro219.DAL.Repository
             {
                 var query = _context.Orders
                     .Include(o => o.ShippingAddress)
-                    .Where(x => x.Delete != true)
+                    .Where(x => x.Delete != true && x.Status != 99)
                     .AsQueryable();
 
                 if (!string.IsNullOrWhiteSpace(keyword))

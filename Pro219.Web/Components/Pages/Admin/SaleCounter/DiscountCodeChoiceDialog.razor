@@ -180,7 +180,7 @@
             var temp = new OrderTempPOS
                 {
                     OrderId = OrderId,
-                    ListItem = new List<CheckoutListItem>(),
+                    ListItem = new List<OrderTempPOSItem>(),
                     discountObj = newDiscount,
                 };
             lstOrderTemp.Add(temp);
@@ -206,7 +206,7 @@
                     var temp = new OrderTempPOS
                         {
                             OrderId = OrderId,
-                            ListItem = new List<CheckoutListItem>(),
+                            ListItem = new List<OrderTempPOSItem>(),
                             discountObj = newDiscount,
                         };
                     deserializedData.Add(temp);
@@ -219,7 +219,7 @@
                 var temp = new OrderTempPOS
                     {
                         OrderId = OrderId,
-                        ListItem = new List<CheckoutListItem>(),
+                        ListItem = new List<OrderTempPOSItem>(),
                         discountObj = newDiscount,
                     };
                 deserializedData.Add(temp);

@@ -1,44 +1,53 @@
 ﻿<div>
     <div>
-        <MudButton Class="!items-center !bg-admin-default !px-5 !text-white" OnClick="OpenDialogProduct"><MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" /> Chọn sản phẩm</MudButton>
+        <MudButton Class="!items-center !bg-admin-default !px-5 !text-white" Disabled="@_isProcessing" OnClick="OpenDialogProduct"><MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" /> Chọn sản phẩm</MudButton>
     </div>
-    @if(_orderItems.Any())
-    {
-        <div class="mt-8 max-h-[700px] w-full overflow-y-auto">
-            @foreach(var item in _orderItems)
+    @if(_loadingProduct) {
+        <div class="mt-8 max-h-[700px] w-full overflow-y-auto border border-solid border-slate-300 p-4">
+            @for(var i = 0; i < 6; i++)
             {
-                <div class="flex w-full flex-col items-start gap-4 py-5 lg:flex-row lg:items-center">
-                    <div class="max-h-full max-w-full flex-shrink-0 lg:max-h-[7.5rem] lg:max-w-[7.5rem]">
-                        <a>
-                            <img src="@Constant.DefaultImages" alt="product" />
-                        </a>
-                    </div>
-                    <div class="flex max-w-none flex-shrink-0 flex-col lg:max-w-[calc(100%-26.5rem)]">
-                        <a>@item.ProductName</a>
-                        <button class="w-fit p-2 text-xs text-slate-500 hover:text-red-500" @onclick="@(() => DeleteProductInItems(item.ProductVariantId))">Xóa</button>
-                    </div>
-                    <div class="flex w-28">
-                        <div class="flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center border-y border-l">
-                            <MudIcon Class="!h-4 !w-4" Icon="@Icons.Material.Filled.Remove" Size="Size.Small" @onclick="@(() => UpdateQuantity(item, false))" />
-                        </div>
-
-                        <span class="flex h-[1.875rem] w-10 items-baseline justify-center border bg-gray-50 p-1">@item.Quantity</span>
-
-                        <div class="flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center border-y border-r">
-                            <MudIcon Class="!h-4 !w-4" Icon="@Icons.Material.Filled.Add" Size="Size.Small" @onclick="@(() => UpdateQuantity(item, true))" />
-                        </div>
-                    </div>
-
-                    <span class="w-40 flex-shrink-0 whitespace-pre-wrap">@item.UnitPrice.ToString("C", vietnameseCulture)</span>
-                </div>
+                <MudSkeleton accesskey="@i" Width="100%" Height="6.25rem" />
             }
         </div>
-    }else
-    {
-        <div class="flex flex-col items-center justify-center py-20">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjSsgl_3i4kM0HTfpCFvNz90eAGcTAqApLMw&s" width="400" alt="no product"/>
-            <p class="text-center">Không có sản phẩm nào</p>
-        </div>
+    } else {
+        @if(_orderItems.Any())
+        {
+            <div class="mt-8 max-h-[700px] w-full overflow-y-auto border border-solid border-slate-300 p-4">
+                @foreach(var item in _orderItems)
+                {
+                    <div class="flex w-full flex-col items-start gap-5 border-t border-solid border-slate-300 py-5 first:!border-t-0 lg:flex-row lg:items-center">
+                        <div class="max-h-full w-full flex-shrink-0 lg:w-[6.25rem]">
+                            <img src="@item.Image" alt="product image" class="aspect-square w-full" />
+                        </div>
+                        <div class="flex w-full flex-shrink-0 flex-col lg:w-2/6">
+                            <a>@item.ProductName</a>
+                        </div>
+                        <span class="w-1/6 flex-shrink-0 whitespace-pre-wrap">@item.UnitPrice.ToString("C", vietnameseCulture)</span>
+                        <div class="flex w-1/6">
+                            <div class="flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center border-y border-l">
+                                <MudIcon Class="!h-4 !w-4" Icon="@Icons.Material.Filled.Remove" Size="Size.Small" Disabled="@_isProcessing" @onclick="@(() => UpdateQuantity(item, false))" />
+                            </div>
+
+                            <span class="flex h-[1.875rem] w-10 items-baseline justify-center border bg-gray-50 p-1">@item.Quantity</span>
+
+                            <div class="flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center border-y border-r">
+                                <MudIcon Class="!h-4 !w-4" Icon="@Icons.Material.Filled.Add" Size="Size.Small" Disabled="@_isProcessing" @onclick="@(() => UpdateQuantity(item, true))" />
+                            </div>
+                        </div>
+                        <span class="w-1/6 flex-shrink-0 whitespace-pre-wrap">@(item.Subtotal.ToString("C", vietnameseCulture))</span>
+                        <div class="w-1/6">
+                            <MudIcon Icon="@Icons.Material.Filled.Delete" Disabled="@_isProcessing" Class="cursor-pointer" Color="Color.Error" @onclick="@(() => DeleteProductInItems(item.ProductVariantId))" />
+                        </div>
+                    </div>
+                }
+            </div>
+        }else
+        {
+            <div class="flex flex-col items-center justify-center py-20">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjSsgl_3i4kM0HTfpCFvNz90eAGcTAqApLMw&s" width="400" alt="no product"/>
+                <p class="text-center">Không có sản phẩm nào</p>
+            </div>
+        }
     }
 
     <MudDivider Class="my-8" />
@@ -47,8 +56,8 @@
         <div class="item flex justify-between gap-6">
             <h2 class="text-2xl font-bold">Tài khoản</h2>
             <div class="flex items-center gap-4">
-                <MudButton Variant="Variant.Filled" hidden="@(Order.CustomerId == -1)" OnClick="SetToGuest" Class="!items-center !px-5 !text-white" Color="Color.Error"><MudIcon Icon="@Icons.Material.Filled.Remove" Class="mr-2" />Khách vãng lai</MudButton>
-                <MudButton OnClick="OpenDialogCustomer" Class="!items-center !bg-admin-default !px-5 !text-white"><MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" /> Chọn tài khoản</MudButton>
+                <MudButton Disabled="@_isProcessing" Variant="Variant.Filled" hidden="@(Order.CustomerId == -1)" OnClick="SetToGuest" Class="!items-center !px-5 !text-white" Color="Color.Error"><MudIcon Icon="@Icons.Material.Filled.Remove" Class="mr-2" />Khách vãng lai</MudButton>
+                <MudButton Disabled="@_isProcessing" OnClick="OpenDialogCustomer" Class="!items-center !bg-admin-default !px-5 !text-white"><MudIcon Icon="@Icons.Material.Filled.Add" Class="mr-2" /> Chọn tài khoản</MudButton>
             </div>
         </div>
 
@@ -148,12 +157,12 @@
                 <MudDivider />
                 <div class="flex items-center justify-between gap-4">
                     <span class="w-full max-w-[200px] flex-shrink-0 text-base font-medium">Phương thức thanh toán:</span>
-                    <MudRadioGroup T="int" @bind-Value="_paymentMethod">
+                    <MudRadioGroup Disabled="@_isProcessing" T="int" @bind-Value="_paymentMethod">
                         <div class="flex items-center justify-end gap-4">
                             <MudRadio Value="Constant.PaymentMethod.CashBack">
                                 Tiền mặt
                             </MudRadio>
-                            <MudRadio Value="Constant.PaymentMethod.CashBack">
+                            <MudRadio Value="Constant.PaymentMethod.Transfer">
                                 Chuyển khoản
                             </MudRadio>
                         </div>
@@ -164,7 +173,7 @@
                     <div class="max-w-[calc(100%-186px)] flex w-full items-center gap-2">
                         <MudTextField T="string" Disabled Variant="Variant.Outlined" Value="@_discountCode" />
                         <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="cursor-pointer" hidden="@(string.IsNullOrEmpty(_discountCode))" @onclick="RemoveDiscount" />
-                        <MudButton OnClick="OpenDialogDiscountCode" Disabled="@(_totalProductAmount == 0)" Variant="Variant.Outlined">Chọn mã</MudButton>
+                        <MudButton OnClick="OpenDialogDiscountCode" Disabled="@(_totalProductAmount == 0 || _isProcessing)" Variant="Variant.Outlined">Chọn mã</MudButton>
                     </div>
                 </div>
                 <div class="flex w-full items-center gap-4">
@@ -180,7 +189,12 @@
                     <div class="flex w-full items-center gap-4">
                         <span class="w-full max-w-[170px] flex-shrink-0 text-base font-medium">Phí giao hàng:</span>
                         <div class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-base">
-                            <MudTextField T="decimal" @bind-Value="_shippingAmount" InputType="InputType.Number" Variant="Variant.Outlined" />
+                            <MudNumericField T="decimal"
+                                             Disabled="@_isProcessing"
+                                             @bind-Value="_shippingAmount" 
+                                             Adornment="Adornment.End"
+                                             AdornmentText="₫"
+                                             Placeholder="Nhập phí ship" Min="0" Variant="Variant.Outlined" />
                         </div>
                     </div>
                 }
@@ -192,6 +206,8 @@
                     <span class="w-full max-w-[170px] flex-shrink-0 text-base font-medium">Tổng tiền thanh toán:</span>
                     <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-base">@(TotalPaymentAmount.ToString("C", vietnameseCulture))</span>
                 </div>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnCheckout" Disabled="@_isProcessing" Size="Size.Large">Thanh toán</MudButton>
             </div>
         </div>
     </div>
@@ -203,8 +219,11 @@
     [Parameter]
     public string Token { get; set; } = string.Empty;
 
+    [Parameter]
+    public EventCallback RefreshData { get; set; }
+
     private DAL.Models.Address _defaultAddress = new DAL.Models.Address();
-    private List<CheckoutListItem >_orderItems = new List<CheckoutListItem>();
+    private List<OrderTempPOSItem >_orderItems = new List<OrderTempPOSItem>();
     private DAL.Models.Customer _customer = new DAL.Models.Customer();
     List<DAL.Models.Order> _orders = [];
     List<ProvinceDTO> _provinces = [];
@@ -222,7 +241,10 @@
     private decimal _totalProductAmount = 0;
     private decimal _discountAmount = 0;
     private string _discountCode = string.Empty;
+    private int _discountCodeId = -1;
     private int _paymentMethod = Constant.PaymentMethod.CashBack;
+    private bool _loadingProduct = true;
+    private bool _isProcessing = false;
 
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Large, FullWidth = true };
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
@@ -258,29 +280,43 @@
 
     private async Task LoadOrderItems()
     {
-        var orderItems = await localStorage.GetItemAsStringAsync(Constant.OrderPOSTemp);
-        if (!string.IsNullOrEmpty(orderItems))
-        {
-            var deserializedData = JsonSerializer.Deserialize<List<OrderTempPOS>>(orderItems);
+        try {
+            _orderItems = new();
+            _totalProductAmount = 0;
+            _discountAmount = 0;
 
-            if (deserializedData != null && deserializedData.Any())
+            var orderItems = await localStorage.GetItemAsStringAsync(Constant.OrderPOSTemp);
+            if (!string.IsNullOrEmpty(orderItems))
             {
-                var objOrder = deserializedData.FirstOrDefault(x => x.OrderId == Order.OrderId);
+                var deserializedData = JsonSerializer.Deserialize<List<OrderTempPOS>>(orderItems);
 
-                if (objOrder != null)
+                if (deserializedData != null && deserializedData.Any())
                 {
-                    if(objOrder.ListItem.Any()) {
-                        _orderItems = objOrder.ListItem;
-                        _totalProductAmount = objOrder.ListItem.Sum(x => x.Subtotal) ?? 0;
-                    }
+                    var objOrder = deserializedData.FirstOrDefault(x => x.OrderId == Order.OrderId);
 
-                    if (objOrder.discountObj != null)
+                    if (objOrder != null)
                     {
-                        _discountCode = objOrder.discountObj.DiscountCode;
-                        _discountAmount = _totalProductAmount > objOrder.discountObj.DiscountAmount ? objOrder.discountObj.DiscountAmount : _totalProductAmount;
+                        if(objOrder.ListItem.Any()) {
+                            _orderItems = objOrder.ListItem;
+                            _totalProductAmount = objOrder.ListItem.Sum(x => x.Subtotal);
+                        }
+
+                        if (objOrder.discountObj != null)
+                        {
+                            _discountCode = objOrder.discountObj.DiscountCode;
+                            _discountAmount = _totalProductAmount > objOrder.discountObj.DiscountAmount ? objOrder.discountObj.DiscountAmount : _totalProductAmount;
+                            _discountCodeId = objOrder.discountObj.Id;
+                        }
                     }
                 }
             }
+        } catch(Exception ex)
+        {
+
+        }
+        finally
+        {
+            _loadingProduct = false;
         }
     }
 
@@ -501,13 +537,13 @@
                     }
                 }
             }
-            await LoadOrderItems();
-            await GetShippingFeeAsync();
-            StateHasChanged();
         }
+        await LoadOrderItems();
+        await GetShippingFeeAsync();
+        StateHasChanged();
     }
 
-    async Task UpdateQuantity(CheckoutListItem checkoutListItem, bool isIncrease)
+    async Task UpdateQuantity(OrderTempPOSItem checkoutListItem, bool isIncrease)
     {
         if (checkoutListItem.Quantity == 1 && !isIncrease) return;
 
@@ -530,6 +566,19 @@
                         {
                             var currentQuantity = hasProductVariant.Quantity;
                             var totalQuantity = isIncrease ? currentQuantity + 1: currentQuantity - 1;
+
+
+                            if (isIncrease)
+                            {
+                                var productVariant = await _productVariantService.GetById(checkoutListItem.ProductVariantId);
+
+                                if(productVariant.IsSuccess && productVariant.Data != null && totalQuantity > productVariant.Data.StockQuantity)
+                                {
+                                    _snackbar.Add("Số lượng đạt giới hạn", Severity.Warning);
+                                    return;
+                                }
+                            }
+
                             var subTotal = hasProductVariant.UnitPrice * totalQuantity;
                             hasProductVariant.Quantity = totalQuantity;
                             hasProductVariant.Subtotal = subTotal;
@@ -537,7 +586,7 @@
                             if (order.discountObj != null)
                             {
                                 decimal amount = 0;
-                                var totalAmount = order.ListItem.Sum(x => x.Subtotal) ?? 0;
+                                var totalAmount = order.ListItem.Sum(x => x.Subtotal);
                                 if (order.discountObj.DiscountType == Constant.DiscountTypePercent)
                                 {
                                     amount = totalAmount * (order.discountObj.Value / 100);
@@ -594,6 +643,17 @@
 
     private async Task GetShippingFeeAsync()
     {
+        if (!_isShipping || !_orderItems.Any())
+        {
+            _shippingAmount = 0;
+            return;
+        }
+
+        if (_selectedProvince == 0 || _selectedDistrict == 0 || string.IsNullOrEmpty(_selectedWard))
+        {
+            return;
+        }
+
         if (!_orderItems.Any())
         {
             _shippingAmount = 0;
@@ -660,6 +720,171 @@
             decimal amountAfterDiscount = Math.Max(0, _totalProductAmount - _discountAmount);
 
             return amountAfterDiscount + _shippingAmount;
+        }
+    }
+
+    private void ResetOrderState()
+    {
+        _orderItems = new List<OrderTempPOSItem>();
+        _totalProductAmount = 0;
+        _discountAmount = 0;
+        _discountCode = string.Empty;
+        _discountCodeId = -1;
+        _shippingAmount = 0;
+        _note = string.Empty;
+        _isShipping = false;
+        _selectedProvince = 0;
+        _selectedDistrict = 0;
+        _selectedWard = string.Empty;
+        _customer = new DAL.Models.Customer();
+        _defaultAddress = new DAL.Models.Address();
+        Order = new DAL.Models.Order();
+    }
+
+    private async Task OnCheckout()
+    {
+        if (_isProcessing) return;
+
+        if (!_orderItems.Any())
+        {
+            _snackbar.Add("Vui lòng chọn ít nhất một sản phẩm để thanh toán.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+
+            var shippingId = -1;
+            var address = new CheckoutAddressModel();
+            var phoneNumber = string.Empty;
+            if(Order.CustomerId != -1)
+            {
+                phoneNumber = _customer.PhoneNumber;
+            }
+            if(_isShipping)
+            {
+                if(_shippingAmount < 0)
+                {
+                    _snackbar.Add("Phí giao hàng không được nhỏ hơn 0.", Severity.Error);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(_defaultAddress.FullName) ||
+                    string.IsNullOrEmpty(_defaultAddress.Phone) ||
+                    _selectedProvince == 0 || _selectedDistrict == 0 || _selectedWard == string.Empty)
+                {
+                    _snackbar.Add("Vui lòng điền đầy đủ thông tin nhận hàng.", Severity.Warning);
+                    return;
+                }
+
+                address.CustomerId = Order.CustomerId ?? -1;
+                address.Phone = _defaultAddress.Phone;
+                address.FullName = _defaultAddress.FullName;
+                address.City = _defaultAddress.City;
+                address.CityName = _defaultAddress.CityName;
+                address.District = _defaultAddress.District;
+                address.DistrictName = _defaultAddress.DistrictName;
+                address.Street = _defaultAddress.Street;
+                address.StreetName = _defaultAddress.StreetName;
+                address.OtherInfo = _defaultAddress.OtherInfo;
+
+                if (_isUseCurrentAddress == 1)
+                {   
+                    shippingId = _defaultAddress.Id;
+                }
+            }
+
+            if (_paymentMethod == 0)
+            {
+                _snackbar.Add("Vui lòng chọn phương thức thanh toán.", Severity.Warning);
+                return;
+            }
+
+            var payload = new CheckoutPOS
+        {
+            OrderId = Order.OrderId,
+            ListItemCheckout = _orderItems,
+            ShippingFee = _shippingAmount,
+            shippingAddressId = shippingId,
+            isNewAddress = _isShipping,
+            AddressDTO =  _isShipping ? address : null,
+            DiscountAmount = _discountAmount,
+            DiscountId = _discountCodeId,
+            Note = _note,
+            PaymentMethodTypeId = _paymentMethod,
+            PhoneNumber = phoneNumber,
+        };
+
+            var result = await _orderService.CheckoutPOS(payload);
+
+
+            if (result.IsSuccess && result.Data != null)
+            {
+                var data = result.Data;
+
+                var objOrderTemp = await localStorage.GetItemAsStringAsync(Constant.OrderPOSTemp);
+
+                if (!string.IsNullOrEmpty(objOrderTemp))
+                {
+                    var deserializedData = JsonSerializer.Deserialize<List<OrderTempPOS>>(objOrderTemp);
+                    if (deserializedData != null && deserializedData.Any())
+                    {
+                        var order = deserializedData.FirstOrDefault(x => x.OrderId == Order.OrderId);
+
+                        if(order != null)
+                        {
+                            deserializedData.Remove(order);
+                            await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+                        }
+                    }
+                }
+
+                if (data.PaymentType == Constant.PaymentMethod.Transfer)
+                {
+                    _snackbar.Add("Chuyển hướng đến cổng thanh toán...", Severity.Info);
+                    navigation.NavigateTo(data.URLPayment);
+                }
+                else if (data.PaymentType == Constant.PaymentMethod.CashBack)
+                {
+                    _snackbar.Add("Thanh toán thành công!", Severity.Success);
+                    StateHasChanged();
+                }
+                else
+                {
+                    _snackbar.Add($"Phương thức thanh toán không hợp lệ: {data.PaymentType}", Severity.Error);
+                }
+
+                ResetOrderState();
+                await RefreshData.InvokeAsync();
+                await LoadData();
+                await LoadAddress();
+                await LoadOrderItems();
+                StateHasChanged();
+            }
+            else
+            {
+                var errorMessage = result.ErrorMessage ?? "Có lỗi xảy ra. Vui lòng thử lại.";
+
+                if (result.StatusCode == "400")
+                {
+                    errorMessage = result.ErrorMessage ?? "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.";
+                }
+                else if (result.StatusCode == "401" || result.StatusCode == "403")
+                {
+                    errorMessage = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.";
+                }
+                else if (result.StatusCode == "500")
+                {
+                    errorMessage = "Lỗi hệ thống. Vui lòng thử lại.";
+                }
+
+                _snackbar.Add(errorMessage, Severity.Error);
+            }
+        } catch(Exception ex) {}
+        finally
+        {
+            _isProcessing = false;
+            StateHasChanged();
         }
     }
 }
