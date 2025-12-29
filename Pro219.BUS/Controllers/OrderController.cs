@@ -97,6 +97,40 @@ namespace Pro219.API.Controllers
                 return StatusCode(500, Constant.ErrorCode.OtherError);
             }
         }
+
+        [HttpPut("ChangePaymentMethodToCash/{orderId}")]
+        public async Task<ActionResult<Order>> ChangePaymentMethodToCash(int orderId)
+        {
+            try
+            {
+                var order = await orderRepository.GetOrderById(orderId);
+                if (order == null)
+                {
+                    return NotFound(Constant.ErrorCode.DataNotFound);
+                }
+                if (order.PaymentMethodId == 1 || order.Status!=Constant.OrderStatus.StatusPending || order.IsOrderPOS==false)
+                {
+                    return BadRequest("Không đủ điều kiện chuyển đổi");
+                }
+                order.PaymentMethodId = 1;
+                order.LastUpdate = DateTime.Now;
+                order.UpdateBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                order.Status = Constant.OrderStatus.StatusDone;
+                order.PaymentStatus = Constant.OrderStatus.PaymentCompleted;
+                order.OrderStatus = Constant.OrderStatus.OrderStatusDone;
+                var result = await orderRepository.UpdateOrder(order);
+                if (result == null)
+                {
+                    return StatusCode(500, Constant.ErrorCode.DatabaseError);
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+
         private List<StatusHistoryEntry> ParseStatusHistory(string? statusHistoryJson)
         {
             if (string.IsNullOrWhiteSpace(statusHistoryJson))
