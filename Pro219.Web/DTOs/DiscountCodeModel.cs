@@ -18,7 +18,7 @@ namespace Pro219.Web.DTOs
 
         [Required(ErrorMessage = Constant.MessageValid.Required)]
         [Range(1.0, (double)decimal.MaxValue, ErrorMessage = "Giá trị tối thiểu là 1.")]
-        public decimal Value { get; set; } = 100000;
+        public decimal Value { get; set; } = 10;
 
         [ConditionalMinValue(ErrorMessage = "Giá trị tối thiểu là 1.")]
         public decimal? MinOrderValue { get; set; }

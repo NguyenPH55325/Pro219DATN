@@ -26,22 +26,25 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá trị (@(_discountType == 1 ? "%" : "VND"))</span>
-                <MudNumericField @bind-Value="@_model.Value" For="@(() => _model.Value)" Placeholder="@(_discountType == 1 ? "10" : "179000")" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField @bind-Value="@_model.Value" For="@(() => _model.Value)" Min="0" Adornment="Adornment.End"
+                                 AdornmentText="₫" HideSpinButtons="true" Placeholder="@(_discountType == 1 ? "10" : "179000")" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá tối thiểu áp dụng</span>
-                <MudNumericField @bind-Value="@_model.MinOrderValue" For="@(() => _model.MinOrderValue)" Placeholder="179000" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField @bind-Value="@_model.MinOrderValue" For="@(() => _model.MinOrderValue)" Min="0" Adornment="Adornment.End"
+                                 AdornmentText="₫" HideSpinButtons="true" Placeholder="179000" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá giảm tối đa</span>
-                <MudNumericField @bind-Value="@_model.MaxDiscountAmount" Disabled="@_isDisableMaxValue" For="@(() => _model.MaxDiscountAmount)" Placeholder="179000" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField @bind-Value="@_model.MaxDiscountAmount" Disabled="@_isDisableMaxValue" For="@(() => _model.MaxDiscountAmount)" Min="0" Adornment="Adornment.End"
+                                 AdornmentText="₫" HideSpinButtons="true" Placeholder="179000" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Số mã được phát hành</span>
-                <MudNumericField @bind-Value="@_model.MaxUsage" For="@(() => _model.MaxUsage)" Placeholder="1" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField @bind-Value="@_model.MaxUsage" For="@(() => _model.MaxUsage)" Min="0" HideSpinButtons="true" Placeholder="1" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
