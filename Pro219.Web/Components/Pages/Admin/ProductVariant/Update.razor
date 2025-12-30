@@ -17,7 +17,8 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá</span>
-                <MudNumericField @bind-Value="@_model.Price" For="@(() => _model.Price)" Placeholder="179000" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField @bind-Value="@_model.Price" For="@(() => _model.Price)" Placeholder="179000" Min="0" Adornment="Adornment.End"
+                                 AdornmentText="₫" HideSpinButtons="true" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
@@ -44,7 +45,7 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Số lượng</span>
-                <MudNumericField @bind-Value="@_model.StockQuantity" For="@(() => _model.StockQuantity)" Placeholder="100" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField @bind-Value="@_model.StockQuantity" For="@(() => _model.StockQuantity)" Min="0" HideSpinButtons="true" Placeholder="100" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
@@ -127,8 +128,8 @@
     private List<BreadcrumbItem> _items =>
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Sản Phẩm Chi Tiết", href: RouterConst.Admin.ProductVariant),
-        new("Chỉnh Sửa Sản Phẩm", href: "#", disabled: true),
+    new("Sản Phẩm Chi Tiết", href: RouterConst.Admin.ProductVariant),
+    new("Chỉnh Sửa Sản Phẩm", href: "#", disabled: true),
     ];
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -189,8 +190,8 @@
             return;
         }
 
-
         _isLoading = false;
+        StateHasChanged();
     }
 
     private async Task UploadFiles(IBrowserFile file)

@@ -17,7 +17,8 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá mặc định</span>
-                <MudNumericField @bind-Value="@_model.BasePrice" For="@(() => _model.BasePrice)" Placeholder="179000" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField @bind-Value="@_model.BasePrice" For="@(() => _model.BasePrice)" Min="0" Placeholder="179000" Adornment="Adornment.End"
+                                 AdornmentText="₫" HideSpinButtons="true" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
@@ -103,7 +104,7 @@
 
             <div class="flex items-center justify-center gap-4">
                 <MudButton OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.Product))" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Class="w-fit px-10">Tạo</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSubmitting" Class="w-fit px-10">Tạo</MudButton>
             </div>
         </EditForm>
     </div>
@@ -128,6 +129,7 @@
     private bool _isLoading = true;
     private int _isActive = 1;
     private int MaxAllowedSize = 1024 * 1024 * 5;
+    private bool _isSubmitting = false;
 
     private List<BreadcrumbItem> _items =>
     [
@@ -240,91 +242,101 @@
 
     async Task OnSubmit()
     {
+        if (_isSubmitting) return;
         if (_images.Count + _newImages.Count <= 0)
         {
             _snackbar.Add("Vui lòng thêm ít nhất 1 ảnh", Severity.Warning);
             return;
         }
 
-        var result = await _productService.Update(_model, _token);
-
-        if (result.IsSuccess)
+        try
         {
-            try
+            _isSubmitting = true;
+            var result = await _productService.Update(_model, _token);
+
+            if (result.IsSuccess)
             {
-                var productId = _model.Id;
-                var contentRootPath = WebHostEnvironment.WebRootPath;
-                var productImagesPath = Path.Combine(contentRootPath, "Uploads", "Images", "Products", productId.ToString());
-
-                // 2. Xử lý xóa ảnh cũ khỏi DB và hệ thống file
-                if (_imagesToDelete.Any())
+                try
                 {
-                    var resultDelete = await _productImageService.DeleteAny(_imagesToDelete.Select(i => i.Id).ToList(), _token);
+                    var productId = _model.Id;
+                    var contentRootPath = WebHostEnvironment.WebRootPath;
+                    var productImagesPath = Path.Combine(contentRootPath, "Uploads", "Images", "Products", productId.ToString());
 
-                    foreach (var image in _imagesToDelete)
+                    // 2. Xử lý xóa ảnh cũ khỏi DB và hệ thống file
+                    if (_imagesToDelete.Any())
                     {
-                        var fullPath = Path.Combine(contentRootPath, image.ImageUrl.TrimStart('/'));
-                        if (File.Exists(fullPath))
+                        var resultDelete = await _productImageService.DeleteAny(_imagesToDelete.Select(i => i.Id).ToList(), _token);
+
+                        foreach (var image in _imagesToDelete)
                         {
-                            File.Delete(fullPath);
-                        }
-                    }
-                    _imagesToDelete.Clear();
-                }
-
-                // 3. Xử lý lưu ảnh mới vào hệ thống file và DB
-                if (_newImages.Any())
-                {
-                    if (!Directory.Exists(productImagesPath))
-                    {
-                        Directory.CreateDirectory(productImagesPath);
-                    }
-
-                    List<DAL.Models.ProductImage> imagesToCreate = new List<DAL.Models.ProductImage>();
-
-                    foreach (var image in _newImages)
-                    {
-                        var fileName = Path.GetFileName(image.File.Name);
-                        var filePath = Path.Combine(productImagesPath, fileName);
-
-                        // Lưu file vào thư mục
-                        await using Stream fileStream = image.File.OpenReadStream(MaxAllowedSize);
-                        await using FileStream fs = File.Create(filePath);
-                        await fileStream.CopyToAsync(fs);
-
-                        // Tạo record trong DB
-                        DAL.Models.ProductImage productImage = new DAL.Models.ProductImage
+                            var fullPath = Path.Combine(contentRootPath, image.ImageUrl.TrimStart('/'));
+                            if (File.Exists(fullPath))
                             {
-                                ProductId = productId,
-                                ImageUrl = "/Uploads/Images/Products/" + productId.ToString() + "/" + fileName,
-                                IsMain = true,
-                                Status = 1,
-                            };
-                        imagesToCreate.Add(productImage);
+                                File.Delete(fullPath);
+                            }
+                        }
+                        _imagesToDelete.Clear();
                     }
 
-                    if (imagesToCreate.Any())
+                    // 3. Xử lý lưu ảnh mới vào hệ thống file và DB
+                    if (_newImages.Any())
                     {
-                        await _productImageService.CreateAny(imagesToCreate);
+                        if (!Directory.Exists(productImagesPath))
+                        {
+                            Directory.CreateDirectory(productImagesPath);
+                        }
+
+                        List<DAL.Models.ProductImage> imagesToCreate = new List<DAL.Models.ProductImage>();
+
+                        foreach (var image in _newImages)
+                        {
+                            var fileName = Path.GetFileName(image.File.Name);
+                            var filePath = Path.Combine(productImagesPath, fileName);
+
+                            // Lưu file vào thư mục
+                            await using Stream fileStream = image.File.OpenReadStream(MaxAllowedSize);
+                            await using FileStream fs = File.Create(filePath);
+                            await fileStream.CopyToAsync(fs);
+
+                            // Tạo record trong DB
+                            DAL.Models.ProductImage productImage = new DAL.Models.ProductImage
+                                {
+                                    ProductId = productId,
+                                    ImageUrl = "/Uploads/Images/Products/" + productId.ToString() + "/" + fileName,
+                                    IsMain = true,
+                                    Status = 1,
+                                };
+                            imagesToCreate.Add(productImage);
+                        }
+
+                        if (imagesToCreate.Any())
+                        {
+                            await _productImageService.CreateAny(imagesToCreate);
+                        }
+
+                        _newImages.Clear();
                     }
 
-                    _newImages.Clear();
-                }
+                    // Cập nhật lại danh sách ảnh hiển thị (bao gồm cả ảnh cũ còn lại và ảnh mới vừa thêm)
+                    var resImagesAfterUpdate = await _productImageService.GetAllByProductId(id);
+                    if (resImagesAfterUpdate.IsSuccess && resImagesAfterUpdate.Data != null)
+                    {
+                        _images = resImagesAfterUpdate.Data;
+                    }
 
-                // Cập nhật lại danh sách ảnh hiển thị (bao gồm cả ảnh cũ còn lại và ảnh mới vừa thêm)
-                var resImagesAfterUpdate = await _productImageService.GetAllByProductId(id);
-                if (resImagesAfterUpdate.IsSuccess && resImagesAfterUpdate.Data != null)
+                    _snackbar.Add("Cập nhật sản phẩm thành công", Severity.Success);
+                    navigation.NavigateTo(RouterConst.Admin.Product);
+                }
+                catch (Exception ex)
                 {
-                    _images = resImagesAfterUpdate.Data;
+                    _snackbar.Add($"Cập nhật sản phẩm thành công, nhưng lỗi xử lý ảnh: {ex.Message}", Severity.Warning);
                 }
-
-                _snackbar.Add("Cập nhật sản phẩm thành công", Severity.Success);
-                navigation.NavigateTo(RouterConst.Admin.Product);
             }
-            catch (Exception ex)
-            {
-                _snackbar.Add($"Cập nhật sản phẩm thành công, nhưng lỗi xử lý ảnh: {ex.Message}", Severity.Warning);
-            }
+        }
+        catch(Exception ex) {}
+        finally
+        {
+            _isSubmitting = false;
         }
     }
 }

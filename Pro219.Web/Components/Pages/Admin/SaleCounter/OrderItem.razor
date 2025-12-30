@@ -173,7 +173,7 @@
                     <div class="max-w-[calc(100%-186px)] flex w-full items-center gap-2">
                         <MudTextField T="string" Disabled Variant="Variant.Outlined" Value="@_discountCode" />
                         <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="cursor-pointer" hidden="@(string.IsNullOrEmpty(_discountCode))" @onclick="RemoveDiscount" />
-                        <MudButton OnClick="OpenDialogDiscountCode" Disabled="@(_totalProductAmount == 0 || _isProcessing)" Variant="Variant.Outlined">Chọn mã</MudButton>
+                        <MudButton OnClick="OpenDialogDiscountCode" Disabled="@(_totalProductAmount == 0 || _isProcessing)" Class="h-14" Variant="Variant.Outlined">Chọn mã</MudButton>
                     </div>
                 </div>
                 <div class="flex w-full items-center gap-4">
@@ -194,6 +194,7 @@
                                              @bind-Value="_shippingAmount" 
                                              Adornment="Adornment.End"
                                              AdornmentText="₫"
+                                             HideSpinButtons="true"
                                              Placeholder="Nhập phí ship" Min="0" Variant="Variant.Outlined" />
                         </div>
                     </div>
@@ -769,7 +770,7 @@
 
         try
         {
-
+            _isProcessing = true;
             var shippingId = -1;
             var address = new CheckoutAddressModel();
             var phoneNumber = string.Empty;
@@ -817,19 +818,19 @@
             }
 
             var payload = new CheckoutPOS
-        {
-            OrderId = Order.OrderId,
-            ListItemCheckout = _orderItems,
-            ShippingFee = _shippingAmount,
-            shippingAddressId = shippingId,
-            isNewAddress = _isShipping,
-            AddressDTO =  _isShipping ? address : null,
-            DiscountAmount = _discountAmount,
-            DiscountId = _discountCodeId,
-            Note = _note,
-            PaymentMethodTypeId = _paymentMethod,
-            PhoneNumber = phoneNumber,
-        };
+            {
+                OrderId = Order.OrderId,
+                ListItemCheckout = _orderItems,
+                ShippingFee = _shippingAmount,
+                shippingAddressId = shippingId,
+                isNewAddress = _isShipping,
+                AddressDTO =  _isShipping ? address : null,
+                DiscountAmount = _discountAmount,
+                DiscountId = _discountCodeId,
+                Note = _note,
+                PaymentMethodTypeId = _paymentMethod,
+                PhoneNumber = phoneNumber,
+            };
 
             var result = await _orderService.CheckoutPOS(payload);
 
