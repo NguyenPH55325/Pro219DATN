@@ -108,7 +108,7 @@ namespace Pro219.API.Controllers
                 {
                     return NotFound(Constant.ErrorCode.DataNotFound);
                 }
-                if (order.PaymentMethodId == 1 || order.Status!=Constant.OrderStatus.StatusPending || order.IsOrderPOS==false)
+                if (order.PaymentMethodId == 1 || order.Status!=Constant.OrderStatus.StatusWaitingForPayment || order.IsOrderPOS==false)
                 {
                     return BadRequest("Không đủ điều kiện chuyển đổi");
                 }
@@ -118,7 +118,18 @@ namespace Pro219.API.Controllers
                 order.Status = Constant.OrderStatus.StatusDone;
                 order.PaymentStatus = Constant.OrderStatus.PaymentCompleted;
                 order.OrderStatus = Constant.OrderStatus.OrderStatusDone;
-                var result = await orderRepository.UpdateOrder(order);
+                var statusHistory = ParseStatusHistory(order.StatusHistory);
+                statusHistory.Add(new StatusHistoryEntry
+                {
+                    Index = statusHistory.Count + 1,
+                    Status = order.Status ?? Constant.OrderStatus.StatusDone,
+                    OrderStatus = Constant.OrderStatus.OrderStatusDone,
+                    PaymentStatus = Constant.OrderStatus.PaymentCompleted,
+                    DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
+                });
+                order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
+                var result = await orderRepository.UpdateOrder(order); 
+
                 if (result == null)
                 {
                     return StatusCode(500, Constant.ErrorCode.DatabaseError);

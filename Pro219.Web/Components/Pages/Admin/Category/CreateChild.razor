@@ -6,77 +6,78 @@
 @if (_isLoading)
 {
     <Loading />
-} else
+}
+else
 {
     <div class="p-6">
-    <MudBreadcrumbs Class="!p-0 !text-sm" Items="_items" Separator=">"></MudBreadcrumbs>
+        <MudBreadcrumbs Class="!p-0 !text-sm" Items="_items" Separator=">"></MudBreadcrumbs>
 
-    <div class="flex items-center justify-between">
-        <h1 class="leading-[3rem] h-12 text-3xl font-bold text-admin-default">Tạo danh mục con cho: @_parentCategory.Name</h1>
+        <div class="flex items-center justify-between">
+            <h1 class="leading-[3rem] h-12 text-3xl font-bold text-admin-default">Tạo danh mục con cho: @_parentCategory.Name</h1>
 
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Button" OnClick="OnSubmit" Class="w-fit px-10">Lưu</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Button" Disabled="@_isLoading" OnClick="OnSubmit" Class="w-fit px-10">Lưu</MudButton>
+        </div>
+
+        <div class="mx-auto mt-6 w-full rounded-lg bg-white p-8 shadow-sm">
+            <EditForm Model="_model" OnValidSubmit="OnAddToList" class="mx-auto flex w-full flex-col gap-4">
+                <DataAnnotationsValidator />
+
+                <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+                    <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Tên</span>
+                    <MudTextField @bind-Value="@_model.Name" For="@(() => _model.Name)" Placeholder="Áo polo" Variant="Variant.Outlined" FullWidth Style="background-color: white" />
+                </div>
+
+                <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+                    <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Mô tả</span>
+                    <MudTextField @bind-Value="@_model.Description" For="@(() => _model.Description)" Placeholder="mô tả danh mục" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                </div>
+
+                <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+                    <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Trạng thái</span>
+
+                    <MudRadioGroup @bind-Value="@_isActive" For="@(() => _isActive)">
+                        <MudRadio Value="1" Color="Color.Primary">Hoạt động</MudRadio>
+                        <MudRadio Value="0" Color="Color.Primary">Ngừng Hoạt động</MudRadio>
+                    </MudRadioGroup>
+                </div>
+
+                <div class="flex items-center justify-center gap-4">
+                    <MudButton Href="@RouterConst.Admin.Category" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
+                    <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Class="w-fit px-10" Disabled="@_isLoading">Thêm</MudButton>
+                </div>
+            </EditForm>
+
+            <MudDivider Class="my-8" />
+
+            <MudTable Bordered Items="@_NewSubCategories" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortLabel="Tên" T="string">Tên</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Mô tả" T="string">Mô tả</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Trạng thái" T="string">Trạng thái</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortLabel="Thao tác" T="string">Thao tác</MudTableSortLabel></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Tên">@context.Name</MudTd>
+                    <MudTd DataLabel="Mô tả">@context.Description</MudTd>
+                    <MudTd DataLabel="Trạng thái">@((context.Status == Constant.StatusDefault.Active) ? "Hoạt Động" : "Không Hoạt Động")</MudTd>
+                    <MudTd DataLabel="Thao tác">
+                        <MudIconButton Disabled="@_isLoading" Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="@(() => OnDeleteList(context.VirtualId))"></MudIconButton>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText>Chưa có danh mục nào cần thêm.</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </div>
     </div>
-
-    <div class="mx-auto mt-6 w-full rounded-lg bg-white p-8 shadow-sm">
-        <EditForm Model="_model" OnValidSubmit="OnAddToList" class="mx-auto flex w-full flex-col gap-4">
-            <DataAnnotationsValidator />
-
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Tên</span>
-                <MudTextField @bind-Value="@_model.Name" For="@(() => _model.Name)" Placeholder="Áo polo" Variant="Variant.Outlined" FullWidth Style="background-color: white" />
-            </div>
-
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Mô tả</span>
-                <MudTextField @bind-Value="@_model.Description" For="@(() => _model.Description)" Placeholder="mô tả danh mục" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
-            </div>
-
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Trạng thái</span>
-
-                <MudRadioGroup @bind-Value="@_isActive" For="@(() => _isActive)">
-                    <MudRadio Value="1" Color="Color.Primary">Hoạt động</MudRadio>
-                    <MudRadio Value="0" Color="Color.Primary">Ngừng Hoạt động</MudRadio>
-                </MudRadioGroup>
-            </div>
-
-            <div class="flex items-center justify-center gap-4">
-                <MudButton Href="@RouterConst.Admin.Category" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Class="w-fit px-10">Thêm</MudButton>
-            </div>
-        </EditForm>
-
-        <MudDivider Class="my-8" />
-
-        <MudTable Bordered Items="@_NewSubCategories" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
-            <HeaderContent>
-                <MudTh><MudTableSortLabel SortLabel="Tên" T="string">Tên</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Mô tả" T="string">Mô tả</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Trạng thái" T="string">Trạng thái</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel SortLabel="Thao tác" T="string">Thao tác</MudTableSortLabel></MudTh>
-            </HeaderContent>
-            <RowTemplate>
-                <MudTd DataLabel="Tên">@context.Name</MudTd>
-                <MudTd DataLabel="Mô tả">@context.Description</MudTd>
-                <MudTd DataLabel="Trạng thái">@((context.Status == Constant.StatusDefault.Active) ? "Hoạt Động" : "Không Hoạt Động")</MudTd>
-                <MudTd DataLabel="Thao tác">
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" OnClick="@(() => OnDeleteList(context.VirtualId))"></MudIconButton>
-                </MudTd>
-            </RowTemplate>
-            <NoRecordsContent>
-                <MudText>Chưa có danh mục nào cần thêm.</MudText>
-            </NoRecordsContent>
-        </MudTable>
-    </div>
-</div>
 }
 
 @code {
     [Parameter]
     public int id { get; set; }
 
-    DAL.Models.Category  _parentCategory = new DAL.Models.Category();
-    CategoryModel _model = new CategoryModel(); 
+    DAL.Models.Category _parentCategory = new DAL.Models.Category();
+    CategoryModel _model = new CategoryModel();
     public List<CategoryModel> _NewSubCategories { get; set; } = new List<CategoryModel>();
     private int _isActive = 1;
     private bool _isLoading = false;
@@ -113,6 +114,7 @@
 
     void OnAddToList()
     {
+        if (_isLoading) return;
         _model.Status = (byte)_isActive;
         _model.ParentCategoryId = id;
         _model.VirtualId = GenerateFixed6CharId();
@@ -126,6 +128,7 @@
 
     void OnDeleteList(string virtualId)
     {
+        if (_isLoading) return;
         if (virtualId == "")
         {
             _snackbar.Add("Không có danh mục này", Severity.Error);
@@ -150,13 +153,15 @@
 
     async Task OnSubmit()
     {
+        if (_isLoading) return;
         if (_NewSubCategories.Count == 0)
         {
             _snackbar.Add("Không có danh mục nào cần lưu", Severity.Warning);
             return;
         }
 
-        try {
+        try
+        {
             _isLoading = true;
             StateHasChanged();
 
@@ -173,7 +178,8 @@
                 {
                     successCount += 1;
                     lstSuccess.Add(item);
-                } else
+                }
+                else
                 {
                     failedCount += 1;
                 }
@@ -181,17 +187,17 @@
 
             _snackbar.Add($"Tạo {successCount} thành công, {failedCount} thất bại", Severity.Success);
 
-            foreach(var item in lstSuccess)
+            foreach (var item in lstSuccess)
             {
                 _NewSubCategories.Remove(item);
             }
 
             navigation.NavigateTo(RouterConst.Admin.Category);
-        } 
-        catch(Exception e)
+        }
+        catch (Exception e)
         {
             _snackbar.Add("Có lỗi xảy ra", Severity.Warning);
-        } 
+        }
         finally
         {
             _isLoading = false;

@@ -281,6 +281,7 @@
     private async Task LoadOrderItems()
     {
         try {
+            _isProcessing = true;
             _orderItems = new();
             _totalProductAmount = 0;
             _discountAmount = 0;
@@ -316,48 +317,56 @@
         }
         finally
         {
+            _isProcessing = false;
             _loadingProduct = false;
         }
     }
 
     async Task LoadAddress()
     {
-        if (Order.CustomerId != -1)
-        {
-            var resAddress = await _addressService.GetAllByCustomerId(Order.CustomerId ?? -1);
-            if (resAddress.IsSuccess && resAddress.Data.Any())
+        try {
+            _isProcessing = true;
+            if (Order.CustomerId != -1)
             {
-                var obj = resAddress.Data.FirstOrDefault(x => x.IsDefault) ?? resAddress.Data.First();
-
-                if (obj != null)
+                var resAddress = await _addressService.GetAllByCustomerId(Order.CustomerId ?? -1);
+                if (resAddress.IsSuccess && resAddress.Data.Any())
                 {
-                    _defaultAddress = obj;
-                    _isDisabledAddressUse = false;
+                    var obj = resAddress.Data.FirstOrDefault(x => x.IsDefault) ?? resAddress.Data.First();
 
-                    var province = _provinces.FirstOrDefault(x => x.ProvinceID.ToString() == obj.City);
-                    if (province != null)
+                    if (obj != null)
                     {
-                        _selectedProvince = province.ProvinceID;
-                        await LoadDistricts(_selectedProvince);
+                        _defaultAddress = obj;
+                        _isDisabledAddressUse = false;
 
-                        var district = _districts.FirstOrDefault(x => x.DistrictID.ToString() == obj.District);
-                        if (district != null)
+                        var province = _provinces.FirstOrDefault(x => x.ProvinceID.ToString() == obj.City);
+                        if (province != null)
                         {
-                            _selectedDistrict = district.DistrictID;
-                            await LoadWards(_selectedDistrict);
+                            _selectedProvince = province.ProvinceID;
+                            await LoadDistricts(_selectedProvince);
 
-                            var ward = _wards.FirstOrDefault(x => x.WardCode == obj.Street);
-                            if (ward != null)
+                            var district = _districts.FirstOrDefault(x => x.DistrictID.ToString() == obj.District);
+                            if (district != null)
                             {
-                                _selectedWard = ward.WardCode;
+                                _selectedDistrict = district.DistrictID;
+                                await LoadWards(_selectedDistrict);
+
+                                var ward = _wards.FirstOrDefault(x => x.WardCode == obj.Street);
+                                if (ward != null)
+                                {
+                                    _selectedWard = ward.WardCode;
+                                }
                             }
                         }
                     }
                 }
             }
+        } catch(Exception ex) {}
+        finally
+        {
+            _isProcessing = false;
+            await GetShippingFeeAsync();
+            StateHasChanged();
         }
-        await GetShippingFeeAsync();
-        StateHasChanged();
     }
 
     private async Task OnProvinceChanged(int provinceId)
@@ -674,30 +683,37 @@
             return;
         }
 
-        var requestData = new CalculateFeeRequestModel
-            {
-                ToDistrictId = districtId,
-                ToWardCode = _defaultAddress.Street,
-                Items = _orderItems.Select(item => new FeeItemModel
+        try {
+            _isProcessing = true;
+            var requestData = new CalculateFeeRequestModel
                 {
-                    Quantity = item.Quantity,
-                    Name = item.ProductName ?? string.Empty,
-                    Length = 35,
-                    Weight = 500,
-                    Width = 35,
-                    Height = 5,
-                }).ToList()
-            };
+                    ToDistrictId = districtId,
+                    ToWardCode = _defaultAddress.Street,
+                    Items = _orderItems.Select(item => new FeeItemModel
+                    {
+                        Quantity = item.Quantity,
+                        Name = item.ProductName ?? string.Empty,
+                        Length = 35,
+                        Weight = 500,
+                        Width = 35,
+                        Height = 5,
+                    }).ToList()
+                };
 
-        var resCalculate = await _addressService.CaculateFee(requestData);
+            var resCalculate = await _addressService.CaculateFee(requestData);
 
-        if (resCalculate.IsSuccess && resCalculate.Data?.Data != null)
+            if (resCalculate.IsSuccess && resCalculate.Data?.Data != null)
+            {
+                _shippingAmount = resCalculate.Data.Data.Total;
+            }
+            else
+            {
+                _shippingAmount = 0;
+            }
+        }catch(Exception ex) {}
+        finally
         {
-            _shippingAmount = resCalculate.Data.Data.Total;
-        }
-        else
-        {
-            _shippingAmount = 0;
+            _isProcessing = false;
         }
     }
 
