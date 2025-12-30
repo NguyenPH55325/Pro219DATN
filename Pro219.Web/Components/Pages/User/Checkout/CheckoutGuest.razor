@@ -98,7 +98,7 @@
                                 <div class="flex flex-col">
                                     <p class="whitespace-pre-wrap text-sm">@item.productName - @item.ColorName - @item.SizeName</p>
                                     <span class="whitespace-pre-wrap text-sm font-medium">@FormatCurrency(item.UnitPrice ?? 0) x @item.Quantity</span>
-                                    <button class="w-fit p-2 text-xs text-slate-500 hover:text-red-500" @onclick="@(() => Delete(item.VariantId))">Xóa</button>
+                                    <button disabled="@_isSubmitting" class="w-fit p-2 text-xs text-slate-500 hover:text-red-500" @onclick="@(() => Delete(item.VariantId))">Xóa</button>
                                 </div>
                             </div>
                         }
@@ -123,7 +123,7 @@
                         <span class="flex-shrink-0 text-sm font-bold uppercase">Tổng tiền:</span>
                         <span class="whitespace-pre-wrap text-sm font-medium">@FormatCurrency(CalculateTotal())</span>
                     </div>
-                    <MudButton Class="!h-10" Color="Color.Dark" Variant="Variant.Filled" OnClick="OnCheckout" Disabled="@(!_data.Any())">
+                    <MudButton Class="!h-10" Color="Color.Dark" Variant="Variant.Filled" OnClick="OnCheckout" Disabled="@(!_data.Any() || _isSubmitting)">
                         Đặt Hàng
                     </MudButton>
                 </div>
@@ -160,6 +160,7 @@
     private decimal _shippingPrice = 0;
     private int _orderIdSuccess = -1;
     private string _orderCodeSuccess = string.Empty;
+    private bool _isSubmitting = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -293,35 +294,47 @@
             return;
         }
 
-        var requestData = new CalculateFeeRequestModel
-            {
-                ToDistrictId = _selectedDistrict,
-                ToWardCode = _selectedWard,
-                Items = _data.Select(item => new FeeItemModel
+        try
+        {
+            _isSubmitting = true;
+
+            var requestData = new CalculateFeeRequestModel
                 {
-                    Quantity = item.Quantity,
-                    Name = item.productName ?? string.Empty,
-                    Length = 35,
-                    Weight = 500,
-                    Width = 35,
-                    Height = 5,
-                }).ToList()
-            };
+                    ToDistrictId = _selectedDistrict,
+                    ToWardCode = _selectedWard,
+                    Items = _data.Select(item => new FeeItemModel
+                    {
+                        Quantity = item.Quantity,
+                        Name = item.productName ?? string.Empty,
+                        Length = 35,
+                        Weight = 500,
+                        Width = 35,
+                        Height = 5,
+                    }).ToList()
+                };
 
-        var resCalculate = await _addressService.CaculateFee(requestData);
+            var resCalculate = await _addressService.CaculateFee(requestData);
 
-        if (resCalculate.IsSuccess && resCalculate.Data?.Data != null)
-        {
-            _shippingPrice = resCalculate.Data.Data.Total;
+            if (resCalculate.IsSuccess && resCalculate.Data?.Data != null)
+            {
+                _shippingPrice = resCalculate.Data.Data.Total;
+            }
+            else
+            {
+                _shippingPrice = 0;
+            }
         }
-        else
+        catch(Exception ex) {}
+        finally
         {
-            _shippingPrice = 0;
+            _isSubmitting = false;
         }
     }
 
     private async Task OnCheckout()
     {
+        if (_isSubmitting) return;
+
         if (string.IsNullOrEmpty(_model.FullName) || string.IsNullOrEmpty(_model.Phone) || string.IsNullOrEmpty(_selectedWard) || _selectedProvince <= 0 || _selectedDistrict <= 0)
         {
             _snackbar.Add("Vui lòng điền đầy đủ thông tin", Severity.Warning);
@@ -363,6 +376,7 @@
 
         try
         {
+            _isSubmitting = true;
             var listProductForCheckout = _data.Select(item => new CheckoutListItem
                 {
                     ProductName = $"{item.productName} - {item.ColorName} - {item.SizeName}",
@@ -497,27 +511,42 @@
         catch (Exception ex)
         {
             _snackbar.Add($"Lỗi đặt hàng: {ex.Message}. Vui lòng thử lại hoặc liên hệ hỗ trợ.", Severity.Error);
+        } 
+        finally
+        {
+            _isSubmitting = false;
         }
     }
 
     private async Task Delete(int id)
     {
-        var obj = _cartItemLocal.FirstOrDefault(x => x.VariantId == id);
-        if (obj != null)
+        if (_isSubmitting) return;
+        try
         {
-            await localStorage.RemoveItemAsync(Constant.CartItemKey, _cts.Token);
-            _cartItemLocal.Remove(obj);
-            await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(_cartItemLocal), _cts.Token);
+            _isSubmitting = true;
 
-            _snackbar.Add("Xóa thành công", Severity.Success);
-            await _cartStateService.LoadCartDetailsAsync();
-            await LoadDataAsync();
-            await GetShippingFeeAsync();
-            StateHasChanged();
+            var obj = _cartItemLocal.FirstOrDefault(x => x.VariantId == id);
+            if (obj != null)
+            {
+                await localStorage.RemoveItemAsync(Constant.CartItemKey, _cts.Token);
+                _cartItemLocal.Remove(obj);
+                await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(_cartItemLocal), _cts.Token);
+
+                _snackbar.Add("Xóa thành công", Severity.Success);
+                await _cartStateService.LoadCartDetailsAsync();
+                await LoadDataAsync();
+                await GetShippingFeeAsync();
+                StateHasChanged();
+            }
+            else
+            {
+                _snackbar.Add("Đã có lỗi xảy ra", Severity.Error);
+            }
         }
-        else
+        catch (Exception ex) { }
+        finally
         {
-            _snackbar.Add("Đã có lỗi xảy ra", Severity.Error);
+            _isSubmitting = false;
         }
     }
 

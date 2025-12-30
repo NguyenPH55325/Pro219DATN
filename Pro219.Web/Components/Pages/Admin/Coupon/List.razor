@@ -126,8 +126,8 @@
     private string _searchDiscountTpe = "all";
     private byte _searchDiscountAmountType = 0;
     private DateTime? _startDate = DateTime.Now.AddYears(-1);
-    private DateTime? _endDate = DateTime.Now;
-    private DateTime? _maxStartDate = DateTime.Now;
+    private DateTime? _endDate = DateTime.Now.AddYears(1);
+    private DateTime? _maxStartDate = DateTime.Now.AddYears(1);
     private DateTime? _minEndDate = DateTime.Now.AddYears(-1);
     private bool _loading = true;
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");

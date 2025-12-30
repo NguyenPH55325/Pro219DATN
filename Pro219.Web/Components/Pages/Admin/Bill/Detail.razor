@@ -17,7 +17,7 @@
 
             <div class="flex items-center gap-4">
                 @if(_orderDetail != null && _orderDetail.Status == 0 && _orderDetail.IsPOS == true) {
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary">Chuyển đổi thanh toán thành tiền mặt</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ChangePaymentToCash(_orderDetail.OrderId))">Chuyển đổi thanh toán thành tiền mặt</MudButton>
                     <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(() => navigation.NavigateTo(_orderDetail.PaymentLink))">Thanh toán</MudButton>
                 }
                 @if (_orderDetail != null && ShouldShowButtons())
@@ -312,7 +312,7 @@
             }
 
             var result = await _orderService.UpdateStatus(newOrderUpdate, token ?? "");
-            
+
             if (result.IsSuccess)
             {
                 _snackbar.Add(successMessage, severity);
@@ -370,5 +370,29 @@
     private async Task CopyToClipboard(string code)
     {
         await JS.InvokeVoidAsync("navigator.clipboard.writeText", code);
+    }
+
+    async Task ChangePaymentToCash(int orderId)
+    {
+        if (orderId <= 0) return;
+
+        var result = await _orderService.ChangePaymentToCash(orderId);
+
+        if (result.IsSuccess)
+        {
+            _snackbar.Add("Chuyển đổi thành công", Severity.Success);
+            await LoadData();
+        }
+        else
+        {
+            if (result.ErrorMessage != null || result.ErrorMessage != "")
+            {
+                _snackbar.Add(result.ErrorMessage, Severity.Warning);
+            }
+            else
+            {
+                _snackbar.Add("CHuyển đổi thất bại. Vui lòng thử lại.", Severity.Warning);
+            }
+        }
     }
 }

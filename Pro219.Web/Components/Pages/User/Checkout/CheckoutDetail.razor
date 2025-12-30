@@ -50,7 +50,7 @@
                     <ChildContent>
                         <MudDivider />
 
-                        <MudButton Class="my-6 w-full" Variant="Variant.Outlined" OnClick="OpenDialogCreateAddress">
+                        <MudButton Disabled="@_isSubmitting" Class="my-6 w-full" Variant="Variant.Outlined" OnClick="OpenDialogCreateAddress">
                             <MudIcon Icon="@Icons.Material.Filled.AddLocation" /> Thêm địa chỉ mới
                         </MudButton>
 
@@ -118,7 +118,7 @@
                             <div class="flex flex-col">
                                 <p class="whitespace-pre-wrap text-sm">@item.productName - @item.ColorName - @item.SizeName</p>
                                 <span class="whitespace-pre-wrap text-sm font-medium">@FormatCurrency(item.UnitPrice ?? 0) x @item.Quantity</span>
-                                <button class="w-fit p-2 text-xs text-slate-500 hover:text-red-500" @onclick="@(() => Delete(item.Id))">Xóa</button>
+                                <button disabled="@_isSubmitting" class="w-fit p-2 text-xs text-slate-500 hover:text-red-500" @onclick="@(() => Delete(item.Id))">Xóa</button>
                             </div>
                         </div>
                     }
@@ -134,7 +134,7 @@
 
                 <div class="flex w-full items-center gap-2">
                     <MudTextField @bind-Value="@_coupon" placeholder="nhập mã giảm giá" Variant="Variant.Outlined" Style="height: 40px" />
-                    <MudButton Class="!h-10 w-[8rem] flex-shrink-0" Color="Color.Dark" Variant="Variant.Filled" Disabled="@(!_data.Any() || _addressDefault == null)" OnClick="ApplyDiscountCodeValue">
+                    <MudButton Class="!h-10 w-[8rem] flex-shrink-0" Color="Color.Dark" Variant="Variant.Filled" Disabled="@(!_data.Any() || _addressDefault == null || _isSubmitting)" OnClick="ApplyDiscountCodeValue">
                         Áp Dụng
                     </MudButton>
                 </div>
@@ -171,7 +171,7 @@
                     <span class="flex-shrink-0 text-sm font-bold uppercase">Tổng tiền:</span>
                     <span class="whitespace-pre-wrap text-sm font-medium">@FormatCurrency(CalculateTotal())</span>
                 </div>
-                <MudButton Class="!h-10" Color="Color.Dark" Variant="Variant.Filled" Disabled="@(!_data.Any() || _addressDefault == null)" OnClick="OnCheckout">
+                <MudButton Class="!h-10" Color="Color.Dark" Variant="Variant.Filled" Disabled="@(!_data.Any() || _addressDefault == null || _isSubmitting)" OnClick="OnCheckout">
                     Đặt Hàng
                 </MudButton>
             </div>
@@ -205,6 +205,7 @@
     private int _selectPaymentMethod = Constant.PaymentMethod.CashBack;
     private int _orderIdSuccess = -1;
     private string _orderCodeSuccess = string.Empty;
+    private bool _isSubmitting = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -307,41 +308,61 @@
             return;
         }
 
-        var requestData = new CalculateFeeRequestModel
+        try
         {
-            ToDistrictId = districtId,
-            ToWardCode = _addressDefault.Street,
-            Items = _data.Select(item => new FeeItemModel
+            _isSubmitting = true;
+
+            var requestData = new CalculateFeeRequestModel
             {
-                Quantity = item.Quantity,
-                Name = item.productName ?? string.Empty,
-                Length = 35,
-                Weight = 500,
-                Width = 35,
-                Height = 5,
-            }).ToList()
-        };
+                ToDistrictId = districtId,
+                ToWardCode = _addressDefault.Street,
+                Items = _data.Select(item => new FeeItemModel
+                {
+                    Quantity = item.Quantity,
+                    Name = item.productName ?? string.Empty,
+                    Length = 35,
+                    Weight = 500,
+                    Width = 35,
+                    Height = 5,
+                }).ToList()
+            };
 
-        var resCalculate = await _addressService.CaculateFee(requestData);
+            var resCalculate = await _addressService.CaculateFee(requestData);
 
-        if (resCalculate.IsSuccess && resCalculate.Data?.Data != null)
+            if (resCalculate.IsSuccess && resCalculate.Data?.Data != null)
+            {
+                _shippingPrice = resCalculate.Data.Data.Total;
+            }
+            else
+            {
+                _shippingPrice = 0;
+            }
+        } 
+        catch(Exception ex) {}
+        finally
         {
-            _shippingPrice = resCalculate.Data.Data.Total;
-        }
-        else
-        {
-            _shippingPrice = 0;
+            _isSubmitting = false;
         }
     }
 
     private async Task OnChangeAddress(int addressId)
     {
-        _addressDefault = _address.FirstOrDefault(a => a.Id == addressId);
-        _selectedAddress = addressId;
+        if (_isSubmitting) return;
+        try
+        {
+            _isSubmitting = true;
+            _addressDefault = _address.FirstOrDefault(a => a.Id == addressId);
+            _selectedAddress = addressId;
 
-        await GetShippingFeeAsync();
-        await ReapplyDiscountsAsync();
-        StateHasChanged();
+            await GetShippingFeeAsync();
+            await ReapplyDiscountsAsync();
+            StateHasChanged();
+        }
+        catch(Exception ex) {}
+        finally
+        {
+            _isSubmitting = false;
+        }
     }
 
     private async Task OpenDialogCreateAddress()
@@ -372,44 +393,53 @@
             return;
         }
 
-        decimal totalAmount = CalculateSubtotal();
-
-        var result = await _couponService.ApplyDiscountCodeValue(_coupon.Trim(), totalAmount, _shippingPrice, _token);
-
-        if (result.IsSuccess && result.Data != null)
+        try
         {
-            var resApply = result.Data;
+            _isSubmitting = true;
+            decimal totalAmount = CalculateSubtotal();
 
-            if (resApply.Type == Constant.DiscountType.Order)
-            {
-                _discountAmount = resApply.DiscountAmount;
-                _snackbar.Add($"Áp dụng mã thành công! Giảm giá: {FormatCurrency(_discountAmount)}", Severity.Success);
-            }
-            else if (resApply.Type == Constant.DiscountType.Shipping)
-            {
-                _discountShippingFee = resApply.ShippingDiscount;
-                _snackbar.Add($"Áp dụng mã thành công! Giảm giá: {FormatCurrency(_discountShippingFee)}", Severity.Success);
-            }
+            var result = await _couponService.ApplyDiscountCodeValue(_coupon.Trim(), totalAmount, _shippingPrice, _token);
 
-            UpdateAppliedDiscountList(resApply.Type, _coupon.Trim());
-
-            var resultDiscountDetail = await _couponService.GetByCode(_coupon.Trim());
-            if (resultDiscountDetail.IsSuccess && resultDiscountDetail.Data != null)
+            if (result.IsSuccess && result.Data != null)
             {
-                _discountDetail = resultDiscountDetail.Data;
+                var resApply = result.Data;
+
+                if (resApply.Type == Constant.DiscountType.Order)
+                {
+                    _discountAmount = resApply.DiscountAmount;
+                    _snackbar.Add($"Áp dụng mã thành công! Giảm giá: {FormatCurrency(_discountAmount)}", Severity.Success);
+                }
+                else if (resApply.Type == Constant.DiscountType.Shipping)
+                {
+                    _discountShippingFee = resApply.ShippingDiscount;
+                    _snackbar.Add($"Áp dụng mã thành công! Giảm giá: {FormatCurrency(_discountShippingFee)}", Severity.Success);
+                }
+
+                UpdateAppliedDiscountList(resApply.Type, _coupon.Trim());
+
+                var resultDiscountDetail = await _couponService.GetByCode(_coupon.Trim());
+                if (resultDiscountDetail.IsSuccess && resultDiscountDetail.Data != null)
+                {
+                    _discountDetail = resultDiscountDetail.Data;
+                }
             }
-        }
-        else
+            else
+            {
+                _coupon = string.Empty;
+                _snackbar.Add($"Áp dụng mã thất bại: {result.ErrorMessage}", Severity.Error);
+            }
+        } 
+        catch(Exception ex) {}
+        finally
         {
-            _coupon = string.Empty;
-            _snackbar.Add($"Áp dụng mã thất bại: {result.ErrorMessage}", Severity.Error);
+            _isSubmitting = false;
+            StateHasChanged();
         }
-
-        StateHasChanged();
     }
 
     private async Task OnCheckout()
     {
+        if (_isSubmitting) return;
         // Validate giỏ hàng
         if (!_data.Any())
         {
@@ -596,20 +626,31 @@
 
     private async Task Delete(int id)
     {
-        var result = await _cartItemService.Delete(id, _token);
+        if (_isSubmitting) return;
+        try
+        {
+            _isSubmitting = true;
 
-        if (result)
-        {
-            _snackbar.Add("Xóa thành công", Severity.Success);
-            await _cartStateService.LoadCartDetailsAsync();
-            await LoadDataAsync();
-            await GetShippingFeeAsync();
-            await ReapplyDiscountsAsync();
-            StateHasChanged();
+            var result = await _cartItemService.Delete(id, _token);
+
+            if (result)
+            {
+                _snackbar.Add("Xóa thành công", Severity.Success);
+                await _cartStateService.LoadCartDetailsAsync();
+                await LoadDataAsync();
+                await GetShippingFeeAsync();
+                await ReapplyDiscountsAsync();
+                StateHasChanged();
+            }
+            else
+            {
+                _snackbar.Add("Đã có lỗi xảy ra", Severity.Error);
+            }
         }
-        else
+        catch(Exception ex) {}
+        finally
         {
-            _snackbar.Add("Đã có lỗi xảy ra", Severity.Error);
+            _isSubmitting = false;
         }
     }
 

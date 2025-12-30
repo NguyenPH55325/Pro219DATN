@@ -111,7 +111,7 @@
 
             <div class="mt-6 flex w-full items-center justify-center gap-4">
                 <MudButton Href="@RouterConst.Admin.Customer" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Class="w-fit px-10">Tạo</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSubmitting" Class="w-fit px-10">Tạo</MudButton>
             </div>
         </EditForm>
     </div>
@@ -122,6 +122,7 @@
     List<ProvinceDTO> _provinces = [];
     List<DistrictDTO> _districts = [];
     List<WardDTO> _wards = [];
+    private bool _isSubmitting = false;
 
     InputType PasswordInputCurrent => _isPasswordVisibleCurrent ? InputType.Text : InputType.Password;
     InputType PasswordInputNew => _isPasswordVisibleNew ? InputType.Text : InputType.Password;
@@ -161,6 +162,7 @@
     {
         try
         {
+            _isSubmitting = true;
             _selectedProvince = provinceId;
             _model.CityName = _provinces.FirstOrDefault(x => x.ProvinceID == provinceId)?.ProvinceName ?? "";
             _selectedDistrict = 0;
@@ -175,12 +177,17 @@
             }
         }
         catch (Exception e) { }
+        finally
+        {
+            _isSubmitting = false;
+        }
     }
 
     private async Task OnDistrictChanged(int districtId)
     {
         try
         {
+            _isSubmitting = true;
             _selectedDistrict = districtId;
             _model.DistrictName = _districts.FirstOrDefault(x => x.DistrictID == districtId)?.DistrictName ?? "";
             _selectedWard = string.Empty;
@@ -193,6 +200,10 @@
             }
         }
         catch (Exception e) { }
+        finally
+        {
+            _isSubmitting = false;
+        }
     }
 
     private void OnWardChanged(string wardId)
@@ -203,6 +214,7 @@
 
     async Task OnSubmit()
     {
+        if (_isSubmitting) return;
         if (!_model.Password.Equals(_confirmPassword))
         {
             _snackbar.Add("Xác nhận mật khẩu không khớp", Severity.Warning);
@@ -215,20 +227,29 @@
             return;
         }
 
-        _model.CityId = _selectedProvince.ToString();
-        _model.DistrictId = _selectedDistrict.ToString();
-        _model.WardId = _selectedWard;
-
-        var result = await _customerService.Create(_model);
-
-        if (result.IsSuccess)
+        try
         {
-            _snackbar.Add("Tạo thành công", Severity.Success);
-            navigation.NavigateTo(RouterConst.Admin.Customer);
-        } else
+            _isSubmitting = true;
+            _model.CityId = _selectedProvince.ToString();
+            _model.DistrictId = _selectedDistrict.ToString();
+            _model.WardId = _selectedWard;
+
+            var result = await _customerService.Create(_model);
+
+            if (result.IsSuccess)
+            {
+                _snackbar.Add("Tạo thành công", Severity.Success);
+                navigation.NavigateTo(RouterConst.Admin.Customer);
+            } else
+            {
+                var mess = string.IsNullOrEmpty(result.ErrorMessage) ? "Tạo thất bại" : result.ErrorMessage;
+                _snackbar.Add(mess, Severity.Warning);
+            }
+        }
+        catch(Exception ex) {}
+        finally
         {
-            var mess = string.IsNullOrEmpty(result.ErrorMessage) ? "Tạo thất bại" : result.ErrorMessage;
-            _snackbar.Add(mess, Severity.Warning);
+            _isSubmitting = false;
         }
     }
 

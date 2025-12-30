@@ -46,7 +46,7 @@
 
             <div class="flex items-center justify-center gap-4">
                 <MudButton Href="@RouterConst.Admin.Customer" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Class="w-fit px-10">Sửa</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSubmitting" Class="w-fit px-10">Sửa</MudButton>
             </div>
         </EditForm>
     </div>
@@ -57,7 +57,7 @@
     public int _customerId { get; set; }
 
     DAL.Models.Customer _model = new DAL.Models.Customer();
-
+    private bool _isSubmitting = false;
     private int _isActive = -1;
     private string _token = string.Empty;
     private string passswordDraft = "*********";
@@ -70,7 +70,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
+        if (firstRender)
         {
             await LoadDataAsync();
             StateHasChanged();
@@ -83,7 +83,7 @@
 
         var resCustomer = await _customerService.GetById(_customerId);
 
-        if(resCustomer.IsSuccess && resCustomer.Data != null)
+        if (resCustomer.IsSuccess && resCustomer.Data != null)
         {
             _model = resCustomer.Data;
             _isActive = resCustomer.Data.Status != null ? (int)resCustomer.Data.Status : -1;
@@ -92,24 +92,35 @@
 
     private async Task OnSubmit()
     {
-        if(_isActive <= -1)
+        if (_isSubmitting) return;
+        if (_isActive <= -1)
         {
             _snackbar.Add("Vui lòng chọn trạng thái hoạt động", Severity.Warning);
             return;
         }
 
-        _model.Status = (byte)_isActive;
-        var result = await _customerService.Edit(_model, _token);
+        try
+        {
+            _isSubmitting = true;
 
-        if (result.IsSuccess)
-        {
-            _snackbar.Add("Sửa thành công", Severity.Success);
-            navigation.NavigateTo(RouterConst.Admin.Customer);
+            _model.Status = (byte)_isActive;
+            var result = await _customerService.Edit(_model, _token);
+
+            if (result.IsSuccess)
+            {
+                _snackbar.Add("Sửa thành công", Severity.Success);
+                navigation.NavigateTo(RouterConst.Admin.Customer);
+            }
+            else
+            {
+                var mess = string.IsNullOrEmpty(result.ErrorMessage) ? "Sửa thất bại" : result.ErrorMessage;
+                _snackbar.Add(mess, Severity.Warning);
+            }
         }
-        else
+        catch (Exception ex) { }
+        finally
         {
-            var mess = string.IsNullOrEmpty(result.ErrorMessage) ? "Sửa thất bại" : result.ErrorMessage;
-            _snackbar.Add(mess, Severity.Warning);
+            _isSubmitting = false;
         }
     }
 }

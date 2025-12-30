@@ -532,5 +532,28 @@ namespace Pro219.Web.Services
                 return false;
             }
         }
+
+        public async Task<ServiceResult<DAL.Models.Order>> ChangePaymentToCash(int id)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, $"/Order/ChangePaymentMethodToCash/{id}");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<DAL.Models.Order>();
+                return ServiceResult<DAL.Models.Order>.Success(result);
+            }
+            else
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var errorCode = result;
+
+                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                    ? Constant.Errors[errorCode ?? ""]
+                                    : result;
+                return ServiceResult<DAL.Models.Order>.Failure(result, errorMess, response.StatusCode.ToString());
+            }
+        }
     }
 }

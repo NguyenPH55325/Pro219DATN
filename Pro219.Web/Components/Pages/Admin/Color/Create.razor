@@ -33,7 +33,7 @@
 
             <div class="flex items-center justify-center gap-4">
                 <MudButton Href="@RouterConst.Admin.Color" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Class="w-fit px-10">Tạo</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSubmitting"  Class="w-fit px-10">Tạo</MudButton>
             </div>
         </EditForm>
     </div>
@@ -42,6 +42,7 @@
 @code {
     ColorModel _model = new ColorModel();
     private int _isActive = 1;
+    private bool _isSubmitting = false;
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
@@ -51,17 +52,27 @@
 
     async Task OnSubmit()
     {
-        _model.Status = (byte)_isActive;
-        var result = await _colorService.Create(_model);
+        if (_isSubmitting) return;
 
-        if (result.IsSuccess)
+        try
         {
-            _snackbar.Add("Tạo thành công", Severity.Success);
-            navigation.NavigateTo(RouterConst.Admin.Color);
-        }
-        else
+            _isSubmitting = true;
+            _model.Status = (byte)_isActive;
+            var result = await _colorService.Create(_model);
+
+            if (result.IsSuccess)
+            {
+                _snackbar.Add("Tạo thành công", Severity.Success);
+                navigation.NavigateTo(RouterConst.Admin.Color);
+            }
+            else
+            {
+                _snackbar.Add("Tạo thất bại", Severity.Warning);
+            }
+        }catch(Exception ex) {}
+        finally
         {
-            _snackbar.Add("Tạo thất bại", Severity.Warning);
+            _isSubmitting = false;
         }
     }
 }

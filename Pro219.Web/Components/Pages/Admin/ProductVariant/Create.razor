@@ -97,7 +97,7 @@
 
             <div class="flex items-center justify-center gap-4">
                 <MudButton OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.ProductDetail.Replace(":id", productId.ToString())))" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Class="w-fit px-10">Tạo</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSubmitting" Class="w-fit px-10">Tạo</MudButton>
             </div>
         </EditForm>
     </div>
@@ -116,13 +116,14 @@
     List<DAL.Models.ProductImage> _productImages = new List<DAL.Models.ProductImage>();
     IList<ImageFileDTO> _imagesWithUrls = new List<ImageFileDTO>();
     private int _isActive = 1;
+    private bool _isSubmitting = false;
     private int MaxAllowedSize = 1024 * 1024 * 5;
 
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Sản Phẩm Chi Tiết", href: RouterConst.Admin.ProductVariant),
-        new("Tạo Sản Phẩm Chi Tiết", href: "#", disabled: true),
+    new("Sản Phẩm Chi Tiết", href: RouterConst.Admin.ProductVariant),
+    new("Tạo Sản Phẩm Chi Tiết", href: "#", disabled: true),
     ];
 
     protected override async Task OnInitializedAsync()
@@ -185,64 +186,74 @@
 
     async Task OnSubmit()
     {
+        if (_isSubmitting) return;
         if (_imagesWithUrls.Count <= 0)
         {
             _snackbar.Add("Vui lòng thêm ảnh", Severity.Warning);
             return;
         }
 
-        _model.ProductId = productId;
-        _model.IsActive = _isActive == 1 ? true : false;
-        _model.Status = 1;
-        var result = await _productVariantService.Create(_model);
-
-        if (result.IsSuccess && result.Data != null && result.Data.Id > 0)
+        try
         {
-            try
+            _isSubmitting = true;
+            _model.ProductId = productId;
+            _model.IsActive = _isActive == 1 ? true : false;
+            _model.Status = 1;
+            var result = await _productVariantService.Create(_model);
+
+            if (result.IsSuccess && result.Data != null && result.Data.Id > 0)
             {
-                var productVariantId = result.Data.Id;
-                var contentRootPath = WebHostEnvironment.WebRootPath;
-                var productImagesPath = Path.Combine(contentRootPath, "Uploads", "Images", "ProductVariants", productVariantId.ToString());
-
-                if (!Directory.Exists(productImagesPath))
+                try
                 {
-                    Directory.CreateDirectory(productImagesPath);
-                }
+                    var productVariantId = result.Data.Id;
+                    var contentRootPath = WebHostEnvironment.WebRootPath;
+                    var productImagesPath = Path.Combine(contentRootPath, "Uploads", "Images", "ProductVariants", productVariantId.ToString());
 
-                foreach (var image in _imagesWithUrls)
-                {
-                    var fileName = Path.GetFileName(image.File.Name);
-                    var filePath = Path.Combine(productImagesPath, fileName);
-
-                    await using Stream fileStream = image.File.OpenReadStream(MaxAllowedSize);
-                    await using FileStream fs = File.Create(filePath);
-                    await fileStream.CopyToAsync(fs);
-
-                    DAL.Models.ProductImage productImage = new DAL.Models.ProductImage
+                    if (!Directory.Exists(productImagesPath))
                     {
-                        ProductVariantId = productVariantId,
-                        ProductId = productId,
-                        ImageUrl = "/Uploads/Images/ProductVariants/" + productVariantId.ToString() + "/" + fileName,
-                        IsMain = true,
-                        Status = 1,
-                    };
-                    _productImages.Add(productImage);
-                }
+                        Directory.CreateDirectory(productImagesPath);
+                    }
 
-                if (_productImages.Any())
+                    foreach (var image in _imagesWithUrls)
+                    {
+                        var fileName = Path.GetFileName(image.File.Name);
+                        var filePath = Path.Combine(productImagesPath, fileName);
+
+                        await using Stream fileStream = image.File.OpenReadStream(MaxAllowedSize);
+                        await using FileStream fs = File.Create(filePath);
+                        await fileStream.CopyToAsync(fs);
+
+                        DAL.Models.ProductImage productImage = new DAL.Models.ProductImage
+                            {
+                                ProductVariantId = productVariantId,
+                                ProductId = productId,
+                                ImageUrl = "/Uploads/Images/ProductVariants/" + productVariantId.ToString() + "/" + fileName,
+                                IsMain = true,
+                                Status = 1,
+                            };
+                        _productImages.Add(productImage);
+                    }
+
+                    if (_productImages.Any())
+                    {
+                        await _productImageService.CreateAny(_productImages);
+                    }
+
+                    _imagesWithUrls.Clear();
+                    _productImages.Clear();
+                    _snackbar.Add("Tạo sản phẩm thành công", Severity.Success);
+                    navigation.NavigateTo(RouterConst.Admin.ProductDetail.Replace(":id", productId.ToString()));
+                }
+                catch (Exception ex)
                 {
-                    await _productImageService.CreateAny(_productImages);
+                    _snackbar.Add($"Tạo sản phẩm thành công, nhưng lỗi lưu ảnh: {ex.Message}", Severity.Warning);
                 }
-
-                _imagesWithUrls.Clear();
-                _productImages.Clear();
-                _snackbar.Add("Tạo sản phẩm thành công", Severity.Success);
-                navigation.NavigateTo(RouterConst.Admin.ProductDetail.Replace(":id", productId.ToString()));
             }
-            catch (Exception ex)
-            {
-                _snackbar.Add($"Tạo sản phẩm thành công, nhưng lỗi lưu ảnh: {ex.Message}", Severity.Warning);
-            }
+        }
+        catch (Exception ex) { }
+        finally
+        {
+            _isSubmitting = false;
         }
     }
 }
