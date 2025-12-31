@@ -62,13 +62,13 @@ namespace Pro219.DAL.Repository
             }
         }
 
-        public async Task<Wishlist> GetWishlistByCustomerAndVariant(int customerId, int productVariantId)
+        public async Task<Wishlist> GetWishlistByCustomerAndProduct(int customerId, int productId)
         {
             try
             {
                 var wishlist = await _context.Wishlists
                     .FirstOrDefaultAsync(x => x.CustomerId == customerId 
-                        && x.ProductVariantId == productVariantId 
+                        && x.ProductId == productId 
                         && x.Delete != true);
                 return wishlist;
             }

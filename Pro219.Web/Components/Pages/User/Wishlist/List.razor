@@ -1,0 +1,112 @@
+﻿@page "/wishlist"
+@layout MainLayout
+
+<section class="mx-auto max-w-[1440px] p-8">
+    <h1 class="text-xl font-bold uppercase md:text-2xl lg:text-3xl">Danh sách yêu thích của bạn</h1>
+
+    <div class="mt-6">
+        @{
+            @if(_wishlists.Any())
+            {
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                    @foreach(var item in _wishlists)
+                    {
+                            var product = _products.FirstOrDefault(x => x.Id == item.ProductId);
+                            var url = product != null && product.ImageUrls.Any() ? product.ImageUrls[0] : Constant.DefaultImages;
+                            var name = product != null ? product.Name + " - " + product.BrandName + " - " + product.CategoryName : "Tên sản phẩm";
+                        if(product != null)
+                            {
+                                <div class="flex w-full flex-col items-center justify-between gap-4">
+                                    <img src="@url" alt="product" />
+                                    <h2>@name</h2>
+                                    <button class="w-full border border-solid border-red-500 py-3 text-red-500" @onclick="@(() => DeleteWishlist(item.Id))">
+                                        <MudIcon Icon="@Icons.Material.Filled.Favorite" /> <span class="ml-2">Bỏ Yêu Thích</span>
+                                    </button>
+                            </div>
+                            }
+                        }
+                </div>
+            } else
+            {
+                <p class="text-center text-sm">Không có sản phẩm yêu thích nào.</p>
+            }
+        }
+    </div>
+</section>
+
+@code {
+    [CascadingParameter(Name = Constant.CascadingNameParams.UserInfo)]
+    public GetMeResponseDTO UserInfo { get; set; } = new GetMeResponseDTO();
+
+    List<DAL.Models.Wishlist> _wishlists = [];
+    List<DAL.Repository.ProductRepository.ProductDetailDto> _products = [];
+    List<DAL.Models.ProductImage> _productImages = [];
+
+    private bool _loading = true;
+    private string _token = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            if (UserInfo != null && UserInfo.Id > 0)
+            {
+                var resWishlist = await _wishlistService.GetAllByCustomer(UserInfo.Id);
+
+                if (resWishlist.IsSuccess && resWishlist.Data.Count() > 0)
+                {
+                    _wishlists = resWishlist.Data;
+                }
+
+                var resProduct = await _productService.GetAllWithDetail();
+                if (resProduct.IsSuccess && resProduct.Data.Count() > 0)
+                {
+                    _products = resProduct.Data;
+                }
+
+                var resProductImage = await _productImageService.GetAll();
+                if (resProductImage.IsSuccess && resProductImage.Data.Count() > 0)
+                {
+                    _productImages = resProductImage.Data;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteWishlist(int id)
+    {
+        var result = await _wishlistService.Delete(id, _token);
+
+        if(result)
+        {
+            await LoadData();
+        } else
+        {
+            _snackbar.Add("Có lỗi xảy ra. Vui lòng thử lại", Severity.Error);
+            return;
+        }
+    }
+}

@@ -407,6 +407,24 @@ namespace Pro219.API.Controllers
             }
         }
 
+        [HttpGet("get-with-detail")]
+        public async Task<ActionResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>> GetAllWithDetail()
+        {
+            try
+            {
+                var result = await productRepository.GetAllAndDetailOptimized();
+                if (result == null)
+                {
+                    return BadRequest();
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, Constant.ErrorCode.OtherError);
+            }
+        }
+
         [HttpGet("get-detail/{id}")]
         public async Task<ActionResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>> GetDetail(int id)
         {

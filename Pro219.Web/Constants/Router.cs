@@ -41,6 +41,9 @@
             public const string PaymentSuccess = "/order/payment-success";
             public const string PaymentCancelled = "/order/payment-cancelled";
             public const string SearchOrder = "/orders/search";
+
+            // Wishlist
+            public const string wishlists = "/wishlist";
         }
 
         public static class Admin
