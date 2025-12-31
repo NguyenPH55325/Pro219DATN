@@ -371,17 +371,26 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<List<ProductShowDto>> GetTopNewestProductAsync()
+        public async Task<ServiceResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>> GetAllWithDetail()
         {
-            try
+            var request = new HttpRequestMessage(HttpMethod.Get, "/Product/get-with-detail");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
             {
-                var result = await _httpClient.GetFromJsonAsync<List<ProductShowDto>>("Product/product-show");
-                return result ?? new List<ProductShowDto>();
+                var result = await response.Content.ReadFromJsonAsync<List<DAL.Repository.ProductRepository.ProductDetailDto>>();
+                return ServiceResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>.Success(result);
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Lỗi: {ex.Message}");
-                return new List<ProductShowDto>();
+                var result = await response.Content.ReadAsStringAsync();
+                var errorCode = result;
+
+                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
+                                    ? Constant.Errors[errorCode ?? ""]
+                                    : result;
+                return ServiceResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>.Failure(result, errorMess, response.StatusCode.ToString());
             }
         }
 
@@ -430,58 +439,6 @@ namespace Pro219.Web.Services
                 return ServiceResult<List<DAL.Repository.ProductRepository.ProductDetailDto>>.Failure(result, errorMess, response.StatusCode.ToString());
             }
 
-        }
-
-        public async Task<List<ProductShowDto>> GetBestSellerAsync()
-        {
-            try
-            {
-                var result = await _httpClient.GetFromJsonAsync<List<ProductShowDto>>("Product/best-seller");
-                return result ?? new List<ProductShowDto>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi: {ex.Message}");
-                return new List<ProductShowDto>();
-            }
-        }
-
-
-        public async Task<ProductShowDto?> GetProductByIdAsync(int id)
-        {
-            try
-            {
-                var result = await _httpClient.GetFromJsonAsync<ProductShowDto>($"Product/GetById/{id}");
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi lấy dữ liệu: {ex.Message}");
-                return null;
-            }
-        }
-
-        public async Task<ServiceResult<ProductDetailDto>> GetProductDetail(int id)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"Product/detail/{id}");
-
-            var response = await _httpClient.SendAsync(request);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<ProductDetailDto>();
-                return ServiceResult<ProductDetailDto>.Success(result);
-            }
-            else
-            {
-                var result = await response.Content.ReadAsStringAsync();
-                var errorCode = result;
-
-                var errorMess = Constant.Errors.ContainsKey(errorCode ?? "")
-                                    ? Constant.Errors[errorCode ?? ""]
-                                    : result; 
-                return ServiceResult<ProductDetailDto>.Failure(result, errorMess, response.StatusCode.ToString());
-            }
         }
     }
 }

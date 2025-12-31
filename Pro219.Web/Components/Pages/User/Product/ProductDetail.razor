@@ -97,9 +97,23 @@ else
                     <button class="w-[49%] bg-black py-3 uppercase text-white" @onclick="ToCheckout">Mua Ngay</button>
                 </div>
 
-                <div class="mt-2">
-                    <button class="w-full border border-solid border-slate-200 py-3"><MudIcon Icon="@Icons.Material.Filled.FavoriteBorder" /> Yêu Thích</button>
-                </div>
+                @if (_isShowButton)
+                {
+                    <div class="mt-2">
+                        @if(_isInWishlist)
+                        {
+                            <button class="w-full border border-solid border-red-500 py-3 text-red-500" @onclick="AddWishlist">
+                                <MudIcon Icon="@Icons.Material.Filled.Favorite" /> <span class="ml-2">Yêu Thích</span>
+                            </button>   
+                        }
+                        else
+                        {
+                            <button class="w-full border border-solid border-slate-200 py-3" @onclick="AddWishlist">
+                                <MudIcon Icon="@Icons.Material.Filled.FavoriteBorder" /> <span class="ml-2">Yêu Thích</span>
+                            </button>
+                        }
+                    </div>
+                }
             </div>
         </div>
     </section>
@@ -165,6 +179,9 @@ else
 </section>
 
 @code {
+    [CascadingParameter(Name = Constant.CascadingNameParams.UserInfo)]
+    public GetMeResponseDTO UserInfo { get; set; } = new GetMeResponseDTO();
+
     [Parameter] public int id { get; set; }
 
     private DAL.Repository.ProductRepository.ProductDetailDto? _product = new DAL.Repository.ProductRepository.ProductDetailDto();
@@ -182,6 +199,8 @@ else
     private int _quantity = 1;
     private decimal _currentPrice = 0;
     private string _quantityShow = "0";
+    private bool _isInWishlist = false;
+    private bool _isShowButton = true;
 
     private bool _disableAction => _foundVariant == null || _foundVariant.StockQuantity < 1;
 
@@ -190,12 +209,11 @@ else
         if(firstRender)
         {
             _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
-        }
-    }
+            if (string.IsNullOrEmpty(_token)) _isShowButton = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadData();
+            await LoadData();
+            StateHasChanged();
+        }
     }
 
     private async Task LoadData()
@@ -222,6 +240,11 @@ else
                 var reviewCount = _reviews.Count();
                 var sumOverall = _reviews.Sum(x => x.Overall);
                 _averageRating = Math.Truncate((double)sumOverall / reviewCount * 100) / 100;
+            }
+
+            if (!string.IsNullOrEmpty(_token) && UserInfo != null && UserInfo.Id > 0)
+            {
+                await CheckWishlistStatus();
             }
         } else
         {
@@ -481,7 +504,7 @@ else
             navigation.NavigateTo(RouterConst.User.GusestCheckoutDetail);
         } else
         {
-            
+
 
             var result = await _cartService.AddToCart(item, _token);
 
@@ -511,5 +534,43 @@ else
         string middleMask = new string('*', input.Length - 2);
 
         return $"{firstChar}{middleMask}{lastChar}";
+    }
+
+    private async Task CheckWishlistStatus()
+    {
+        if (string.IsNullOrEmpty(_token) || UserInfo == null || UserInfo.Id <= 0 || _product == null) return;
+
+        var result = await _wishlistService.GetByCustomerAndProduct(UserInfo.Id, _product.Id);
+        _isInWishlist = result.IsSuccess && result.Data != null;
+        StateHasChanged();
+    }
+
+    public async Task AddWishlist()
+    {
+        if (string.IsNullOrEmpty(_token))
+        {
+            _snackbar.Add("Vui lòng đăng nhập để sử dụng tính năng yêu thích", Severity.Info);
+            return;
+        }
+
+        if (UserInfo == null || UserInfo.Id <= 0)
+        {
+            _snackbar.Add("Có lỗi xảy ra. Vui lòng thử lại", Severity.Error);
+            return;
+        }
+
+        if (_product == null || _product.Id <= 0)
+        {
+            _snackbar.Add("Có lỗi xảy ra. Vui lòng thử lại", Severity.Error);
+            return;
+        }
+
+        var result = await _wishlistService.ToggleWishlist(UserInfo.Id, _product.Id, _token);
+
+        if (result.IsSuccess)
+        {
+            _isInWishlist = result.Data;
+            StateHasChanged();
+        }
     }
 }

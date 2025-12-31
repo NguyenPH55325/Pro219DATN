@@ -75,12 +75,12 @@ namespace Pro219.API.Controllers
             }
         }
 
-        [HttpGet("GetByCustomerAndVariant/{customerId}/{productVariantId}")]
-        public async Task<ActionResult<Wishlist>> GetWishlistByCustomerAndVariant(int customerId, int productVariantId)
+        [HttpGet("GetByCustomerAndProduct/{customerId}/{productId}")]
+        public async Task<ActionResult<Wishlist>> GetWishlistByCustomerAndProduct(int customerId, int productId)
         {
             try
             {
-                var result = await wishlistRepository.GetWishlistByCustomerAndVariant(customerId, productVariantId);
+                var result = await wishlistRepository.GetWishlistByCustomerAndProduct(customerId, productId);
                 if (result == null)
                 {
                     return NotFound(Constant.ErrorCode.DataNotFound);
@@ -155,7 +155,6 @@ namespace Pro219.API.Controllers
         }
 
         [HttpDelete("Delete/{id}")]
-        [Authorize(Roles = "Admin,Manager,Staff")]
         public async Task<ActionResult<Wishlist>> DeleteWishlist(int id)
         {
             try
