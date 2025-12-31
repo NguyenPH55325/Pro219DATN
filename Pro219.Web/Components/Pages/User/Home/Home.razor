@@ -4,7 +4,7 @@
 <PageTitle>@Constant.PageTitleUser Home</PageTitle>
 
 <section class="mx-auto w-full max-w-[120rem]">
-    <img  src="/Assets/Images/user-home-banner-1.png" alt="banner" />
+    <img src="/Assets/Images/user-home-banner-1.png" alt="banner" />
 </section>
 
 <section class="my-8 px-0 pt-8 lg:px-8">
@@ -15,7 +15,7 @@
             @foreach (var item in _productNews)
             {
                 <div accesskey="@item.Id" class="relative w-full">
-                    @if(IsOutOfStock(item))
+                    @if (IsOutOfStock(item))
                     {
                         <div class="absolute bottom-0 left-0 right-0 top-0 z-20 flex items-center justify-center bg-black opacity-70"><span class="rotate-45 px-4 py-2 text-4xl font-bold text-red-600 opacity-100">Hết hàng</span></div>
                     }
@@ -47,6 +47,21 @@
                                     </picture>
                                 }
                             </a>
+
+                            @{
+                                if (_isShowButtonWishlist)
+                                {
+                                    var isWishlist = _wishlists.FirstOrDefault(x => x.ProductId == item.Id);
+                                    if (isWishlist != null)
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Favorite" Class="absolute bottom-2 right-2 cursor-pointer text-red-500" @onclick="@(() => AddWishlist(item.Id))" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.FavoriteBorder" Class="absolute bottom-2 right-2 cursor-pointer" @onclick="@(() => AddWishlist(item.Id))" />
+                                    }
+                                }
+                            }
                         </div>
 
                         <div class="mb-10 w-full">
@@ -116,7 +131,7 @@
     <h2 class="text-center text-xl font-bold uppercase md:text-2xl lg:text-3xl">Sản được yêu thích nhất</h2>
     <div class="mt-8 grid gap-2 px-4 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:px-2">
         @if (_productFavourites.Any())
-        {   
+        {
             @foreach (var item in _productFavourites)
             {
                 <div accesskey="@item.Id" class="relative w-full">
@@ -137,20 +152,35 @@
                                         <picture accesskey="@item.Id" class="invisible absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center opacity-0 transition duration-700 ease-in-out group-hover:visible group-hover:opacity-100">
                                             <img class="overflow-clip" src="@item?.ImageUrls[1]" />
                                         </picture>
-                                    } else
+                                    }
+                                    else
                                     {
                                         <picture class="flex h-full items-center justify-center transition duration-700 ease-in-out">
                                             <img class="overflow-clip" src="@item.ImageUrls[0]" />
-                                        </picture> 
+                                        </picture>
                                     }
                                 }
                                 else
                                 {
                                     <picture class="flex h-full items-center justify-center transition duration-700 ease-in-out">
                                         <img class="overflow-clip" src="/Assets/Images/default-image.png" />
-                                    </picture>    
+                                    </picture>
                                 }
                             </a>
+                            @{
+                                if (_isShowButtonWishlist)
+                                {
+                                    var isWishlist = _wishlists.FirstOrDefault(x => x.ProductId == item.Id);
+                                    if (isWishlist != null)
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.Favorite" Class="absolute bottom-2 right-2 cursor-pointer text-red-500" @onclick="@(() => AddWishlist(item.Id))" />
+                                    }
+                                    else
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.FavoriteBorder" Class="absolute bottom-2 right-2 cursor-pointer" @onclick="@(() => AddWishlist(item.Id))" />
+                                    }
+                                }
+                            }
                         </div>
 
                         <div class="mb-10 w-full">
@@ -214,26 +244,57 @@
 </section>
 
 @code {
+    [CascadingParameter(Name = Constant.CascadingNameParams.UserInfo)]
+    public GetMeResponseDTO UserInfo { get; set; } = new GetMeResponseDTO();
+
     readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Medium, FullWidth = true };
 
     List<DAL.Repository.ProductRepository.ProductDetailDto> _productNews = [];
     List<DAL.Repository.ProductRepository.ProductDetailDto> _productFavourites = [];
+    List<DAL.Models.Wishlist> _wishlists = [];
 
+    private string _token = string.Empty;
+    private bool _isShowButtonWishlist = true;
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+            if (string.IsNullOrEmpty(_token)) _isShowButtonWishlist = false;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        StateHasChanged();
+    }
+
+    private async Task LoadData()
     {
         var _resProductNew = await _productService.GetNewProducts();
         var _resProductFavourites = await _productService.GetFavouriteProducts();
 
-        if(_resProductNew.IsSuccess && _resProductNew.Data != null)
+        if (_resProductNew.IsSuccess && _resProductNew.Data.Count() > 0)
         {
             _productNews = _resProductNew.Data;
         }
 
-        if (_resProductFavourites.IsSuccess && _resProductFavourites.Data != null)
+        if (_resProductFavourites.IsSuccess && _resProductFavourites.Data.Count() > 0)
         {
             _productFavourites = _resProductFavourites.Data;
+        }
+
+        if (UserInfo != null && UserInfo.Id > 0)
+        {
+            var resWishlist = await _wishlistService.GetAllByCustomer(UserInfo.Id);
+
+            if (resWishlist.IsSuccess && resWishlist.Data.Count() > 0)
+            {
+                _wishlists = resWishlist.Data;
+            }
         }
     }
 
@@ -258,6 +319,35 @@
 
         if (!result.Canceled)
         {
+        }
+    }
+
+    public async Task AddWishlist(int productId)
+    {
+        if (string.IsNullOrEmpty(_token))
+        {
+            _snackbar.Add("Vui lòng đăng nhập để sử dụng tính năng yêu thích", Severity.Info);
+            return;
+        }
+
+        if (UserInfo == null || UserInfo.Id <= 0)
+        {
+            _snackbar.Add("Có lỗi xảy ra. Vui lòng thử lại", Severity.Error);
+            return;
+        }
+
+        if (productId <= 0)
+        {
+            _snackbar.Add("Có lỗi xảy ra. Vui lòng thử lại", Severity.Error);
+            return;
+        }
+
+        var result = await _wishlistService.ToggleWishlist(UserInfo.Id, productId, _token);
+
+        if (result.IsSuccess)
+        {
+            await LoadData();
+            StateHasChanged();
         }
     }
 }

@@ -14,17 +14,19 @@
                             var product = _products.FirstOrDefault(x => x.Id == item.ProductId);
                             var url = product != null && product.ImageUrls.Any() ? product.ImageUrls[0] : Constant.DefaultImages;
                             var name = product != null ? product.Name + " - " + product.BrandName + " - " + product.CategoryName : "Tên sản phẩm";
-                        if(product != null)
-                            {
-                                <div class="flex w-full flex-col items-center justify-between gap-4">
-                                    <img src="@url" alt="product" />
-                                    <h2>@name</h2>
-                                    <button class="w-full border border-solid border-red-500 py-3 text-red-500" @onclick="@(() => DeleteWishlist(item.Id))">
-                                        <MudIcon Icon="@Icons.Material.Filled.Favorite" /> <span class="ml-2">Bỏ Yêu Thích</span>
-                                    </button>
-                            </div>
+                            if(product != null)
+                                {
+                                    <div class="flex w-full flex-col items-center justify-between gap-4">
+                                        <a href="@(RouterConst.User.ProductDetail + $"/{product.Id}")">
+                                            <img src="@url" alt="product" />
+                                        </a>
+                                        <h2>@name</h2>
+                                        <button class="w-full border border-solid border-red-500 py-3 text-red-500" @onclick="@(() => DeleteWishlist(item.Id))">
+                                            <MudIcon Icon="@Icons.Material.Filled.Favorite" /> <span class="ml-2">Bỏ Yêu Thích</span>
+                                        </button>
+                                    </div>
+                                }
                             }
-                        }
                 </div>
             } else
             {
