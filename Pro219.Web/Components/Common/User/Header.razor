@@ -56,7 +56,7 @@
             </MudButton>
             <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo($"{RouterConst.User.SearchAll}?page={Constant.Pagination.DefaultPage}"))">Tất Cả Sản Phẩm</MudButton>
             <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo(RouterConst.User.SearchOrder))">Tra cứu đơn hàng</MudButton>
-            @if (!string.IsNullOrEmpty(_token))
+            @if (_isShowDiscountCodeMenuOpen)
             {
                 <MudButton Class="!font-medium !text-[#666666] hover:!text-black" OnClick="@(() => navigation.NavigateTo(RouterConst.User.CouponNow))">Mã giảm giá</MudButton>
             }
@@ -145,7 +145,6 @@
         <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Inherit" Edge="Edge.End" OnClick="@ToggleDrawer" />
     </MudDrawerHeader>
     <MudNavMenu>
-        @* Mục Tìm kiếm (Đặt ở trên cùng) *@
         <div class="p-4">
             <MudTextField @bind-Value="_searchValue" Placeholder="Tìm kiếm sản phẩm" OnAdornmentClick="HandleSearch" OnKeyDown="@(e => { if (e.Key == "Enter") HandleSearch(); })" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" Immediate="true" />
         </div>
@@ -212,15 +211,14 @@
     private int _countCart = 99;
     private string _token = string.Empty;
     private bool _isShowMenuChild = false;
-    private bool _drawerOpen = false; // Trạng thái mở/đóng Drawer
-    private bool _isCategoryMenuOpen = true; // Trạng thái mở/đóng menu Danh mục trong Drawer
+    private bool _drawerOpen = false;
+    private bool _isCategoryMenuOpen = true;
+    private bool _isShowDiscountCodeMenuOpen = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
-        {
             _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
-        }
+            if(!string.IsNullOrEmpty(_token)) _isShowDiscountCodeMenuOpen = true;
     }
 
     protected override async Task OnInitializedAsync()
@@ -249,8 +247,6 @@
         _isShowMenuChild = !_isShowMenuChild;
         StateHasChanged();
     }
-
-    // ... (Các biến khác) ...
 
     private void ToggleDrawer()
     {
