@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Pro219.API.DTOs;
+using Pro219.API.Utilities;
+using System.Text;
 
 namespace Pro219.BUS.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("common")]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
@@ -28,6 +31,14 @@ namespace Pro219.BUS.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [HttpPost("send-email")]
+        public async Task<bool> SendEmailToAddress([FromBody] EmailDTO emailDTO)
+        {
+            UtilityFunc utilityFunc = new UtilityFunc();
+            bool sentResult = await utilityFunc.SendEmailToAddress(emailDTO.Email, emailDTO.Name, emailDTO.Subject, emailDTO.Body, emailDTO.BodyHTML);
+            return sentResult;
         }
     }
 }

@@ -225,18 +225,24 @@ namespace Pro219.API.Controllers
             }
 
             UtilityFunc utilityFunc = new UtilityFunc();
-            //string newPassword = utilityFunc.GenerateRandomString(10);
-            string newPassword = "User@12345";
+            string newPassword = utilityFunc.GenerateRandomString(10);
+            //string newPassword = "User@12345";
 
             customer.PasswordHash = utilityFunc.HashPassword(newPassword);
             customer.LastLogin = null;
 
             var updatedCustomer = await _customerRepository.UpdateCustomer(customer);
-
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"Kính chào quý khách hàng <b>{customer.FullName}</b><br><br>Mật khẩu truy cập vào tài khoản Adam Store đã được thay đổi thành <b>{newPassword} </b> Vui lòng truy cập trang web và thay đổi mật khẩu, xin trân trọng cám ơn!<br><br>Adam Store");
             if (updatedCustomer == null)
             {
                 return StatusCode(500, Constant.ErrorCode.OtherError);
             }
+            else
+            {
+                bool re = await utilityFunc.SendEmailToAddress(customer.Email, customer.FullName, "Khôi phục mật khẩu tài khoản Adam Store", "", sb.ToString());
+            } 
+                
 
             return Ok(true);
         }
