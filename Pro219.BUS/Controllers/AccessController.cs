@@ -225,7 +225,7 @@ namespace Pro219.API.Controllers
             }
 
             UtilityFunc utilityFunc = new UtilityFunc();
-            string newPassword = utilityFunc.GenerateRandomString(10);
+            string newPassword = utilityFunc.GenerateRandomString(16);
             //string newPassword = "User@12345";
 
             customer.PasswordHash = utilityFunc.HashPassword(newPassword);

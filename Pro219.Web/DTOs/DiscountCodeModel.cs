@@ -17,16 +17,16 @@ namespace Pro219.Web.DTOs
         public string DiscountType { get; set; } = string.Empty;
 
         [Required(ErrorMessage = Constant.MessageValid.Required)]
-        [Range(1.0, (double)decimal.MaxValue, ErrorMessage = "Giá trị tối thiểu là 1.")]
+        [Range(1, 9999999999999999, ErrorMessage = "Nhập giá trị hợp lệ với loại giảm giá (%: >= 1% hoặc đ: >= 1000đ)")]
         public decimal Value { get; set; } = 10;
 
-        [ConditionalMinValue(ErrorMessage = "Giá trị tối thiểu là 1.")]
+        [ConditionalMinValue(ErrorMessage = "Giá trị tối thiểu là 1000")]
         public decimal? MinOrderValue { get; set; }
 
         public decimal? MaxDiscountAmount { get; set; }
 
         [Required(ErrorMessage = Constant.MessageValid.Required)]
-        [Range(1, int.MaxValue, ErrorMessage = "Số lần sử dụng tối thiểu là 1.")]
+        [Range(1, int.MaxValue, ErrorMessage = "Số mã phát hành tối thiểu là 1")]
         public int? MaxUsage { get; set; } = 10;
 
         public int? UsageCount { get; set; } = 0;
@@ -41,7 +41,7 @@ namespace Pro219.Web.DTOs
 
         public bool IsActive { get; set; } = true;
 
-        public byte Status { get; set; }
+        public byte Status { get; set; } = 1;
     }
 
     public class ConditionalMinValueAttribute : ValidationAttribute
@@ -53,9 +53,9 @@ namespace Pro219.Web.DTOs
 
             var decimalValue = value as decimal?;
 
-            if (decimalValue.HasValue && decimalValue.Value < 1)
+            if (decimalValue.HasValue && decimalValue.Value < 1000)
             {
-                return new ValidationResult(ErrorMessage ?? "Giá trị tối thiểu là 1.");
+                return new ValidationResult(ErrorMessage ?? "Giá trị tối thiểu là 1000");
             }
 
             return ValidationResult.Success!;

@@ -93,7 +93,7 @@
                     <h3 class="text-lg font-bold">Thông tin giao hàng</h3>
                     <MudDivider Class="my-5" />
 
-                    <div class="flex w-full flex-col gap-4">
+                    <EditForm EditContext="@_editContext" class="flex w-full flex-col gap-4">
                         @if (Order.CustomerId != -1) 
                         {
                             <MudRadioGroup Disabled="_isDisabledAddressUse" T="int" Value="_isUseCurrentAddress" ValueChanged="ChangeAddressUse">
@@ -149,7 +149,7 @@
                         <MudTextField @bind-Value="@_defaultAddress.OtherInfo" For="@(() => _defaultAddress.OtherInfo)" Variant="Variant.Outlined" Placeholder="Địa chỉ chi tiết" FullWidth="true" />
 
                         <MudTextField @bind-Value="@_note" For="@(() => _note)" Variant="Variant.Outlined" Placeholder="Ghi chú" FullWidth="true" />
-                    </div>
+                    </EditForm>
                 }
             </div>
             <div class="flex w-[35rem] flex-col gap-5">
@@ -190,6 +190,8 @@
                         <span class="w-full max-w-[170px] flex-shrink-0 text-base font-medium">Phí giao hàng:</span>
                         <div class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-base">
                             <MudNumericField T="decimal"
+                                             Format="F0"
+                                             Step="1000"
                                              Disabled="@_isProcessing"
                                              @bind-Value="_shippingAmount" 
                                              Adornment="Adornment.End"
@@ -222,6 +224,9 @@
 
     [Parameter]
     public EventCallback RefreshData { get; set; }
+
+    private EditContext _editContext;
+    private ValidationMessageStore _messageStore;
 
     private DAL.Models.Address _defaultAddress = new DAL.Models.Address();
     private List<OrderTempPOSItem >_orderItems = new List<OrderTempPOSItem>();
@@ -262,6 +267,9 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _editContext = new EditContext(_defaultAddress);
+        _messageStore = new ValidationMessageStore(_editContext);
+
         var resProvince = await _addressService.GetAllProvince();
         if (resProvince.IsSuccess) _provinces = resProvince.Data ?? new();
     }
@@ -372,6 +380,7 @@
 
     private async Task OnProvinceChanged(int provinceId)
     {
+        ClearErrors();
         _selectedProvince = provinceId;
         _defaultAddress.City = provinceId.ToString();
         _defaultAddress.CityName = _provinces.FirstOrDefault(x => x.ProvinceID == provinceId)?.ProvinceName ?? "";
@@ -387,6 +396,7 @@
 
     private async Task OnDistrictChanged(int districtId)
     {
+        ClearErrors();
         _selectedDistrict = districtId;
         _defaultAddress.District = districtId.ToString();
         _defaultAddress.DistrictName = _districts.FirstOrDefault(x => x.DistrictID == districtId)?.DistrictName ?? "";
@@ -446,6 +456,7 @@
 
         if (!result.Canceled)
         {
+            ClearErrors();
             await LoadData();
             await LoadAddress();
             StateHasChanged();
@@ -903,5 +914,11 @@
             _isProcessing = false;
             StateHasChanged();
         }
+    }
+
+    private void ClearErrors()
+    {
+        _messageStore.Clear();
+        _editContext.NotifyValidationStateChanged();
     }
 }

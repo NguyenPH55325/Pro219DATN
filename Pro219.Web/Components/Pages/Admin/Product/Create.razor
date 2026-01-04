@@ -19,7 +19,7 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá mặc định</span>
-                <MudNumericField @bind-Value="@_model.BasePrice" For="@(() => _model.BasePrice)" Min="0" Placeholder="179000" Adornment="Adornment.End"
+                <MudNumericField Step="1000" @bind-Value="@_model.BasePrice" For="@(() => _model.BasePrice)" Format="F0" Placeholder="179000" Adornment="Adornment.End"
                                  AdornmentText="₫" HideSpinButtons="true" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
