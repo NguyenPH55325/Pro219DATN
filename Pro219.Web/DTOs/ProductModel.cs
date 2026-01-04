@@ -22,8 +22,8 @@ namespace Pro219.Web.DTOs
         [MaxLength(2000, ErrorMessage = Constant.MessageValid.Max2000)]
         public string? Description { get; set; }
 
-        [Range(1000, int.MaxValue, ErrorMessage = Constant.MessageValid.Required)]
-        public decimal BasePrice { get; set; }
+        [Range(1000, 9999999999999999, ErrorMessage = "Vui lòng nhập giá trị tối thiểu là 1000đ và tối đa 9999.999.999.999.999đ")]
+        public decimal BasePrice { get; set; } = 100000;
 
         public byte? Status { get; set; }
     }

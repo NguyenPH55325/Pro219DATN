@@ -60,10 +60,22 @@ namespace Pro219.API.Utilities
 
         public string GenerateRandomString(int count)
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            if (count < 1) return string.Empty;
+
+            const string normalChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            const string specialChars = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
             Random random = new Random();
-            return new string(Enumerable.Repeat(chars, count)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+            char[] result = new char[count];
+
+            result[0] = specialChars[random.Next(specialChars.Length)];
+
+            for (int i = 1; i < count; i++)
+            {
+                result[i] = normalChars[random.Next(normalChars.Length)];
+            }
+
+            return new string(result.OrderBy(x => random.Next()).ToArray());
         }
 
     }

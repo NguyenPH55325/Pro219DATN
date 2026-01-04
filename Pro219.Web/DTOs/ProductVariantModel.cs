@@ -20,11 +20,11 @@ namespace Pro219.Web.DTOs
         [MaxLength(100, ErrorMessage = Constant.MessageValid.Max100)]
         public string SKU { get; set; } = string.Empty;
 
-        [Range(1, int.MaxValue, ErrorMessage = Constant.MessageValid.Required)]
+        [Range(1, 100000000, ErrorMessage = "Vui lòng nhập số lượng tối thiểu 1 và tối đa 100000000")]
         public int StockQuantity { get; set; } = 10;
 
 
-        [Range(1000, int.MaxValue, ErrorMessage = Constant.MessageValid.Required)]
+        [Range(1000, 9999999999999999, ErrorMessage = "Vui lòng nhập giá trị tối thiểu là 1000đ và tối đa 9999.999.999.999.999đ")]
         public decimal Price { get; set; } = 100000;
 
         public int? ArrivalTime { get; set; }

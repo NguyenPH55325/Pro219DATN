@@ -26,25 +26,25 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá trị (@(_discountType == 1 ? "%" : "VND"))</span>
-                <MudNumericField @bind-Value="@_model.Value" For="@(() => _model.Value)" Min="0" Adornment="Adornment.End"
+                <MudNumericField @bind-Value="@_model.Value" For="@(() => _model.Value)" Format="F0" Step="@(_discountType == 1 ? 10 : 1000)" Adornment="Adornment.End"
                                  AdornmentText="₫" HideSpinButtons="true" Placeholder="@(_discountType == 1 ? "10" : "179000")" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá tối thiểu áp dụng</span>
-                <MudNumericField @bind-Value="@_model.MinOrderValue" For="@(() => _model.MinOrderValue)" Min="0" Adornment="Adornment.End"
+                <MudNumericField @bind-Value="@_model.MinOrderValue" For="@(() => _model.MinOrderValue)" Step="1000" Format="F0" Adornment="Adornment.End"
                                  AdornmentText="₫" HideSpinButtons="true" Placeholder="179000" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá giảm tối đa</span>
-                <MudNumericField @bind-Value="@_model.MaxDiscountAmount" Disabled="@_isDisableMaxValue" For="@(() => _model.MaxDiscountAmount)" Min="0" Adornment="Adornment.End"
+                <MudNumericField @bind-Value="@_model.MaxDiscountAmount" Disabled="@_isDisableMaxValue" For="@(() => _model.MaxDiscountAmount)" Step="1000" Format="F0" Adornment="Adornment.End"
                                  AdornmentText="₫" HideSpinButtons="true" Placeholder="179000" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Số mã được phát hành</span>
-                <MudNumericField @bind-Value="@_model.MaxUsage" For="@(() => _model.MaxUsage)" Min="0" HideSpinButtons="true" Placeholder="1" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField @bind-Value="@_model.MaxUsage" For="@(() => _model.MaxUsage)" HideSpinButtons="true" Placeholder="1" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
@@ -87,23 +87,23 @@
                 <MudCheckBox T="bool" @bind-Checked="@_model.IsReusable" Color="Color.Primary" Label="Cho phép tái sử dụng"></MudCheckBox>
             </div>
 
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+            @*<div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Dành cho</span>
 
                 <MudRadioGroup @bind-Value="@_TypeDiscountCode" For="@(() => _TypeDiscountCode)">
                     <MudRadio Value="1" Color="Color.Primary">Hóa đơn</MudRadio>
                     <MudRadio Value="2" Color="Color.Primary">Phí vận chuyển</MudRadio>
                 </MudRadioGroup>
-            </div>
+            </div>*@
 
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+            @*<div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Trạng thái</span>
 
                 <MudRadioGroup @bind-Value="@_isActive" For="@(() => _isActive)">
                     <MudRadio Value="1" Color="Color.Primary">Hoạt động</MudRadio>
                     <MudRadio Value="0" Color="Color.Primary">Ngừng Hoạt động</MudRadio>
                 </MudRadioGroup>
-            </div>
+            </div>*@
 
             <div class="flex items-center justify-center gap-4">
                 <MudButton Href="@RouterConst.Admin.Coupon" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
@@ -241,21 +241,8 @@
     {
         _discountType = type;
 
-        if (type == 1)
-        {
-            _model.DiscountType = Constant.DiscountTypePercent;
-            _model.Status = 1;
-            _isDisableMaxValue = false;
-        }
-        else
-        {
-            _model.DiscountType = Constant.DiscountTypeFixed;
-            _model.Status = 2;
-            _isDisableMaxValue = true;
-            _model.MaxDiscountAmount = null;
-        }
-
-        _model.Value = 0;
+        _isDisableMaxValue = _discountType == 1 ? false : true;
+        if (_discountType == 2) _model.MaxDiscountAmount = null;
 
         StateHasChanged();
     }
@@ -309,8 +296,8 @@
         try
         {
             _isSubmitting = true;
-            _model.IsActive = _isActive == 1 ? true : false;
-            _model.Type = (byte)_TypeDiscountCode;
+            _model.IsActive = true;
+            _model.Status = _discountType == 1 ? (byte)1 : (byte)2;
             var result = await _couponService.Update(_model, _token);
 
             if (result.IsSuccess)

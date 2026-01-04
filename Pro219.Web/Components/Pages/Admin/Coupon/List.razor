@@ -55,7 +55,6 @@
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Số mã được phát hành" T="DAL.Models.DiscountCode">Đã sử dụng</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="StartDate" T="DAL.Models.DiscountCode">Ngày Bắt Đầu</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="EndDate" T="DAL.Models.DiscountCode">Ngày Kết Thúc</MudTableSortLabel></MudTh>
-                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="IsActive" T="DAL.Models.DiscountCode">Trạng Thái</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap">Thao tác</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -69,9 +68,7 @@
                 <MudTd DataLabel="UsageCount">@context.UsageCount / @context.MaxUsage</MudTd>
                 <MudTd DataLabel="EndDate">@context.StartDate.ToString("dd/MM/yyyy HH:mm")</MudTd>
                 <MudTd DataLabel="EndDate">@context.EndDate.ToString("dd/MM/yyyy HH:mm")</MudTd>
-                <MudTd DataLabel="IsActive">
-                    @((context.IsActive) ? "Hoạt Động" : "Không Hoạt Động")
-                </MudTd>
+                <MudTd DataLabel="Trạng thái">@(context.StartDate > DateTime.Now ? "Chưa phát hành" : (context.StartDate <= DateTime.Now && context.EndDate >= DateTime.Now) ? "Đang diễn ra" : "Đã hết hạn")</MudTd>
                 <MudTd DataLabel="Thao tác">
                     @{
                         bool isActiveNow = IsCouponActiveNow(context);
@@ -230,7 +227,7 @@
     {
         var now = DateTime.Now;
 
-        return discount.IsActive && (now >= discount.StartDate && now <= discount.EndDate);
+        return discount.IsActive && (now >= discount.StartDate);
     }
 
     private string FormatDiscountValue(DAL.Models.DiscountCode discount)
