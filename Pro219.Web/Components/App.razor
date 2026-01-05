@@ -29,5 +29,12 @@
         link.click();
         document.body.removeChild(link);
     };
+
+    window.preventDefaultKey = (event) => {
+        if (event && event.preventDefault) {
+            event.preventDefault();
+        }
+        return false;
+    };
 </script>
 </html>
