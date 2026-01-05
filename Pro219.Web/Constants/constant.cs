@@ -13,6 +13,7 @@
         public const string AuthCartIdLocalStorage = "AuthCartIdKey";
         public const string CartItemKey = "CartItemKey";
         public const string OrderPOSTemp = "OrderPOSTemp";
+        public const string ExpiredCartTempUser = "CartTempUserTime";
 
         public const string DefaultImages = "/Assets/Images/default-image.png";
         public const int DefaultSkeletons = 10;

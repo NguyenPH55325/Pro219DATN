@@ -52,6 +52,7 @@
     {
         var token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
         var expired = await localStorage.GetItemAsStringAsync(Constant.TokenExpiredLocalStorage);
+        var expiredCartTempUser = await localStorage.GetItemAsStringAsync(Constant.ExpiredCartTempUser);
         var FirstLogin = await localStorage.GetItemAsStringAsync(Constant.UserFirstLoginLocalStorage);
         var cartItemGuest = await localStorage.GetItemAsStringAsync(Constant.CartItemKey);
 
@@ -140,6 +141,7 @@
                     {
                         var resCartItem = await _cartService.MergeCart(deserializedData, token);
                         await localStorage.RemoveItemAsync(Constant.CartItemKey);
+                        await localStorage.RemoveItemAsync(Constant.ExpiredCartTempUser);
                     }
                 }
                 await _cartStateService.LoadCartDetailsAsync();
@@ -147,6 +149,18 @@
             }
         } else
         {
+            if (!string.IsNullOrEmpty(expiredCartTempUser))
+            {
+                if (DateTime.TryParse(expiredCartTempUser.Trim('"'), out DateTime expirationTime))
+                {
+                    if (expirationTime <= DateTime.Now)
+                    {
+                        await localStorage.RemoveItemAsync(Constant.ExpiredCartTempUser);
+                        await localStorage.RemoveItemAsync(Constant.CartItemKey);
+                        await _cartStateService.LoadCartDetailsAsync();
+                    }
+                }
+            }
             _currentUserInfo = null;
             _firstLogin = false;
             StateHasChanged();
@@ -188,6 +202,7 @@
         await localStorage.RemoveItemAsync(Constant.TokenNameLocalStorage);
         await localStorage.RemoveItemAsync(Constant.TokenExpiredLocalStorage);
         await localStorage.RemoveItemAsync(Constant.UserInfoLocalStorage);
+        await localStorage.RemoveItemAsync(Constant.AuthCartIdLocalStorage);
 
         _currentUserInfo = null;
 
