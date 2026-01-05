@@ -555,5 +555,12 @@ namespace Pro219.Web.Services
                 return ServiceResult<DAL.Models.Order>.Failure(result, errorMess, response.StatusCode.ToString());
             }
         }
+
+        public async Task SendEmail(EmailModel emailModel) 
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, $"/common/send-email");
+            request.Content = JsonContent.Create(emailModel);
+            await _httpClient.SendAsync(request);
+        }
     }
 }

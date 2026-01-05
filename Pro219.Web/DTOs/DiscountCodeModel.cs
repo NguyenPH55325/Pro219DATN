@@ -23,6 +23,7 @@ namespace Pro219.Web.DTOs
         [ConditionalMinValue(ErrorMessage = "Giá trị tối thiểu là 1000")]
         public decimal? MinOrderValue { get; set; }
 
+        [ConditionalMinValue(ErrorMessage = "Giá trị tối thiểu là 1000")]
         public decimal? MaxDiscountAmount { get; set; }
 
         [Required(ErrorMessage = Constant.MessageValid.Required)]
