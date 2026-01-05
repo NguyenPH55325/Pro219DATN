@@ -125,10 +125,6 @@ namespace Pro219.API.Controllers
                 {
                     return BadRequest("Đơn hàng không đủ giá trị để sử dụng mã giảm giá");
                 }
-                if (discountCode.MaxDiscountAmount != null && discountCode.Value > discountCode.MaxDiscountAmount)
-                {
-                    return BadRequest("Mã giảm giá vượt quá giá trị giảm giá tối đa");
-                }
 
                 ApplyDiscountCodeDTO applyDiscountCodeDTO = new ApplyDiscountCodeDTO
                 {
@@ -143,6 +139,10 @@ namespace Pro219.API.Controllers
                     if (applyDiscountCodeDTO.Type == 1)
                     {
                         var discount = totalAmount * (discountCode.Value / 100);
+                        if(discountCode.MaxDiscountAmount != null && discountCode.MaxDiscountAmount < discount)
+                        {
+                            discount = discountCode.MaxDiscountAmount ?? discount;
+                        }
                         applyDiscountCodeDTO.DiscountAmount = discount > totalAmount ? totalAmount : discount;
                     }
                     else
