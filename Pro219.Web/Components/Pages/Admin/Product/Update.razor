@@ -96,7 +96,7 @@
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Trạng thái</span>
 
-                <MudRadioGroup @bind-Value="@_isActive" For="@(() => _isActive)">
+                <MudRadioGroup Disabled="@_isDisabledStatus"  @bind-Value="@_isActive" For="@(() => _isActive)">
                     <MudRadio Value="1" Color="Color.Primary">Hoạt động</MudRadio>
                     <MudRadio Value="0" Color="Color.Primary">Ngừng Hoạt động</MudRadio>
                 </MudRadioGroup>
@@ -104,7 +104,7 @@
 
             <div class="flex items-center justify-center gap-4">
                 <MudButton OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.Product))" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSubmitting" Class="w-fit px-10">Tạo</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSubmitting" Class="w-fit px-10">Sửa</MudButton>
             </div>
         </EditForm>
     </div>
@@ -130,6 +130,7 @@
     private int _isActive = 1;
     private int MaxAllowedSize = 1024 * 1024 * 5;
     private bool _isSubmitting = false;
+    private bool _isDisabledStatus = false;
 
     private List<BreadcrumbItem> _items =>
     [
@@ -172,6 +173,13 @@
             if (resImages.IsSuccess && resImages.Data != null)
             {
                 _images = resImages.Data;
+            }
+
+
+            var resProductVariants = await _productVariantService.GetAllByProduct(data.Id);
+            if(resProductVariants.IsSuccess && !resProductVariants.Data.Any())
+            {
+                _isDisabledStatus = true;
             }
         }
         else

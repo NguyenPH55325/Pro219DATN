@@ -46,49 +46,6 @@
                 }
             </div>
         </div>
-
-        <div class="mt-6 w-full">
-            <h2 class="text-xl font-medium">Phí vận chuyển</h2>
-            <div class="mt-2 grid w-full grid-cols-2 gap-3 sm:grid-cols-1">
-                @if(_shippingCoupon.Any())
-                {
-                    @foreach (var item in _shippingCoupon)
-                    {
-                        <div class="relative flex overflow-hidden rounded-lg border border-dashed border-black bg-white shadow-sm transition-shadow hover:shadow-md">
-                            <div class="flex w-1/3 flex-col items-center justify-center bg-black p-4 text-white">
-                                <span class="font-black text-2xl">
-                                    @(item.Status == 1 ? $"{item.Value.ToString("N0", vietnameseCulture)}%" : $"{(item.Value / 1000).ToString("N0", vietnameseCulture)}K")
-                                </span>
-                                <span class="uppercase text-[10px] opacity-80">Giảm tối đa</span>
-                            </div>
-
-                            <div class="flex w-2/3 flex-col justify-between p-4">
-                                <div>
-                                    <p class="text-xs text-gray-500">Mã: <b class="text-slate-950">@item.Code</b></p>
-                                    <p class="mt-1 italic text-[11px] text-red-500">HSD: @item.EndDate.ToString("dd/MM/yyyy")</p>
-                                </div>
-
-                                <div class="mt-2 flex flex-col justify-between gap-2 lg:flex-row">
-                                    <span class="text-[10px] text-gray-400">Đơn tối thiểu @(item.MinOrderValue != null && item.MinOrderValue > 0 ? item.MinOrderValue?.ToString("C", vietnameseCulture) : 0.ToString("C", vietnameseCulture))</span>
-                                    <MudButton Variant="Variant.Filled"
-                                               Color="Color.Dark"
-                                               Size="Size.Small"
-                                               OnClick="@(() => CopyToClipboard(item.Code))">
-                                        SAO CHÉP
-                                    </MudButton>
-                                </div>
-                            </div>
-
-                            <div class="-translate-y-1/2 absolute left-0 top-1/2 -ml-2 h-4 w-4 rounded-full border-r border-dashed border-blue-400 bg-gray-50"></div>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p>Không có mã giảm giá nào.</p>
-                }
-            </div>
-        </div>
     </div>
 </section>
 

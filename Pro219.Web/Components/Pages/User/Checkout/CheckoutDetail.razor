@@ -134,19 +134,11 @@
 
                 <div class="flex w-full items-center gap-2">
                     <MudTextField @bind-Value="@_coupon" placeholder="nhập mã giảm giá" Variant="Variant.Outlined" Style="height: 40px" />
+                    <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="cursor-pointer" hidden="@(_discountDetail == null)" @onclick="RemoveDiscount" />
                     <MudButton Class="!h-10 w-[8rem] flex-shrink-0" Color="Color.Dark" Variant="Variant.Filled" Disabled="@(!_data.Any() || _addressDefault == null || _isSubmitting)" OnClick="ApplyDiscountCodeValue">
                         Áp Dụng
                     </MudButton>
                 </div>
-
-                @if (_appliedDiscount.Any())
-                {
-                    <span class="font-bold">Bạn đã áp mã: </span>
-                    @foreach (var i in _appliedDiscount)
-                    {
-                        <span>@i.DiscountCode</span>
-                    }
-                }
             </div>
 
             <div class="flex w-full flex-col gap-2 rounded-lg border border-solid border-slate-200 p-3 shadow">
@@ -187,7 +179,6 @@
 
     private List<CartItemWithProductDTO> _data = [];
     private List<DAL.Models.Address> _address = [];
-    private List<ItemAppliedTemp> _appliedDiscount = [];
     private DAL.Models.Address? _addressDefault;
     private DAL.Models.DiscountCode? _discountDetail;
     private GetMeResponseDTO _me = new();
@@ -403,19 +394,8 @@
             if (result.IsSuccess && result.Data != null)
             {
                 var resApply = result.Data;
-
-                if (resApply.Type == Constant.DiscountType.Order)
-                {
-                    _discountAmount = resApply.DiscountAmount;
-                    _snackbar.Add($"Áp dụng mã thành công! Giảm giá: {FormatCurrency(_discountAmount)}", Severity.Success);
-                }
-                else if (resApply.Type == Constant.DiscountType.Shipping)
-                {
-                    _discountShippingFee = resApply.ShippingDiscount;
-                    _snackbar.Add($"Áp dụng mã thành công! Giảm giá: {FormatCurrency(_discountShippingFee)}", Severity.Success);
-                }
-
-                UpdateAppliedDiscountList(resApply.Type, _coupon.Trim());
+                _discountAmount = resApply.DiscountAmount;
+                _snackbar.Add($"Áp dụng mã thành công! Giảm giá: {FormatCurrency(_discountAmount)}", Severity.Success);
 
                 var resultDiscountDetail = await _couponService.GetByCode(_coupon.Trim());
                 if (resultDiscountDetail.IsSuccess && resultDiscountDetail.Data != null)
@@ -425,8 +405,17 @@
             }
             else
             {
-                _coupon = string.Empty;
-                _snackbar.Add($"Áp dụng mã thất bại: {result.ErrorMessage}", Severity.Error);
+                _snackbar.Add($"Áp dụng mã {_coupon} thất bại: {result.ErrorMessage}", Severity.Warning);
+                if(_discountDetail != null)
+                {
+                    _coupon = _discountDetail.Code;
+                } else
+                {
+                    _coupon = string.Empty;
+                    _discountDetail = null;
+                    _discountAmount = 0;
+                    CalculateTotal();
+                }
             }
         } 
         catch(Exception ex) {}
@@ -576,11 +565,11 @@
                     }
 
                     await ClearCartAfterCheckout();
-                    
+
                     _isCheckoutSuccess = true;
                     _orderIdSuccess = data.OrderId.Value;
                     _orderCodeSuccess = data.OrderCode;
-                    
+
                     _snackbar.Add("Đặt hàng thành công! Đơn hàng sẽ được xử lý.", Severity.Success);
                     await _cartStateService.LoadCartDetailsAsync();
                     StateHasChanged();
@@ -593,7 +582,7 @@
             else
             {
                 var errorMessage = result.ErrorMessage ?? "Đặt hàng thất bại. Vui lòng thử lại.";
-                
+
                 if (result.StatusCode == "400")
                 {
                     errorMessage = result.ErrorMessage ?? "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin đơn hàng.";
@@ -693,78 +682,35 @@
         return CalculateSubtotal() + _shippingPrice - _discountAmount - _discountShippingFee;
     }
 
-    private void UpdateAppliedDiscountList(byte? discountType, string discountCode)
-    {
-        var appliedTemp = _appliedDiscount.FirstOrDefault(d => d.Type == discountType);
-
-        if (appliedTemp != null)
-        {
-            _appliedDiscount.Remove(appliedTemp);
-            appliedTemp.DiscountCode = discountCode;
-            _appliedDiscount.Add(appliedTemp);
-        }
-        else
-        {
-            _appliedDiscount.Add(new ItemAppliedTemp
-            {
-                Type = discountType,
-                DiscountCode = discountCode
-            });
-        }
-    }
-
     private async Task ReapplyDiscountsAsync()
     {
-        if (!_appliedDiscount.Any() || !_data.Any())
+        if (string.IsNullOrEmpty(_coupon) || _discountDetail == null || !_data.Any())
+        {
+            _discountAmount = 0;
+            _coupon = string.Empty;
+            _discountDetail = null;
             return;
+        }
 
         decimal totalAmount = CalculateSubtotal();
         var discountsToRemove = new List<ItemAppliedTemp>();
 
-        foreach (var discount in _appliedDiscount)
+        var result = await _couponService.ApplyDiscountCodeValue(
+            _discountDetail.Code.Trim(),
+            totalAmount, 
+            _shippingPrice, 
+            _token
+        );
+
+        if (result.IsSuccess && result.Data != null)
         {
-            if (string.IsNullOrWhiteSpace(discount.DiscountCode))
-                continue;
-
-            var result = await _couponService.ApplyDiscountCodeValue(
-                discount.DiscountCode.Trim(), 
-                totalAmount, 
-                _shippingPrice, 
-                _token
-            );
-
-            if (result.IsSuccess && result.Data != null)
-            {
-                var resApply = result.Data;
-                if (resApply.Type == Constant.DiscountType.Order)
-                {
-                    _discountAmount = resApply.DiscountAmount;
-                }
-                else if (resApply.Type == Constant.DiscountType.Shipping)
-                {
-                    _discountShippingFee = resApply.ShippingDiscount;
-                }
-            }
-            else if (!result.IsSuccess)
-            {
-                _snackbar.Add($"Mã giảm giá {discount.DiscountCode} không còn đủ điều kiện áp dụng nữa.", Severity.Warning);
-                
-                if (discount.Type == Constant.DiscountType.Order)
-                {
-                    _discountAmount = 0;
-                }
-                else if (discount.Type == Constant.DiscountType.Shipping)
-                {
-                    _discountShippingFee = 0;
-                }
-                
-                discountsToRemove.Add(discount);
-            }
+            var resApply = result.Data;
+            _discountAmount = resApply.DiscountAmount;    
         }
-
-        foreach (var discountToRemove in discountsToRemove)
+        else if (!result.IsSuccess)
         {
-            _appliedDiscount.Remove(discountToRemove);
+            _snackbar.Add($"Mã giảm giá {_coupon} không còn đủ điều kiện áp dụng nữa.", Severity.Warning);
+            _discountAmount = 0;
         }
     }
 
@@ -774,5 +720,15 @@
         {
             await _cartItemService.Delete(item.Id, _token);
         }
+    }
+
+    async Task RemoveDiscount()
+    {
+        _coupon = string.Empty;
+        _discountDetail = null;
+        _discountAmount = 0;
+
+        CalculateTotal();
+        StateHasChanged();
     }
 }
