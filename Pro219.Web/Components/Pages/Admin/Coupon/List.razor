@@ -50,11 +50,11 @@
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Value" T="DAL.Models.DiscountCode">Giá Trị</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Giá trị tối thiểu áp dụng" T="DAL.Models.DiscountCode">Giá trị tối thiểu áp dụng</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Giá trị giảm tối đa" T="DAL.Models.DiscountCode">Giá trị giảm tối đa</MudTableSortLabel></MudTh>
-                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Áp dụng" T="DAL.Models.DiscountCode">Áp dụng</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Số lần sử dụng tối đa" T="DAL.Models.DiscountCode">Số mã được phát hành</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Số mã được phát hành" T="DAL.Models.DiscountCode">Đã sử dụng</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="StartDate" T="DAL.Models.DiscountCode">Ngày Bắt Đầu</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="EndDate" T="DAL.Models.DiscountCode">Ngày Kết Thúc</MudTableSortLabel></MudTh>
+                <MudTh class="whitespace-nowrap"><MudTableSortLabel SortLabel="Trạng thái" T="DAL.Models.DiscountCode">Trạng thái</MudTableSortLabel></MudTh>
                 <MudTh class="whitespace-nowrap">Thao tác</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -63,7 +63,6 @@
                 <MudTd DataLabel="Value">@(FormatDiscountValue(context))</MudTd>
                 <MudTd DataLabel="MinOrderValue">@(context.MinOrderValue?.ToString("C", vietnameseCulture) ?? "0")</MudTd>
                 <MudTd DataLabel="MaxDiscountAmount">@(context.MaxDiscountAmount?.ToString("C", vietnameseCulture) ?? "0")</MudTd>
-                <MudTd DataLabel="Type">@(context.Type == 1 ? "Hóa đơn" : "Phí vận chuyển")</MudTd>
                 <MudTd DataLabel="MaxUsage">@context.MaxUsage</MudTd>
                 <MudTd DataLabel="UsageCount">@context.UsageCount / @context.MaxUsage</MudTd>
                 <MudTd DataLabel="EndDate">@context.StartDate.ToString("dd/MM/yyyy HH:mm")</MudTd>

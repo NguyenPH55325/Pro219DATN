@@ -86,14 +86,14 @@
                 </div>
             </div>
 
-            <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
+            @*<div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Trạng thái</span>
 
                 <MudRadioGroup @bind-Value="@_isActive" For="@(() => _isActive)">
                     <MudRadio Value="1" Color="Color.Primary">Hoạt động</MudRadio>
                     <MudRadio Value="0" Color="Color.Primary">Ngừng Hoạt động</MudRadio>
                 </MudRadioGroup>
-            </div>
+            </div>*@
 
             <div class="flex items-center justify-center gap-4">
                 <MudButton OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.Product))" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
@@ -188,7 +188,7 @@
         try
         {
             _isSubmitting = true;
-            _model.Status = (byte)_isActive;
+            _model.Status = (byte)0;
             var result = await _productService.Create(_model);
 
             if (result.IsSuccess && result.Data != null && result.Data.Id > 0)
