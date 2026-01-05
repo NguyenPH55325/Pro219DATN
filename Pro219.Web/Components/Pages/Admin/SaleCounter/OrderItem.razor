@@ -307,6 +307,26 @@
                     if (objOrder != null)
                     {
                         if(objOrder.ListItem.Any()) {
+                            var isSaveNew = 0;
+                            foreach(var item in objOrder.ListItem)
+                            {
+                                var resProV = await _productVariantService.GetById(item.ProductVariantId);
+                                if(resProV.IsSuccess && resProV.Data != null)
+                                {
+                                    var productVariant = resProV.Data;
+                                    if(item.UnitPrice != productVariant.Price)
+                                    {
+                                        item.UnitPrice = productVariant.Price;
+                                        item.Subtotal = item.Quantity * productVariant.Price;
+                                        isSaveNew++;
+                                    }
+                                }
+                            }
+
+                            if(isSaveNew > 0)
+                            {
+                                await localStorage.SetItemAsStringAsync(Constant.OrderPOSTemp, JsonSerializer.Serialize(deserializedData));
+                            }
                             _orderItems = objOrder.ListItem;
                             _totalProductAmount = objOrder.ListItem.Sum(x => x.Subtotal);
                         }

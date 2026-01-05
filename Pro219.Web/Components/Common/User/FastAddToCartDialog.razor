@@ -88,10 +88,6 @@
                     <button class="w-[49%] bg-black py-3 uppercase text-white" @onclick="ToCheckout">Mua Ngay</button>
                 </div>
 
-                <div class="mt-2">
-                    <button class="w-full border border-solid border-slate-200 py-3"><MudIcon Icon="@Icons.Material.Filled.FavoriteBorder" /> Yêu Thích</button>
-                </div>
-
                 <div class="mt-4">
                     <button @onclick="@(() => navigation.NavigateTo(RouterConst.User.ProductDetail + $"/{productId}"))" class="mx-auto flex w-fit items-center text-sm">Xem chi tiết sản phẩm <MudIcon Class="ml-2" Icon="@Icons.Material.Filled.ArrowForward" Size="Size.Small" /></button>
                 </div>
@@ -305,6 +301,7 @@
             {
                 var cartStringJson = JsonSerializer.Serialize(items);
                 await localStorage.SetItemAsStringAsync(Constant.CartItemKey, cartStringJson);
+                await localStorage.SetItemAsStringAsync(Constant.ExpiredCartTempUser, DateTime.Now.AddDays(7).ToString("o"));
             } else
             {
                 var cartCurrentJson = JsonSerializer.Deserialize<List<AddCartModel>>(cartCurrent);
@@ -324,11 +321,16 @@
                         var newQuantity = currentQuantity + _quantity;
                         hasProductCurrent.Quantity = newQuantity;
                         await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(cartCurrentJson));
+                    } else
+                    {
+                        cartCurrentJson.Add(item);
+                        await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(cartCurrentJson));
                     }
                 } 
                 else 
                 {
                     await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(items));
+                    await localStorage.SetItemAsStringAsync(Constant.ExpiredCartTempUser, DateTime.Now.AddDays(7).ToString("o"));
                 }
             }
 
@@ -377,6 +379,7 @@
             {
                 var cartStringJson = JsonSerializer.Serialize(items);
                 await localStorage.SetItemAsStringAsync(Constant.CartItemKey, cartStringJson);
+                await localStorage.SetItemAsStringAsync(Constant.ExpiredCartTempUser, DateTime.Now.AddDays(7).ToString("o"));
             }
             else
             {
@@ -400,6 +403,7 @@
                 else
                 {
                     await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(items));
+                    await localStorage.SetItemAsStringAsync(Constant.ExpiredCartTempUser, DateTime.Now.AddDays(7).ToString("o"));
                 }
             }
 

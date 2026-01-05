@@ -397,6 +397,7 @@ else
             {
                 var cartStringJson = JsonSerializer.Serialize(items);
                 await localStorage.SetItemAsStringAsync(Constant.CartItemKey, cartStringJson);
+                await localStorage.SetItemAsStringAsync(Constant.ExpiredCartTempUser, DateTime.Now.AddDays(7).ToString("o"));
             } else
             {
                 var cartCurrentJson = JsonSerializer.Deserialize<List<AddCartModel>>(cartCurrent);
@@ -425,6 +426,7 @@ else
                 else 
                 {
                     await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(items));
+                    await localStorage.SetItemAsStringAsync(Constant.ExpiredCartTempUser, DateTime.Now.AddDays(7).ToString("o"));
                 }
             }
 
@@ -469,6 +471,7 @@ else
             {
                 var cartStringJson = JsonSerializer.Serialize(items);
                 await localStorage.SetItemAsStringAsync(Constant.CartItemKey, cartStringJson);
+                await localStorage.SetItemAsStringAsync(Constant.ExpiredCartTempUser, DateTime.Now.AddDays(7).ToString("o"));
             }
             else
             {
@@ -497,6 +500,7 @@ else
                 else
                 {
                     await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(items));
+                    await localStorage.SetItemAsStringAsync(Constant.ExpiredCartTempUser, DateTime.Now.AddDays(7).ToString("o"));
                 }
             }
 
