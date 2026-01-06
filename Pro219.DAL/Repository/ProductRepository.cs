@@ -601,9 +601,25 @@ namespace Pro219.DAL.Repository
         {
             try
             {
-                var existingProduct = await _context.Products.FindAsync(product.Id);
+                var existingProduct = await _context.Products
+                    .Include(p => p.Brand)
+                    .Include(p => p.Category)
+                    .FirstOrDefaultAsync(p => p.Id == product.Id);
 
                 if (existingProduct == null || existingProduct.Delete == true) return null;
+
+
+                if (existingProduct.Category == null
+                   || existingProduct.Category.Delete == true)
+                {
+                    return null;
+                }
+
+                if (existingProduct.Brand == null 
+                    || existingProduct.Brand.Delete == true)
+                {
+                    return null;
+                }
 
                 existingProduct.CategoryId = product.CategoryId;
                 existingProduct.BrandId = product.BrandId;

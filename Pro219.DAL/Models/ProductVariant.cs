@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Pro219.DAL.Models
@@ -18,7 +18,7 @@ namespace Pro219.DAL.Models
 
         [Required]
         [MaxLength(100)]
-        public string SKU { get; set; } = string.Empty;
+        public string SKU { get; set; } = string.Empty; // Không còn sử dụng
 
         [Required]
         public int StockQuantity { get; set; }
@@ -27,7 +27,7 @@ namespace Pro219.DAL.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal Price { get; set; }
 
-        public int? ArrivalTime { get; set; } // Days
+        public int? ArrivalTime { get; set; } // Không còn sử dụng
 
         public bool IsActive { get; set; }
 
@@ -44,7 +44,6 @@ namespace Pro219.DAL.Models
         [MaxLength(255)]
         public string? UpdateBy { get; set; }
 
-        // Foreign key navigation properties
         [ForeignKey("ProductId")]
         public virtual Product? Product { get; set; } = null!;
 
@@ -54,7 +53,6 @@ namespace Pro219.DAL.Models
         [ForeignKey("SizeId")]
         public virtual Size? Size { get; set; }
 
-        // Navigation properties
         public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public virtual ICollection<InventoryLog> InventoryLogs { get; set; } = new List<InventoryLog>();
