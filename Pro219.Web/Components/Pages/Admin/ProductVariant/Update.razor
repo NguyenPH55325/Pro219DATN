@@ -45,7 +45,7 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Số lượng</span>
-                <MudNumericField T="int" @bind-Value="@_model.StockQuantity" For="@(() => _model.StockQuantity)" Min="0" HideSpinButtons="true" Placeholder="100" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField Format="F0" T="int" @bind-Value="@_model.StockQuantity" For="@(() => _model.StockQuantity)" Min="0" HideSpinButtons="true" Placeholder="100" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
@@ -97,8 +97,8 @@
             </div>
 
             <div class="flex items-center justify-center gap-4">
-                <MudButton OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.ProductVariant))" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
-                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSubmitting" Class="w-fit px-10">Tạo</MudButton>
+                <MudButton OnClick="@(() => navigation.NavigateTo(RouterConst.Admin.ProductDetail.Replace(":id", _model.ProductId.ToString())))" Color="Color.Surface" Variant="Variant.Filled" ButtonType="ButtonType.Button" Class="w-fit px-10">Quay lại</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Submit" Disabled="@_isSubmitting" Class="w-fit px-10">Sửa</MudButton>
             </div>
         </EditForm>
     </div>
