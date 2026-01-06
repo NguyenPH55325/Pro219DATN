@@ -62,7 +62,7 @@
                 <MudTd DataLabel="Id" hidden>@context.Id</MudTd>
                 <MudTd DataLabel="Ảnh"><MudImage Src="@_productImages.FirstOrDefault(pi => pi.ProductId == context.Id && pi.ProductVariantId == null)?.ImageUrl" Width="100" /></MudTd>
                 <MudTd DataLabel="Ảnh">@context.Name</MudTd>
-                <MudTd DataLabel="Giá mặc định">@context.BasePrice.ToString("C", vietnameseCulture)</MudTd>
+                <MudTd DataLabel="Giá mặc định">@context.BasePrice.ToString("C0", vietnameseCulture)</MudTd>
                 <MudTd DataLabel="Danh mục">@(context.Category?.Name ?? "")</MudTd>
                 <MudTd DataLabel="Thương hiệu">@(context.Brand?.Name ?? "")</MudTd>
                 <MudTd DataLabel="Mô tả">@context.Description</MudTd>

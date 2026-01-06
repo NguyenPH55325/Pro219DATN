@@ -25,7 +25,7 @@
                 <MudTd DataLabel="Ảnh"><MudImage Src="@_productImages.FirstOrDefault(pi => pi.ProductVariantId == context.Id)?.ImageUrl" Width="100" /></MudTd>
                 <MudTd DataLabel="Sản phẩm chứa">@_products.FirstOrDefault(p => p.Id == context.ProductId)?.Name</MudTd>
                 <MudTd DataLabel="SKU">@context.SKU</MudTd>
-                <MudTd DataLabel="Giá">@context.Price.ToString("C", vietnameseCulture)</MudTd>
+                <MudTd DataLabel="Giá">@context.Price.ToString("C0", vietnameseCulture)</MudTd>
                 <MudTd DataLabel="Màu sắc">@_colors.FirstOrDefault(x => x.Id == context.ColorId)?.Name</MudTd>
                 <MudTd DataLabel="Kích thước">@_sizes.FirstOrDefault(x => x.Id == context.SizeId)?.Name</MudTd>
                 <MudTd DataLabel="Số lượng">@context.StockQuantity</MudTd>

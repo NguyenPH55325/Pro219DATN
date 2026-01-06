@@ -50,8 +50,8 @@ namespace Pro219.Web.Services
             var queryParams = new Dictionary<string, string?>
             {
                 { "orderId", checkoutPOS.OrderId.ToString() },
-                { "discountAmount", checkoutPOS.DiscountAmount.ToString() },
-                { "shippingFee", checkoutPOS.ShippingFee.ToString() },
+                { "discountAmount", checkoutPOS.DiscountAmount.ToString("F0") },
+                { "shippingFee", checkoutPOS.ShippingFee.ToString("F0") },
                 { "PaymentMethodTypeId", checkoutPOS.PaymentMethodTypeId.ToString() },
             };
 
@@ -95,8 +95,8 @@ namespace Pro219.Web.Services
         {
             var queryParams = new Dictionary<string, string?>
             {
-                { "discountAmount", discountAmount.ToString() },
-                { "shippingFee", shippingFee.ToString() },
+                { "discountAmount", discountAmount.ToString("F0") },
+                { "shippingFee", shippingFee.ToString("F0") },
                 { "PaymentMethodTypeId", paymentMethodTypeId.ToString() },
                 { "note", note },
                 { "addressId", shippingAddressId.ToString() }

@@ -26,7 +26,7 @@
                                 </div>
 
                                 <div class="mt-2 flex flex-col justify-between gap-2 lg:flex-row">
-                                    <span class="w-full text-left text-[10px] text-gray-400">Đơn tối thiểu @(item.MinOrderValue != null && item.MinOrderValue > 0 ? item.MinOrderValue?.ToString("C", vietnameseCulture) : 0.ToString("C", vietnameseCulture))</span>
+                                    <span class="w-full text-left text-[10px] text-gray-400">Đơn tối thiểu @(item.MinOrderValue != null && item.MinOrderValue > 0 ? item.MinOrderValue?.ToString("C0", vietnameseCulture) : 0.ToString("C0", vietnameseCulture))</span>
                                     <MudButton Class="flex-shrink-0" Variant="Variant.Filled"
                                                Color="Color.Dark"
                                                Size="Size.Small"
