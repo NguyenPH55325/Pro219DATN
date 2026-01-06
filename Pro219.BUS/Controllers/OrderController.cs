@@ -719,8 +719,7 @@ namespace Pro219.API.Controllers
                         DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
                     });
                     order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
-                }
-
+                } 
                 else
                 {
                     var statusHistory = ParseStatusHistory(order.StatusHistory);
