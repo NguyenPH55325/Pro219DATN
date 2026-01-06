@@ -274,7 +274,7 @@ namespace Pro219.DAL.Repository
                     .AsNoTracking()
                     .Where(x => x.ProductId == productId
                         && x.Delete != true
-                        && x.Product.Delete != true && x.Product.Status == 1
+                        && x.Product.Delete != true
                         && x.Product.Brand.Delete != true && x.Product.Brand.Status == 1
                         && x.Product.Category.Delete != true && x.Product.Category.Status == 1
                         && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))

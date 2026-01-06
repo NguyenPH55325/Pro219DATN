@@ -30,7 +30,7 @@
                                  @bind-Value="@_model.Value"
                                  Adornment="Adornment.End"
                                  Format="F0" Step="@(_discountType == 1 ? 10 : 1000)"
-                                 AdornmentText="₫" HideSpinButtons="true" Placeholder="@(_discountType == 1 ? "10" : "179000")" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                                 AdornmentText="@(_discountType == 1 ? "%" : "đ")" HideSpinButtons="true" Placeholder="@(_discountType == 1 ? "10" : "179000")" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">

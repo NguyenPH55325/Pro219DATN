@@ -199,7 +199,7 @@
             _isSubmitting = true;
             _model.ProductId = productId;
             _model.IsActive = _isActive == 1 ? true : false;
-            _model.Status = 1;
+            _model.Status = (byte)1;
             var result = await _productVariantService.Create(_model);
 
             if (result.IsSuccess && result.Data != null && result.Data.Id > 0)
