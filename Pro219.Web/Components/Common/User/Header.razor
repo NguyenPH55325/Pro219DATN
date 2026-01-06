@@ -151,25 +151,19 @@
 
         <MudDivider />
 
-        <MudNavLink Href="#" OnClick="@(() => _isCategoryMenuOpen = !_isCategoryMenuOpen)" Match="NavLinkMatch.All">
-            <div class="flex w-full items-center justify-between">
-                <MudText Typo="Typo.subtitle1">DANH MỤC</MudText>
-            </div>
-        </MudNavLink>
+        <MudText Class="mb-4 mt-6 w-full pl-[28px]" Typo="Typo.subtitle1">DANH MỤC</MudText>
 
-        <div class="max-h-[calc(100lvh-177px)] w-full overflow-y-auto">
-            <MudCollapse Expanded="@_isCategoryMenuOpen">
-                <MudList T="string" Class="ml-4">
-                    @if (_lstCategories.Any())
-                    {
-                        @RenderDrawerItems(_lstCategories)
-                    }
-                    else
-                    {
-                        <MudListItem Disabled="true">Đang tải danh mục...</MudListItem>
-                    }
-                </MudList>
-            </MudCollapse>
+        <div class="max-h-[calc(100lvh-340px)] w-full overflow-y-auto">
+            <MudList T="string" Class="ml-4">
+                @if (_lstCategories.Any())
+                {
+                    @RenderDrawerItems(_lstCategories)
+                }
+                else
+                {
+                    <MudListItem Disabled="true">Đang tải danh mục...</MudListItem>
+                }
+            </MudList>
         </div>
 
         <MudNavLink Href=@($"{RouterConst.User.SearchAll}?page={Constant.Pagination.DefaultPage}") Class="mt-2" Match="NavLinkMatch.All">
@@ -184,11 +178,14 @@
             </div>
         </MudNavLink>
 
-        <MudNavLink Href="@RouterConst.User.CouponNow" Class="mt-2" Match="NavLinkMatch.All">
-            <div class="flex w-full items-center justify-between">
-                <MudText Typo="Typo.subtitle1" Class="!uppercase">Mã giảm giá</MudText>
-            </div>
-        </MudNavLink>
+        @if (_isShowDiscountCodeMenuOpen)
+        {
+            <MudNavLink Href="@RouterConst.User.CouponNow" Class="mt-2" Match="NavLinkMatch.All">
+                <div class="flex w-full items-center justify-between">
+                    <MudText Typo="Typo.subtitle1" Class="!uppercase">Mã giảm giá</MudText>
+                </div>
+            </MudNavLink>
+        }
     </MudNavMenu>
 </MudDrawer>
 
@@ -305,13 +302,20 @@
         {
             if (category.SubCategory?.Any() == true)
             {
-                <MudMenu AnchorOrigin="Origin.TopRight" TransformOrigin="Origin.TopLeft" ListClass="customer-menu !min-w-[15rem] !rounded-lg !bg-white !p-2 !shadow-xl">
-
+                <MudMenu AnchorOrigin="Origin.TopRight"
+                        TransformOrigin="Origin.TopLeft"
+                        Class="!w-full"
+                        ListClass="customer-menu !min-w-[15rem] !rounded-lg !bg-white !p-2 !shadow-xl">
                     <ActivatorContent>
-                        <MudMenuItem Disabled="true" OnClick="@(() => NavigateAndCloseDrawer(category.Id))">
-                            <span>@category.Name</span>
-                            <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowRight" Class="ml-auto" />
-                        </MudMenuItem>
+                        <MudItem>
+                            <MudButton Color="Color.Inherit"
+                                    Variant="Variant.Text"
+                                    Class="!w-full !justify-between !gap-2 !px-3"
+                                    OnClick="@(() => NavigateAndCloseDrawer(category.Id))">
+                                <span>@category.Name</span>
+                                <MudIcon Icon="@Icons.Material.Filled.KeyboardArrowRight" Class="ml-auto" />
+                            </MudButton>
+                        </MudItem>
                     </ActivatorContent>
 
                     <ChildContent>
@@ -330,20 +334,6 @@
 
     private Dictionary<int, bool> _categoryExpansionState = new Dictionary<int, bool>();
 
-    private void ToggleCategoryExpansion(int categoryId)
-    {
-        if (_categoryExpansionState.ContainsKey(categoryId))
-        {
-            _categoryExpansionState[categoryId] = !_categoryExpansionState[categoryId];
-        }
-        else
-        {
-            _categoryExpansionState[categoryId] = true;
-        }
-        
-        StateHasChanged();
-    }
-    
     private bool IsCategoryExpanded(int categoryId)
     {
         return _categoryExpansionState.GetValueOrDefault(categoryId, false);
@@ -355,28 +345,17 @@
         {
             if (category.SubCategory?.Any() == true)
             {
-                var isExpanded = IsCategoryExpanded(category.Id);
-
-                <MudListItem T="string" OnClick="@(() => ToggleCategoryExpansion(category.Id))">
-                    <div class="flex w-full items-center justify-between">
-                        <MudText Typo="Typo.subtitle2" Class="!font-semibold">@category.Name</MudText>
-                        <MudIcon Icon="@(isExpanded ? Icons.Material.Filled.KeyboardArrowUp : Icons.Material.Filled.KeyboardArrowDown)" Size="Size.Small" />
-                    </div>
+                <MudListItem T="string" @onclick="@(() => NavigateAndCloseDrawer(category.Id))">
+                    <MudText Typo="Typo.subtitle2" Class="!font-semibold">@category.Name</MudText>
                 </MudListItem>
-
-                <MudListItem T="string" OnClick="@(() => NavigateAndCloseDrawer(category.Id))" Class="ml-4 !pt-0 !pb-0 !mt-[-4px]">
-                    <MudText Typo="Typo.body2" Class="!text-sm italic text-blue-600 hover:text-black">Xem tất cả @category.Name</MudText>
-                </MudListItem>
-            
-                <MudCollapse Expanded="@isExpanded">
-                    <MudList T="string" Class="ml-4">
-                        @RenderDrawerItems(category.SubCategory)
-                    </MudList>
-                </MudCollapse>
+         
+                <MudList T="string" Class="!ml-2">
+                    @RenderDrawerItems(category.SubCategory)
+                </MudList>
             }
             else
             {
-                <MudListItem T="string" OnClick="() => NavigateAndCloseDrawer(category.Id)">
+                <MudListItem T="string" OnClick="@(() => NavigateAndCloseDrawer(category.Id))">
                     <MudText Typo="Typo.body2">@category.Name</MudText>
                 </MudListItem>
             }

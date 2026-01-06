@@ -9,7 +9,7 @@
 
     <div class="mt-4">
         <MudButton Variant="Variant.Outlined" OnClick="@(() => navigation.NavigateTo($"{RouterConst.User.SearchByKeyword}?k={_keyword}&page={Constant.Pagination.DefaultPage}", false))"><MudIcon Icon="@Icons.Material.Filled.Filter"/> Đặt lại bộ lọc</MudButton>
-        <div class="mt-3 flex max-w-full flex-nowrap items-center gap-4 overscroll-x-auto">
+        <div class="mt-3 grid max-w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <MudSelect T="int" Value="@_selectBrand" ValueChanged="@((int value) => OnMaterialSelected(1, value))" Variant="Variant.Outlined" Label="Thương Hiệu">
                 <MudSelectItem Value="0">Tất cả</MudSelectItem>
                 @if(_brands.Any())
@@ -55,7 +55,7 @@
     <div class="mt-6">
         @if (_products.Any())
         {
-            <div class="grid grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 @foreach (var item in _products)
                 {
                     <div accesskey="@item.Id" class="w-full">
@@ -112,7 +112,7 @@
                             </div>
 
                             <div class="w-full">
-                                <p class="line-clamp-1 text-center text-sm font-bold">@item?.BasePrice.ToString("C", vietnameseCulture)</p>
+                                <p class="line-clamp-1 text-center text-sm font-bold">@item?.BasePrice.ToString("C0", vietnameseCulture)</p>
                             </div>
 
                             <div class="invisible absolute -bottom-10 left-0 z-10 flex w-full items-center justify-between gap-4 bg-black py-2.5 opacity-0 group-hover:visible group-hover:opacity-100">

@@ -76,7 +76,7 @@
                     <MudTd DataLabel="Kích cỡ">@context.SizeName</MudTd>
                     <MudTd DataLabel="Màu">@context.ColorName</MudTd>
                     <MudTd DataLabel="Số lượng">@context.Quantity</MudTd>
-                    <MudTd DataLabel="Giá">@context.UnitPrice.ToString("C", vietnameseCulture)</MudTd>
+                    <MudTd DataLabel="Giá">@context.UnitPrice.ToString("C0", vietnameseCulture)</MudTd>
                     <MudTd DataLabel="Số lượng chọn">
                         <div class="my-4 flex">
                             <MudIconButton Class="!flex !h-[1.875rem] !w-[1.875rem] !cursor-pointer !items-center !justify-center" @onclick="@(() => DecreaseQuantity(context.ProductVariantId))" Icon="@Icons.Material.Filled.Remove" Size="Size.Small" Disabled="@(GetQuantity(context.ProductVariantId) <= 1)" />

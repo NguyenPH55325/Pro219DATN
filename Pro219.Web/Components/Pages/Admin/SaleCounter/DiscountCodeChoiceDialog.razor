@@ -32,7 +32,7 @@
                 <MudTd DataLabel="Code">@context.Code</MudTd>
                 <MudTd DataLabel="DiscountType">@(context.Status == 1 ? "Phần trăm (%)" : "Giá cố định")</MudTd>
                 <MudTd DataLabel="Value">@(FormatDiscountValue(context))</MudTd>
-                <MudTd DataLabel="MaxDiscountAmount">@(context.MaxDiscountAmount?.ToString("C", vietnameseCulture) ?? "0")</MudTd>
+                <MudTd DataLabel="MaxDiscountAmount">@(context.MaxDiscountAmount?.ToString("C0", vietnameseCulture) ?? "0")</MudTd>
                 <MudTd DataLabel="Thao tác">
                     <MudIconButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => SelectDiscount(context))">Chọn</MudIconButton>
                 </MudTd>

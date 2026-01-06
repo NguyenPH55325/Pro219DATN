@@ -19,10 +19,10 @@
 } else
 {   
     <CascadingValue Value="_currentUserInfo" Name="@Constant.CascadingNameParams.UserInfo">
-        <MudLayout Class="sm:px-3 md:px-0 lg:px-0 lg:pt-20 sm:pt-16 md:pt-16">
+        <MudLayout Class="md:px-0 lg:px-0 lg:pt-20 sm:pt-16 md:pt-16">
             <Header OnLoggedOut="HandleLogout" OnOpenCart="HandleOpenCart" FirstLogin="_firstLogin" />
 
-            <main class="lg:min-h-[calc(100lvh-26.625rem)]">
+            <main class="lg:min-h-[calc(100lvh-26.625rem)] sm:px-3">
                 @Body
             </main>
 

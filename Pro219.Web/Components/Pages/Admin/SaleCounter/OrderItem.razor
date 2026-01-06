@@ -22,7 +22,7 @@
                         <div class="flex w-full flex-shrink-0 flex-col lg:w-2/6">
                             <a>@item.ProductName</a>
                         </div>
-                        <span class="w-1/6 flex-shrink-0 whitespace-pre-wrap">@item.UnitPrice.ToString("C", vietnameseCulture)</span>
+                        <span class="w-1/6 flex-shrink-0 whitespace-pre-wrap">@item.UnitPrice.ToString("C0", vietnameseCulture)</span>
                         <div class="flex w-1/6">
                             <div class="flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center border-y border-l">
                                 <MudIcon Class="!h-4 !w-4" Icon="@Icons.Material.Filled.Remove" Size="Size.Small" Disabled="@_isProcessing" @onclick="@(() => UpdateQuantity(item, false))" />
@@ -34,7 +34,7 @@
                                 <MudIcon Class="!h-4 !w-4" Icon="@Icons.Material.Filled.Add" Size="Size.Small" Disabled="@_isProcessing" @onclick="@(() => UpdateQuantity(item, true))" />
                             </div>
                         </div>
-                        <span class="w-1/6 flex-shrink-0 whitespace-pre-wrap">@(item.Subtotal.ToString("C", vietnameseCulture))</span>
+                        <span class="w-1/6 flex-shrink-0 whitespace-pre-wrap">@(item.Subtotal.ToString("C0", vietnameseCulture))</span>
                         <div class="w-1/6">
                             <MudIcon Icon="@Icons.Material.Filled.Delete" Disabled="@_isProcessing" Class="cursor-pointer" Color="Color.Error" @onclick="@(() => DeleteProductInItems(item.ProductVariantId))" />
                         </div>
@@ -182,7 +182,7 @@
                 </div>
                 <div class="flex w-full items-center gap-4">
                     <span class="w-full max-w-[170px] flex-shrink-0 text-base font-medium">Tổng tiền sản phẩm:</span>
-                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-base">@_totalProductAmount.ToString("C", vietnameseCulture)</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-base">@_totalProductAmount.ToString("C0", vietnameseCulture)</span>
                 </div>
                 @if (_isShipping)
                 {
@@ -203,11 +203,11 @@
                 }
                 <div class="flex w-full items-center gap-4">
                     <span class="w-full max-w-[170px] flex-shrink-0 text-base font-medium">Giảm giá:</span>
-                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-base">@_discountAmount.ToString("C", vietnameseCulture)</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-base">@_discountAmount.ToString("C0", vietnameseCulture)</span>
                 </div>
                 <div class="flex w-full items-center gap-4">
                     <span class="w-full max-w-[170px] flex-shrink-0 text-base font-medium">Tổng tiền thanh toán:</span>
-                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-base">@(TotalPaymentAmount.ToString("C", vietnameseCulture))</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-base">@(TotalPaymentAmount.ToString("C0", vietnameseCulture))</span>
                 </div>
 
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnCheckout" Disabled="@_isProcessing" Size="Size.Large">Thanh toán</MudButton>

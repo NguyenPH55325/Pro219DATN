@@ -14,20 +14,20 @@
 else
 {
     <section class="mx-auto mb-10 mt-4 w-full max-w-screen-xl">
-        <div class="mt-2 flex h-full w-full flex-col gap-4 md:flex-row lg:flex-row">
-            <div class="w-full md:w-[calc(100%-27rem)] lg:w-[calc(100%-27rem)]">
-                <MudCarousel Class="mud-width-full !aspect-square" ShowBullets="true" AutoCycle="false" TData="string">
+        <div class="mt-2 flex h-full w-full flex-col justify-between gap-4 md:flex-row lg:flex-row">
+            <div class="w-full md:w-[calc(100%-30rem)] lg:w-[calc(100%-30rem)]">
+                <MudCarousel Class="aspect-[1/1.5] h-full w-full" ShowBullets="true" AutoCycle="false" TData="string">
                     @if (_images.Any()) {
                         @foreach (var item in _images)
                         { 
                             <MudCarouselItem Class="items-center">
-                                    <img src="@item" alt="image" class="aspect-square w-full object-cover" />
+                                    <img src="@item" alt="image" class="h-full w-full object-cover" />
                             </MudCarouselItem>
                         }
                     } else
                     {
                         <MudCarouselItem Class="items-center">
-                                <img src="@Constant.DefaultImages" alt="image" class="aspect-square w-full object-cover" />
+                                <img src="@Constant.DefaultImages" alt="image" class="h-full w-full object-cover" />
                         </MudCarouselItem>
                     }
                 </MudCarousel>
@@ -46,7 +46,7 @@ else
                 <MudDivider Class="!my-2.5 !border-dotted" />
 
                 <span class="text-xl font-bold">
-                    @_currentPrice.ToString("C", vietnameseCulture)
+                    @_currentPrice.ToString("C0", vietnameseCulture)
                 </span>
 
                 <div class="mt-2">

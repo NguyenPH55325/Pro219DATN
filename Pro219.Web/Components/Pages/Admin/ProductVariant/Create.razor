@@ -53,7 +53,7 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Số lượng</span>
-                <MudNumericField T="int" @bind-Value="@_model.StockQuantity" For="@(() => _model.StockQuantity)" Min="0" HideSpinButtons="true" Placeholder="100" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                <MudNumericField Format="F0" T="int" @bind-Value="@_model.StockQuantity" For="@(() => _model.StockQuantity)" Min="0" HideSpinButtons="true" Placeholder="100" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
@@ -199,7 +199,7 @@
             _isSubmitting = true;
             _model.ProductId = productId;
             _model.IsActive = _isActive == 1 ? true : false;
-            _model.Status = 1;
+            _model.Status = (byte)1;
             var result = await _productVariantService.Create(_model);
 
             if (result.IsSuccess && result.Data != null && result.Data.Id > 0)

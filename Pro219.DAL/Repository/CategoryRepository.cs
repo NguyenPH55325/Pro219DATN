@@ -58,6 +58,8 @@ namespace Pro219.DAL.Repository
         {
             try
             {
+                cate.Delete = false;
+                cate.CreateAt = DateTime.Now;
                 var addedCate = _context.Categories.Add(cate).Entity;
                 await _context.SaveChangesAsync();
                 return addedCate;
