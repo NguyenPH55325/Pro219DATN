@@ -526,7 +526,7 @@ namespace Pro219.API.Controllers
             if (PaymentMethodTypeId == 2)
             {
                 DateTimeOffset utcNow = DateTimeOffset.UtcNow;
-                DateTimeOffset expirationTime = utcNow.AddHours(24);
+                DateTimeOffset expirationTime = utcNow.AddMinutes(15);
                 long expiredAt = expirationTime.ToUnixTimeSeconds();
                 PaymentData paymentData = new PaymentData(ordCode, (int)finalAmount, "Adam Store Thanh toán", items, "http://localhost:5001/admin/order/payment-cancelled?order-id=" + order.OrderId, "http://localhost:5001/admin/order/payment-success?order-id=" + order.OrderId + "&pos=true", null, null, null, null, null, expiredAt);
                 CreatePaymentResult createPayment = await payOS.createPaymentLink(paymentData);
@@ -555,12 +555,12 @@ namespace Pro219.API.Controllers
                         }
 
                     }
-                    order.PaymentExpiration = DateTime.Now.AddHours(24);
+                    order.PaymentExpiration = DateTime.Now.AddMinutes(15);
                     order.PaymentLink = createPayment.checkoutUrl;
                     await orderRepository.UpdateOrder(order);
                     _backgroundJobClient.Schedule<OrderManagerService>(
             x => x.CancelExpiredOrderAsync(order.OrderId),
-            TimeSpan.FromHours(24)
+            TimeSpan.FromMinutes(15)
         );
                     return Ok(checkoutDTO);
                 }
@@ -812,7 +812,7 @@ namespace Pro219.API.Controllers
             if (PaymentMethodTypeId == 2)
             {
                 DateTimeOffset utcNow = DateTimeOffset.UtcNow;
-                DateTimeOffset expirationTime = utcNow.AddHours(24);
+                DateTimeOffset expirationTime = utcNow.AddMinutes(15);
                 long expiredAt = expirationTime.ToUnixTimeSeconds();
                 PaymentData paymentData = new PaymentData(ordCode, (int)finalAmount, "Adam Store Thanh toán", items, "http://localhost:5001/order/payment-cancelled?order-id=" + order.OrderId, "http://localhost:5001/order/payment-success?order-id=" + order.OrderId, null, null, null, null, null, expiredAt);
 
@@ -831,13 +831,13 @@ namespace Pro219.API.Controllers
                                 return BadRequest("Số lượng kho không đủ");
                         }
                     }
-                    order.PaymentExpiration = DateTime.Now.AddHours(24);
+                    order.PaymentExpiration = DateTime.Now.AddMinutes(15);
                     order.PaymentLink = createPayment.checkoutUrl;
                     await orderRepository.UpdateOrder(order);
                     await orderRepository.UpdateOrder(order);
                     _backgroundJobClient.Schedule<OrderManagerService>(
             x => x.CancelExpiredOrderAsync(order.OrderId),
-            TimeSpan.FromHours(24));
+            TimeSpan.FromMinutes(15));
                     return Ok(checkoutDTO);
                 }
                 else

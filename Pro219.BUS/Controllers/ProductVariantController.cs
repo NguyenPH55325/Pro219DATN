@@ -28,7 +28,9 @@ namespace Pro219.API.Controllers
         {
             try
             {
-                var result = await productVariantRepository.GetAllProductVariants();
+                string role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+                var result = await productVariantRepository.GetAllProductVariants(role);
                 if (result == null)
                 {
                     return Ok(new List<ProductVariant>());
