@@ -61,8 +61,8 @@
                 <MudTd DataLabel="Code">@context.Code</MudTd>
                 <MudTd DataLabel="DiscountType">@(context.Status == 1 ? "Phần trăm (%)" : "Giá cố định")</MudTd>
                 <MudTd DataLabel="Value">@(FormatDiscountValue(context))</MudTd>
-                <MudTd DataLabel="MinOrderValue">@(context.MinOrderValue?.ToString("C", vietnameseCulture) ?? "0")</MudTd>
-                <MudTd DataLabel="MaxDiscountAmount">@(context.MaxDiscountAmount?.ToString("C", vietnameseCulture) ?? "0")</MudTd>
+                <MudTd DataLabel="MinOrderValue">@(context.MinOrderValue?.ToString("C0", vietnameseCulture) ?? "0")</MudTd>
+                <MudTd DataLabel="MaxDiscountAmount">@(context.MaxDiscountAmount?.ToString("C0", vietnameseCulture) ?? "0")</MudTd>
                 <MudTd DataLabel="MaxUsage">@context.MaxUsage</MudTd>
                 <MudTd DataLabel="UsageCount">@context.UsageCount / @context.MaxUsage</MudTd>
                 <MudTd DataLabel="EndDate">@context.StartDate.ToString("dd/MM/yyyy HH:mm")</MudTd>

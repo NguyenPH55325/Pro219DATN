@@ -27,7 +27,7 @@
                 <div class="flex gap-5 bg-white px-4 py-4">
                     <label class="w-[10rem] flex-shrink-0 whitespace-pre-wrap text-base font-normal text-slate-600">Giá mặc định</label>
                     <div class="my-[1px] block self-stretch border-r border-slate-400" />
-                    <span class="w-full whitespace-pre-wrap break-words text-base font-normal text-slate-900 sm:max-w-[calc(100%-201px)]">@_productDetail?.BasePrice.ToString("C", vietnameseCulture)</span>
+                    <span class="w-full whitespace-pre-wrap break-words text-base font-normal text-slate-900 sm:max-w-[calc(100%-201px)]">@_productDetail?.BasePrice.ToString("C0", vietnameseCulture)</span>
                 </div>
                 <div class="flex gap-5 bg-white px-4 py-4">
                     <label class="w-[10rem] flex-shrink-0 whitespace-pre-wrap text-base font-normal text-slate-600">Mô tả</label>
@@ -73,7 +73,7 @@
                 <MudTd DataLabel="Id" hidden>@context.Id</MudTd>
                 <MudTd DataLabel="Tên"><MudImage Src="@_productImages.FirstOrDefault(pi => pi.ProductVariantId == context.Id)?.ImageUrl" Alt="image" Width="150" /></MudTd>
                 <MudTd DataLabel="SKU">@context.SKU</MudTd>
-                <MudTd DataLabel="Giá">@context.Price.ToString("C", vietnameseCulture)</MudTd>
+                <MudTd DataLabel="Giá">@context.Price.ToString("C0", vietnameseCulture)</MudTd>
                 <MudTd DataLabel="Màu sắc">@_colors.FirstOrDefault(x => x.Id == context.ColorId)?.Name</MudTd>
                 <MudTd DataLabel="Kích thước">@_sizes.FirstOrDefault(x => x.Id == context.SizeId)?.Name</MudTd>
                 <MudTd DataLabel="Số lượng">@context.StockQuantity</MudTd>

@@ -140,8 +140,8 @@
                             @context.ProductName @(context.Color != null ? $"- {context.Color}" : "") @(context.Size != null ? $"- {context.Size}" : "")
                         </MudTd>
                         <MudTd DataLabel="Số lượng">@context.Quantity</MudTd>
-                        <MudTd DataLabel="Đơn giá">@context.UnitPrice.ToString("C", vietnameseCulture)</MudTd>
-                        <MudTd DataLabel="Thành tiền">@((context.Quantity * context.UnitPrice).ToString("C", vietnameseCulture))</MudTd>
+                        <MudTd DataLabel="Đơn giá">@context.UnitPrice.ToString("C0", vietnameseCulture)</MudTd>
+                        <MudTd DataLabel="Thành tiền">@((context.Quantity * context.UnitPrice).ToString("C0", vietnameseCulture))</MudTd>
                 </RowTemplate>
                 <NoRecordsContent>
                     <MudText>Không có dữ liệu.</MudText>
@@ -181,19 +181,19 @@
             <div class="flex flex-col gap-4">
                 <div class="flex w-[25rem] items-center gap-4 sm:w-full">
                     <span class="w-full max-w-[170px] flex-shrink-0 text-sm font-bold">Tổng tiền sản phẩm:</span>
-                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.TotalAmount.ToString("C", vietnameseCulture)</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.TotalAmount.ToString("C0", vietnameseCulture)</span>
                 </div>
                 <div class="flex w-[25rem] items-center gap-4 sm:w-full">
                     <span class="w-full max-w-[170px] flex-shrink-0 text-sm font-bold">Phí giao hàng:</span>
-                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.ShippingFee.ToString("C", vietnameseCulture)</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.ShippingFee.ToString("C0", vietnameseCulture)</span>
                 </div>
                 <div class="flex w-[25rem] items-center gap-4 sm:w-full">
                     <span class="w-full max-w-[170px] flex-shrink-0 text-sm font-bold">Giảm giá:</span>
-                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.DiscountAmount.ToString("C", vietnameseCulture)</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.DiscountAmount.ToString("C0", vietnameseCulture)</span>
                 </div>
                 <div class="flex w-[25rem] items-center gap-4 sm:w-full">
                     <span class="w-full max-w-[170px] flex-shrink-0 text-sm font-bold">Tổng tiền thanh toán:</span>
-                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.FinalAmount.ToString("C", vietnameseCulture)</span>
+                    <span class="max-w-[calc(100%-186px)] w-full whitespace-pre-wrap text-right text-sm">@_orderDetail?.FinalAmount.ToString("C0", vietnameseCulture)</span>
                 </div>
             </div>
         </div>
