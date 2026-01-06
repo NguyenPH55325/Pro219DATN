@@ -20,7 +20,7 @@
                         <div class="absolute bottom-0 left-0 right-0 top-0 z-20 flex items-center justify-center bg-black opacity-70"><span class="rotate-45 px-4 py-2 text-4xl font-bold text-red-600 opacity-100">Hết hàng</span></div>
                     }
                     <div data-animation="1" class="group flex h-full flex-col justify-between lg:p-2.5">
-                        <div class="group relative overflow-hidden px-2.5 text-center">
+                        <div class="group relative min-h-[200px] overflow-hidden px-2.5 text-center">
                             <a href="@(RouterConst.User.ProductDetail + $"/{item.Id}")" class="block transition">
                                 @if (item.ImageUrls.Any())
                                 {
@@ -263,6 +263,7 @@
         {
             _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
             if (string.IsNullOrEmpty(_token)) _isShowButtonWishlist = false;
+            StateHasChanged();
         }
     }
 

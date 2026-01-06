@@ -260,6 +260,7 @@
         try
         {
             _isSubmitting = true;
+            _model.Status = (byte)_isActive;
             var result = await _productService.Update(_model, _token);
 
             if (result.IsSuccess)
