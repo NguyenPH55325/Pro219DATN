@@ -16,8 +16,6 @@ namespace Pro219.Web.DTOs
         [MaxLength(20, ErrorMessage = Constant.MessageValid.Max20)]
         public string DiscountType { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = Constant.MessageValid.Required)]
-        [Range(1, 9999999999999999, ErrorMessage = "Nhập giá trị hợp lệ với loại giảm giá (%: >= 1% hoặc đ: >= 1000đ)")]
         public decimal Value { get; set; } = 10;
 
         [ConditionalMinValue(ErrorMessage = "Giá trị tối thiểu là 1000")]
@@ -57,68 +55,6 @@ namespace Pro219.Web.DTOs
             if (decimalValue.HasValue && decimalValue.Value < 1000)
             {
                 return new ValidationResult(ErrorMessage ?? "Giá trị tối thiểu là 1000");
-            }
-
-            return ValidationResult.Success!;
-        }
-    }
-
-    public class StartDateValidationAttribute : ValidationAttribute
-    {
-        protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
-        {
-            var startDateNullable = value as DateTime?;
-
-            if (!startDateNullable.HasValue)
-                return ValidationResult.Success!;
-
-            var startDate = startDateNullable.Value;
-            var now = DateTime.Now;
-
-            if (startDate <= now)
-            {
-                return new ValidationResult(ErrorMessage ?? "Ngày và giờ bắt đầu phải lớn hơn thời điểm hiện tại.");
-            }
-
-            var endDateProperty = validationContext.ObjectType.GetProperty("EndDate");
-            if (endDateProperty != null)
-            {
-                var endDateValue = endDateProperty.GetValue(validationContext.ObjectInstance) as DateTime?;
-                if (endDateValue.HasValue && startDate >= endDateValue.Value)
-                {
-                    return new ValidationResult(ErrorMessage ?? "Ngày và giờ bắt đầu phải nhỏ hơn ngày kết thúc.");
-                }
-            }
-
-            return ValidationResult.Success!;
-        }
-    }
-
-    public class EndDateValidationAttribute : ValidationAttribute
-    {
-        protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
-        {
-            var endDateNullable = value as DateTime?;
-
-            if (!endDateNullable.HasValue)
-                return ValidationResult.Success!;
-
-            var endDate = endDateNullable.Value;
-            var now = DateTime.Now;
-
-            if (endDate <= now)
-            {
-                return new ValidationResult(ErrorMessage ?? "Ngày và giờ kết thúc phải lớn hơn thời điểm hiện tại.");
-            }
-
-            var startDateProperty = validationContext.ObjectType.GetProperty("StartDate");
-            if (startDateProperty != null)
-            {
-                var startDateValue = startDateProperty.GetValue(validationContext.ObjectInstance) as DateTime?;
-                if (startDateValue.HasValue && endDate <= startDateValue.Value)
-                {
-                    return new ValidationResult(ErrorMessage ?? "Ngày và giờ kết thúc phải lớn hơn ngày bắt đầu.");
-                }
             }
 
             return ValidationResult.Success!;

@@ -233,14 +233,11 @@
     {
         if (discount.DiscountType == Constant.DiscountTypePercent)
         {
-            // Ví dụ: 10.00%
-            return $"{discount.Value:N2}%";
+            return $"{discount.Value.ToString("F0")}%";
         }
         else if (discount.DiscountType == Constant.DiscountTypeFixed)
         {
-            // Ví dụ: 50,000.00 đ
-            // Thay thế "đ" bằng đơn vị tiền tệ phù hợp với hệ thống của bạn
-            return $"{discount.Value:N0} đ";
+            return $"{discount.Value.ToString("C0", vietnameseCulture)}";
         }
         return discount.Value.ToString();
     }

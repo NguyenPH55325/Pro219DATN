@@ -24,7 +24,8 @@
                 {
                     @if (_orderDetail.Status == Constant.OrderStatus.StatusPending)
                     {
-                        <MudButton Variant="Variant.Filled" Disabled="@_isUpdateStatus" Color="Color.Primary" OnClick="@(() => HandleStatusUpdate(Constant.OrderStatus.StatusPending))">Xác nhận</MudButton>
+                        <MudButton Variant="Variant.Filled" Disabled="@_isUpdateStatus" Color="Color.Error" OnClick="@(() => HandleStatusUpdate(Constant.OrderStatus.StatusPending, "failed"))">Hủy</MudButton>
+                        <MudButton Variant="Variant.Filled" Disabled="@_isUpdateStatus" Color="Color.Primary" OnClick="@(() => HandleStatusUpdate(Constant.OrderStatus.StatusPending, "success"))">Xác nhận</MudButton>
                     }
                     else if (_orderDetail.Status == Constant.OrderStatus.StatusConfirm)
                     {
@@ -263,8 +264,21 @@
         switch (currentStatus)
         {
             case Constant.OrderStatus.StatusPending:
-                newStatus = Constant.OrderStatus.StatusConfirm;
-                successMessage = "Đã xác nhận đơn hàng thành công";
+                if (action == "success")
+                {
+                    newStatus = Constant.OrderStatus.StatusConfirm;
+                    successMessage = "Đã xác nhận đơn hàng thành công";
+                }
+                else if (action == "failed")
+                {
+                    newStatus = Constant.OrderStatus.StatusCanceledByUser;
+                    successMessage = "Đã hủy đơn hàng";
+                    severity = Severity.Error;
+                }
+                else
+                {
+                    return;
+                }
                 break;
 
             case Constant.OrderStatus.StatusConfirm:
