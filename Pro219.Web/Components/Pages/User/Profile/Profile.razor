@@ -21,29 +21,29 @@
         <div class="mt-6 px-6">
             <h2 class="text-lg font-bold">Thông tin cá nhân</h2>
 
-            <div class="mt-4 flex flex-col gap-1 px-1">
-                <div class="flex w-full items-center gap-2">
+            <div class="mt-4 flex flex-col gap-2 px-1 md:gap-1 lg:gap-1">
+                <div class="flex w-full flex-col items-start gap-1 md:flex-row lg:flex-row md:items-center lg:items-center md:gap-2 lg::gap-2">
                     <span class="w-40 flex-shrink-0 font-medium">Họ và tên:</span>
-                    <span class="max-w-[calc(100%-168px)] whitespace-pre-wrap">@_me.FullName</span>
+                    <span class="max-w-[calc(100%-168px)] whitespace-pre-wrap sm:pl-1">@_me.FullName</span>
                 </div>
-                <div class="flex w-full items-center gap-2">
+                <div class="flex w-full flex-col items-start gap-1 md:flex-row lg:flex-row md:items-center lg:items-center md:gap-2 lg::gap-2">
                     <span class="w-40 flex-shrink-0 font-medium">Email:</span>
-                    <span class="max-w-[calc(100%-168px)] whitespace-pre-wrap">@_me.Email</span>
+                    <span class="max-w-[calc(100%-168px)] whitespace-pre-wrap sm:pl-1">@_me.Email</span>
                 </div>
-                <div class="flex w-full items-center gap-2">
+                <div class="flex w-full flex-col items-start gap-1 md:flex-row lg:flex-row md:items-center lg:items-center md:gap-2 lg::gap-2">
                     <span class="w-40 flex-shrink-0 font-medium">Số điện thoại:</span>
-                    <span class="max-w-[calc(100%-168px)] whitespace-pre-wrap">@_me.PhoneNumber</span>
+                    <span class="max-w-[calc(100%-168px)] whitespace-pre-wrap sm:pl-1">@_me.PhoneNumber</span>
                 </div>
-                <div class="flex w-full items-center gap-2">
+                <div class="flex w-full flex-col items-start gap-1 md:flex-row lg:flex-row md:items-center lg:items-center md:gap-2 lg::gap-2">
                     <span class="w-40 flex-shrink-0 font-medium">Ngày sinh:</span>
-                    <span class="max-w-[calc(100%-168px)] whitespace-pre-wrap">01/01/2000</span>
+                    <span class="max-w-[calc(100%-168px)] whitespace-pre-wrap sm:pl-1">01/01/2000</span>
                 </div>
             </div>
         </div>
 
         <MudDivider Class="mt-6 px-6" />
 
-        <div class="mt-6 px-6">
+        <div class="mt-6 px-1 md:px-6 lg:px-6">
             <div class="flex w-full items-center justify-between gap-2">
                 <h2 class="text-lg font-bold">Địa chỉ</h2>
                 <MudButton Class="flex-shrink-0" Variant="Variant.Filled" Color="Color.Dark" OnClick="OpenDialogCreateAddress"><MudIcon Icon="@Icons.Material.Filled.AddLocation" /> Thêm địa chỉ mới</MudButton>
@@ -60,8 +60,8 @@
 
             @if (_address.Any())
             {
-                <h3 class="mt-4 px-2 text-base font-medium">Địa chỉ khác</h3>
-                <div class="mt-2 flex max-h-[500px] w-full flex-col gap-2 overflow-y-auto px-3">
+                <h3 class="mt-4 px-1 text-base font-medium md:px-2 lg:px-2">Địa chỉ khác</h3>
+                <div class="mt-2 flex w-full flex-col gap-2 overflow-y-auto px-2 md:px-3 lg:px-3">
                     @foreach(var item in _address)
                     {
                         <div class="flex items-center justify-between gap-2 space-y-2 rounded-lg border border-solid border-slate-200 p-4">

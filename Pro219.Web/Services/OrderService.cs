@@ -78,7 +78,7 @@ namespace Pro219.Web.Services
                 var errorMessage = await response.Content.ReadAsStringAsync();
                 var errorMess = Constant.Errors.ContainsKey(errorMessage ?? "")
                     ? Constant.Errors[errorMessage ?? ""]
-                    : $"Lỗi không xác định: {response.ReasonPhrase}";
+                    : errorMessage;
                 return ServiceResult<Pro219.Web.DTOs.CheckoutDTO>.Failure(errorMessage, errorMess, response.StatusCode.ToString());
             }
         }
@@ -139,7 +139,7 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<List<DAL.Models.Order>>> GetAll(string? keyword)
+        public async Task<ServiceResult<List<DAL.Models.Order>>> GetAll(string? keyword, int paymentMethod, int orderType)
         {
             var queryParams = new Dictionary<string, string?>();
 
@@ -156,6 +156,19 @@ namespace Pro219.Web.Services
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<List<DAL.Models.Order>>();
+                if (result != null && result.Count() > 0)
+                {
+                    if(paymentMethod > 0)
+                    {
+                        result = result.Where(x => x.PaymentMethodId == paymentMethod).ToList();
+                    } 
+                    if (orderType > 0)
+                    {
+                        var orderTypeConvert = orderType == 1 ? false : true;
+                        result = result.Where(x => x.IsOrderPOS == orderTypeConvert).ToList();
+                    }
+                    result = result.OrderByDescending(x => x.OrderDate).ToList();
+                }
                 return ServiceResult<List<DAL.Models.Order>>.Success(result);
             }
             else
@@ -191,7 +204,7 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<List<DAL.Models.Order>>> GetAllByCustomerId(int id)
+        public async Task<ServiceResult<List<DAL.Models.Order>>> GetAllByCustomerId(int id, string? keyword, int paymentMethod)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"/Order/GetByCustomerId/{id}");
 
@@ -200,6 +213,18 @@ namespace Pro219.Web.Services
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<List<DAL.Models.Order>>();
+                if (result != null && result.Count() > 0) { 
+                    if (!string.IsNullOrEmpty(keyword))
+                    {
+                        result = result.Where(x => x.OrderCode.Contains(keyword, StringComparison.OrdinalIgnoreCase)).ToList();
+                    }
+
+                    if (paymentMethod > 0)
+                    {
+                        result = result.Where(x => x.PaymentMethodId == paymentMethod).ToList();
+                    }
+                    result = result.OrderByDescending(x => x.OrderDate).ToList();
+                }
                 return ServiceResult<List<DAL.Models.Order>>.Success(result);
             }
             else
