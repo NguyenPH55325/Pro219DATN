@@ -92,7 +92,8 @@ namespace Pro219.API.Controllers
                 }
                 if(updateDto.Status == Constant.OrderStatus.StatusCanceledByUser || updateDto.Status == Constant.OrderStatus.StatusShippingFailed)
                 {
-                    foreach(var item in order.OrderItems)
+                    var listOrderItem = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
+                    foreach (var item in listOrderItem)
                     {
                         await productVariantRepository.IncreaseProductVariantQuantity(item.ProductVariantId, item.Quantity);
                     }
