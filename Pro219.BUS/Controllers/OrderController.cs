@@ -90,6 +90,13 @@ namespace Pro219.API.Controllers
                 {
                     return StatusCode(500, Constant.ErrorCode.DatabaseError);
                 }
+                if(updateDto.Status == Constant.OrderStatus.StatusCanceledByUser || updateDto.Status == Constant.OrderStatus.StatusShippingFailed)
+                {
+                    foreach(var item in order.OrderItems)
+                    {
+                        await productVariantRepository.IncreaseProductVariantQuantity(item.ProductVariantId, item.Quantity);
+                    }
+                }
                 return Ok(result);
             }
             catch (Exception ex)
