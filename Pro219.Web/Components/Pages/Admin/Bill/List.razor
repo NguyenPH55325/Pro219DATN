@@ -14,6 +14,20 @@
                 <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
                               AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
             </div>
+            <div>
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Danh mục" Value="@_searchOrderType" ValueChanged="OnChangeOrderType">
+                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
+                    <MudSelectItem Value="1">Online</MudSelectItem>
+                    <MudSelectItem Value="2">Tại quầy</MudSelectItem>
+                </MudSelect>
+            </div>
+            <div>
+                <MudSelect T="int" Variant="Variant.Outlined" Placeholder="Danh mục" Value="@_searchPaymentMethod" ValueChanged="OnChangePaymentMethod">
+                    <MudSelectItem Value="0">Tất cả</MudSelectItem>
+                    <MudSelectItem Value="1">Tiền mặt</MudSelectItem>
+                    <MudSelectItem Value="2">Chuyển khoản</MudSelectItem>
+                </MudSelect>
+            </div>
             <div class="flex items-center gap-2">
                 <MudButton Variant="Variant.Outlined" OnClick="OnSearch" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Search" Class="mr-2" /> Tìm kiếm</MudButton>
                 <MudButton Variant="Variant.Outlined" OnClick="OnReset" Class="h-14 w-full"><MudIcon Icon="@Icons.Material.Filled.Filter" Class="mr-2" /> Đặt lại</MudButton>
@@ -121,12 +135,14 @@
     private List<DAL.Models.Customer> _customers = [];
 
     private string _searchValue = string.Empty;
+    private int _searchOrderType = 0;
+    private int _searchPaymentMethod = 0;
     private bool _loading = true;
 
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Hóa Đơn", href: "#", disabled: true),
+    new("Hóa Đơn", href: "#", disabled: true),
     ];
 
     protected override async Task OnInitializedAsync()
@@ -138,13 +154,16 @@
 
     private async Task LoadData()
     {
-        var resOrder = await _orderService.GetAll(_searchValue);
+        var resOrder = await _orderService.GetAll(_searchValue, _searchPaymentMethod, _searchOrderType);
         var resAsddress = await _addressService.GetAll();
         var resCustomers = await _customerService.GetAll(null);
 
         if(resOrder.IsSuccess && resOrder.Data.Count() > 0)
         {
             _orders = resOrder.Data;
+        } else
+        {
+            _orders = [];
         }
 
         if (resAsddress.IsSuccess && resAsddress.Data.Count() > 0)
@@ -158,7 +177,7 @@
         }
     }
 
-    private async Task onChangeSearch(string value)
+    private void onChangeSearch(string value)
     {
         _searchValue = value;
     }
@@ -171,6 +190,8 @@
     private async Task OnReset()
     {
         _searchValue = string.Empty;
+        _searchOrderType = 0;
+        _searchPaymentMethod = 0;
         await LoadData();
     }
 
@@ -205,6 +226,17 @@
 
         var statusItem = Constant.OrderStatusArray.FirstOrDefault(s => s.id == status.Value);
         return statusItem?.label ?? "Không xác định";
+    }
+
+    private void OnChangePaymentMethod(int value)
+    {
+        _searchPaymentMethod = value;
+    }
+
+    private void OnChangeOrderType(int value)
+    {
+        _searchOrderType = value;
+
     }
 
     private string GetOrderStatusClass(byte? status) =>

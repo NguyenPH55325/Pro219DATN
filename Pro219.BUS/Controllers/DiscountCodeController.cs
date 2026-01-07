@@ -106,7 +106,7 @@ namespace Pro219.API.Controllers
 
                 if (discountCode.StartDate > DateTime.Now)
                 {
-                    return BadRequest("Mã giảm giá đã hết hạn");
+                    return BadRequest("Mã giảm giá chưa khả dụng");
                 }
                 if (discountCode.EndDate < DateTime.Now)
                 {
@@ -114,7 +114,7 @@ namespace Pro219.API.Controllers
                 }
                 if (discountCode.IsActive == false)
                 {
-                    return BadRequest("Mã giảm giá đã hết hạn");
+                    return BadRequest("Mã giảm giá chưa khả dụng");
                 }
                 if (discountCode.MaxUsage != null && discountCode.UsageCount >= discountCode.MaxUsage)
                 {

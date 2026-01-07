@@ -25,9 +25,9 @@
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
-                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá trị (@(_discountType == 1 ? "%" : "VND"))</span>
-                <MudNumericField For="@(() => _model.Value)"
-                                 @bind-Value="@_model.Value"
+                <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Giá trị (@(_discountType == 1 ? "%" : "đ"))</span>
+                <MudNumericField For="@(() => _valueDiscount)"
+                                 @bind-Value="@_valueDiscount"
                                  Adornment="Adornment.End"
                                  Format="F0" Step="@(_discountType == 1 ? 10 : 1000)"
                                  AdornmentText="@(_discountType == 1 ? "%" : "đ")" HideSpinButtons="true" Placeholder="@(_discountType == 1 ? "10" : "179000")" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
@@ -143,6 +143,7 @@
     private TimeSpan? _endTime;
     private bool _isDisableMaxValue = false;
     private bool _shouldPreventDefault = false;
+    private decimal _valueDiscount = 10;
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
@@ -220,12 +221,24 @@
         _discountType = type;
 
         _isDisableMaxValue = _discountType == 1 ? false : true;
+        _valueDiscount = _discountType == 1 ? 10 : 100000;
         if (_discountType == 2) _model.MaxDiscountAmount = null;
     }
 
     async Task OnSubmit()
     {
         if (_isSubmitting) return;
+
+        if (_discountType == 1 && (_valueDiscount <= 0 || _valueDiscount > 100))
+        {
+            _snackbar.Add("Loại (%): giá trị chỉ nằm trong trong khoảng 1 đến 100", Severity.Warning);
+            return;
+        } 
+        if (_discountType == 2 && (_valueDiscount < 1000 || _valueDiscount > 9999999999999999))
+        {
+            _snackbar.Add("Loại (đ): giá trị tối thiểu là 1000đ", Severity.Warning);
+            return;
+        }
 
         if (_model.StartDate.HasValue && _model.EndDate.HasValue)
         {
@@ -258,6 +271,7 @@
             _isSubmitting = true;
             _model.IsActive = true;
             _model.Type = 1;
+            _model.Value = _valueDiscount;
             _model.DiscountType = _discountType == 1 ? Constant.DiscountTypePercent : Constant.DiscountTypeFixed;
             _model.Status = _discountType == 1 ? (byte)1 : (byte)2;
 

@@ -335,9 +335,27 @@
     {
         if (_isSubmitting) return;
 
-        if (string.IsNullOrEmpty(_model.FullName) || string.IsNullOrEmpty(_model.Phone) || string.IsNullOrEmpty(_selectedWard) || _selectedProvince <= 0 || _selectedDistrict <= 0)
+        if (string.IsNullOrEmpty(_model.FullName) || string.IsNullOrEmpty(_model.Phone) || string.IsNullOrEmpty(_selectedWard) || _selectedProvince <= 0 || _selectedDistrict <= 0 || string.IsNullOrEmpty(_model.OtherInfo))
         {
-            _snackbar.Add("Vui lòng điền đầy đủ thông tin", Severity.Warning);
+            _snackbar.Add("Vui lòng điền đầy đủ thông tin.", Severity.Warning);
+            return;
+        }
+
+        if (_model.FullName.Length > 200)
+        {
+            _snackbar.Add("Tên tối đa 200 kí tự.", Severity.Warning);
+            return;
+        }
+
+        if (!Regex.IsMatch(_model.Phone, Constant.Regex.PhoneNumber))
+        {
+            _snackbar.Add("Số điện thoại không hợp lệ.", Severity.Warning);
+            return;
+        }
+
+        if (_model.OtherInfo.Length > 500)
+        {
+            _snackbar.Add("Tên tối đa 500 kí tự.", Severity.Warning);
             return;
         }
 

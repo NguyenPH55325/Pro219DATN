@@ -34,6 +34,7 @@ namespace Pro219.Web.DTOs
 
         public string StreetName { get; set; }
 
+        [Required(ErrorMessage = Constant.MessageValid.Required)]
         [MaxLength(500, ErrorMessage = Constant.MessageValid.Max500)]
         public string? OtherInfo { get; set; }
 
