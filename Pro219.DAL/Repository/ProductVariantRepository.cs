@@ -251,24 +251,39 @@ namespace Pro219.DAL.Repository
             }
         }
 
-        public async Task<int> GetProductVariantQuantityById(int id)
+        public async Task<int> GetProductVariantQuantityById(int id, string role = null)
         {
             try
             {
-                var variant = await _context.ProductVariants
+                var query = _context.ProductVariants
                     .Include(pv => pv.Product)
                         .ThenInclude(p => p.Brand)
                     .Include(pv => pv.Product)
                         .ThenInclude(p => p.Category)
                     .Include(pv => pv.Color)
                     .Include(pv => pv.Size)
-                    .Where(x => x.Id == id
-                        && x.Delete != true
-                        && x.Product.Delete != true && x.Product.Status == 1
-                        && x.Product.Brand.Delete != true && x.Product.Brand.Status == 1
-                        && x.Product.Category.Delete != true && x.Product.Category.Status == 1
-                        && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))
-                        && (x.SizeId == null || (x.Size.Delete != true && x.Size.Status == 1)))
+                    .Where(x => x.Id == id && x.Delete != true)
+                    .AsQueryable();
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(x => x.Product.Status == 1 && x.Product.Delete != true
+                                        && x.Product.Brand.Status == 1 && x.Product.Brand.Delete != true
+                                        && x.Product.Category.Status == 1 && x.Product.Category.Delete != true
+                                        && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))
+                                        && (x.SizeId == null || (x.Size.Delete != true && x.Size.Status == 1))
+                                        && x.Status == 1 && x.IsActive == true);
+                }
+                else if (role == "Admin" || role == "Manager" || role == "Staff")
+                {
+                    query = query.Where(x => x.Product.Delete != true
+                                        && x.Product.Brand.Delete != true
+                                        && x.Product.Category.Delete != true
+                                        && (x.ColorId == null || x.Color.Delete != true)
+                                        && (x.SizeId == null || x.Size.Delete != true));
+                }
+
+                var variant = await query
                     .Select(x => x.StockQuantity)
                     .FirstOrDefaultAsync();
                 return variant;
@@ -279,19 +294,34 @@ namespace Pro219.DAL.Repository
             }
         }
 
-        public async Task<List<ProductVariant>> GetProductVariantsByProductId(int productId)
+        public async Task<List<ProductVariant>> GetProductVariantsByProductId(int productId, string role = null)
         {
             try
             {
-                var variants = await _context.ProductVariants
+                var query = _context.ProductVariants
                     .AsNoTracking()
-                    .Where(x => x.ProductId == productId
-                        && x.Delete != true
-                        && x.Product.Delete != true
-                        && x.Product.Brand.Delete != true && x.Product.Brand.Status == 1
-                        && x.Product.Category.Delete != true && x.Product.Category.Status == 1
-                        && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))
-                        && (x.SizeId == null || (x.Size.Delete != true && x.Size.Status == 1)))
+                    .Where(x => x.ProductId == productId && x.Delete != true)
+                    .AsQueryable();
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(x => x.Product.Status == 1 && x.Product.Delete != true
+                                        && x.Product.Brand.Status == 1 && x.Product.Brand.Delete != true
+                                        && x.Product.Category.Status == 1 && x.Product.Category.Delete != true
+                                        && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))
+                                        && (x.SizeId == null || (x.Size.Delete != true && x.Size.Status == 1))
+                                        && x.Status == 1 && x.IsActive == true);
+                }
+                else if (role == "Admin" || role == "Manager" || role == "Staff")
+                {
+                    query = query.Where(x => x.Product.Delete != true
+                                        && x.Product.Brand.Delete != true
+                                        && x.Product.Category.Delete != true
+                                        && (x.ColorId == null || x.Color.Delete != true)
+                                        && (x.SizeId == null || x.Size.Delete != true));
+                }
+
+                var variants = await query
                     .Select(pv => new ProductVariant
                     {
                         Id = pv.Id,
