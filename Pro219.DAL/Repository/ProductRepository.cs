@@ -57,10 +57,6 @@ namespace Pro219.DAL.Repository
                 {
                     query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
                 }
-                else if (role == "Admin" || role == "Manager" || role == "Staff")
-                {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false));
-                }
 
                 if (brandId.HasValue && brandId.Value > 0)
                 {
@@ -257,8 +253,20 @@ namespace Pro219.DAL.Repository
         {
             try
             {
-                var lstIds = _context.Categories.Where(c => c.ParentCategoryId == categoryId || c.Id == categoryId).Select(c => c.Id).ToList();
-
+                var categoryIds = new List<int> { categoryId };
+                var childIds = _context.Categories
+                    .Where(c => c.ParentCategoryId == categoryId)
+                    .Select(c => c.Id)
+                    .ToList();
+                while (childIds.Any())
+                {
+                    categoryIds.AddRange(childIds);
+                    childIds = _context.Categories
+                        .Where(c => childIds.Contains(c.ParentCategoryId ?? 0))
+                        .Select(c => c.Id)
+                        .ToList();
+                }
+                var lstIds = categoryIds;
                 var query = _context.Products
                     .Include(p => p.Brand)
                     .Include(p => p.Category)
@@ -280,10 +288,6 @@ namespace Pro219.DAL.Repository
                 if (role == "Customer" || role == null)
                 {
                     query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
-                }
-                else if (role == "Admin" || role == "Manager" || role == "Staff")
-                {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false));
                 }
 
                 if (brandId.HasValue && brandId.Value > 0)
@@ -503,10 +507,6 @@ namespace Pro219.DAL.Repository
                 {
                     query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
                 }
-                else if (role == "Admin" || role == "Manager" || role == "Staff")
-                {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false));
-                }
 
                 if (brandId.HasValue && brandId.Value > 0)
                 {
@@ -716,10 +716,6 @@ namespace Pro219.DAL.Repository
                 {
                     query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true));
                 }
-                else if (role == "Admin" || role == "Manager" || role == "Staff")
-                {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false));
-                }
 
                 if(!string.IsNullOrEmpty(keyword))
                 {
@@ -870,15 +866,11 @@ namespace Pro219.DAL.Repository
 
                 if (existingProduct == null || existingProduct.Delete == true) return null;
 
-
-                if (existingProduct.Category == null
-                   || existingProduct.Category.Delete == true)
+                if (existingProduct.Category == null || existingProduct.Category.Delete == true)
                 {
                     return null;
                 }
-
-                if (existingProduct.Brand == null 
-                    || existingProduct.Brand.Delete == true)
+                if (existingProduct.Brand == null || existingProduct.Brand.Delete == true)
                 {
                     return null;
                 }
@@ -893,9 +885,25 @@ namespace Pro219.DAL.Repository
                 existingProduct.UpdateBy = product.UpdateBy;
                 existingProduct.UpdateAt = DateTime.Now;
 
-                var updatedProduct = _context.Products.Update(existingProduct).Entity;
+                _context.Products.Update(existingProduct);
                 await _context.SaveChangesAsync();
-                return updatedProduct;
+
+                return new Product
+                {
+                    Id = existingProduct.Id,
+                    Name = existingProduct.Name,
+                    BasePrice = existingProduct.BasePrice,
+                    Description = existingProduct.Description,
+                    Status = existingProduct.Status,
+                    Delete = existingProduct.Delete,
+                    CreatedAt = existingProduct.CreatedAt,  
+                    UpdateAt = existingProduct.UpdateAt,
+                    DeleteAt = existingProduct.DeleteAt,
+                    UpdateBy = existingProduct.UpdateBy,
+                    CategoryId = existingProduct.CategoryId,
+                    BrandId = existingProduct.BrandId,
+                    SaleId = existingProduct.SaleId,
+                };
             }
             catch (Exception)
             {
