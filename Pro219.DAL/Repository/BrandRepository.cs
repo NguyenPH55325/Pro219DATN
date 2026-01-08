@@ -105,6 +105,23 @@ namespace Pro219.DAL.Repository
 
                 if (brand == null) return null;
 
+                var hasActiveOrder = await _context.OrderItems
+                 .Include(oi => oi.Order)
+                 .Include(oi => oi.ProductVariant)
+                 .Where(oi => oi.ProductVariant != null && oi.ProductVariant.Product != null && oi.ProductVariant.Product.BrandId == id
+                     && oi.Order.Status.HasValue
+                     && (oi.Order.Status.Value == 0
+                         || oi.Order.Status.Value == 1
+                         || oi.Order.Status.Value == 2
+                         || oi.Order.Status.Value == 4
+                         || oi.Order.Status.Value == 5))
+                 .AnyAsync();
+
+                if (hasActiveOrder)
+                {
+                    return null;
+                }
+
                 brand.Delete = true;
                 brand.DeleteAt = DateTime.Now;
                 brand.UpdateAt = DateTime.Now;
