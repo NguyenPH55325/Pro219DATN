@@ -15,7 +15,7 @@
 <div class="p-6">
     <MudBreadcrumbs Class="!p-0 !text-sm" Items="_items" Separator=">"></MudBreadcrumbs>
 
-    <h1 class="h-12 text-3xl leading-[3rem] font-bold text-admin-default">Thống kê</h1>
+    <h1 class="leading-[3rem] h-12 text-3xl font-bold text-admin-default">Thống kê</h1>
 
     <div class="mt-6 grid grid-cols-4 gap-4">
         <MudDatePicker Label="Bắt đầu"
@@ -78,6 +78,33 @@
         </div>
     </div>
 
+    <div class="mt-6 grid grid-cols-2 gap-4">
+        <div class="flex w-full flex-col items-center gap-3 rounded-lg border border-solid border-slate-300 bg-white p-4">
+            <p class="font-mediun text-xl">Sản phẩm có doanh thu cao nhất</p>
+                <p class="text-2xl font-bold">
+                    @if(_productBestsaler != null) 
+                    {
+                        @(_productBestsaler.ProductName)
+                    } else
+                    {
+                        @("Cập nhật")
+                    }
+            </p>
+        </div>
+        <div class="flex w-full flex-col items-center gap-3 rounded-lg border border-solid border-slate-300 bg-white p-4">
+            <p class="font-mediun text-xl">Mặt hàng bán chạy nhất</p>
+                <p class="text-2xl font-bold">
+                    @if (_categoryBestsaler != null)
+                    {
+                        @(_categoryBestsaler.CategoryName + " - " + _categoryBestsaler.Unit + " sản phẩm")
+                    } else
+                    {
+                        @("Cập nhật")
+                    }
+                </p>
+        </div>
+    </div>
+
     <div class="doc-section-component-container mt-6 w-full rounded-xl border border-slate-200 bg-white px-2 py-8 shadow-sm">
         <h3 class="mb-4 text-center text-2xl font-semibold tracking-tight">@ChartTitle</h3>
         @if (_dataCharts != null && _dataCharts.Any())
@@ -90,11 +117,81 @@
                 <p class="text-slate-400">Không có dữ liệu hiển thị cho khoảng thời gian này</p>
             </div>
         }
+
+        <MudDivider Class="my-6 !border-slate-300" />
+
+        <div class="flex w-full items-stretch justify-between gap-4">
+            <div class="max-w-[calc(50%-16.5px)] w-full">
+                <h3 class="mb-4 text-center text-2xl font-semibold tracking-tight">10 sản phẩm bán chạy</h3>
+
+                <div class="w-full">
+                    @if(_data.ProductSold.Any())
+                    {
+                        <MudTable Bordered Items="@_data.ProductSold" Elevation="0" Class="w-full" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
+                            <HeaderContent>
+                                <MudTh><MudTableSortLabel SortLabel="STT" T="string">STT</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="STT" T="string">Tên</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="STT" T="string">Số lượng</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="STT" T="string">Tổng tiền bán</MudTableSortLabel></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="STT">@(_data.ProductSold.IndexOf(context) + 1)</MudTd>
+                                <MudTd DataLabel="Tên">@context.ProductName</MudTd>
+                                <MudTd DataLabel="Số lượng">@context.Unit</MudTd>
+                                <MudTd DataLabel="Tổng tiền bán">@context.Revenue.ToString("C0", vietnameseCulture)</MudTd>
+                                
+                            </RowTemplate>
+                            <NoRecordsContent>
+                                <MudText>Không có dữ liệu.</MudText>
+                            </NoRecordsContent>
+                        </MudTable>
+                    } else
+                    {
+                        <p class="mt-4 text-center text-lg">Cập nhật</p>
+                    }
+                </div>
+            </div>
+            <div class="border-s border-solid border-slate-300"></div>
+            <div class="max-w-[calc(50%-16.5px)] w-full">
+                <h3 class="mb-4 text-center text-2xl font-semibold tracking-tight">10 mặt hàng bán chạy</h3>
+
+                <div>
+                    @if (_data.ParentCategorySold.Any())
+                    {
+                        <MudTable Bordered Items="@_data.ParentCategorySold" Elevation="0" Class="w-full" Dense="true" Hover="true" Virtualize="true" FixedHeader="true" HorizontalScrollbar="true">
+                            <HeaderContent>
+                                <MudTh><MudTableSortLabel SortLabel="STT" T="string">STT</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="STT" T="string">Tên</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="STT" T="string">Số lượng</MudTableSortLabel></MudTh>
+                                <MudTh><MudTableSortLabel SortLabel="STT" T="string">Tổng tiền bán</MudTableSortLabel></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="STT">@(_data.ParentCategorySold.IndexOf(context) + 1)</MudTd>
+                                <MudTd DataLabel="Tên">@context.CategoryName</MudTd>
+                                <MudTd DataLabel="Số lượng">@context.Unit</MudTd>
+                                <MudTd DataLabel="Tổng tiền bán">@context.Value.ToString("C0", vietnameseCulture)</MudTd>
+
+                            </RowTemplate>
+                            <NoRecordsContent>
+                                <MudText>Không có dữ liệu.</MudText>
+                            </NoRecordsContent>
+                        </MudTable>
+
+                    }
+                    else
+                    {
+                        <p class="mt-4 text-center text-lg">Cập nhật</p>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 @code {
     private ReportResponseDTO _data = new ReportResponseDTO();
+    private ReportProductSoldDTO _productBestsaler = null;
+    private ReportCategorySoldDTO _categoryBestsaler = null;
     public List<ChartSeries> _dataCharts = new List<ChartSeries>();
     private ChartOptions _options = new ChartOptions();
     private AxisChartOptions _axisChartOptions = new AxisChartOptions();
@@ -155,7 +252,20 @@
         if (resStatistic.IsSuccess && resStatistic.Data != null)
         {
             _data = resStatistic.Data;
-
+            if(_data.ProductSold.Any())
+            {
+                _productBestsaler = _data.ProductSold.OrderByDescending(x => x.Revenue).FirstOrDefault();
+            } else
+            {
+                _productBestsaler = null;
+            }
+            if(_data.ParentCategorySold.Any())
+            {
+                _categoryBestsaler = _data.ParentCategorySold.OrderByDescending(x => x.Unit).FirstOrDefault();
+            } else
+            {
+                _categoryBestsaler = null;
+            }
             UpdateChartSeries();
         }
     }
