@@ -14,9 +14,16 @@ namespace Pro219.Web.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ServiceResult<List<ProductVariant>>> GetAll()
+        public async Task<ServiceResult<List<ProductVariant>>> GetAll(string? token = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "/ProductVariant/GetAll");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
 
             var response = await _httpClient.SendAsync(request);
 
@@ -37,9 +44,16 @@ namespace Pro219.Web.Services
             }
         }
 
-        public async Task<ServiceResult<List<ProductVariant>>> GetAllByProduct(int productId)
+        public async Task<ServiceResult<List<ProductVariant>>> GetAllByProduct(int productId, string? token = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"/ProductVariant/GetByProductId/{productId}");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
 
             var response = await _httpClient.SendAsync(request);
 

@@ -73,38 +73,44 @@
 
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Large, FullWidth = true };
     private bool _loading = true;
+    private string _token = string.Empty;
 
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Sản Phẩm Chi Tiết", href: "#", disabled: true),
+    new("Sản Phẩm Chi Tiết", href: "#", disabled: true),
     ];
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        try
+        if (firstRender)
         {
-            await LoadData();
-        }
-        catch (Exception e)
-        {
-            _loading = false;
-        }
-        finally
-        {
-            _loading = false;
+            try
+            {
+                _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+                await LoadData();
+            }
+            catch (Exception e)
+            {
+                _loading = false;
+            }
+            finally
+            {
+                _loading = false;
+                StateHasChanged();
+            }
         }
     }
 
     async Task LoadData()
     {
-        var resProduct = await _productService.GetAll();
+        var resProduct = await _productService.GetAll(null, null, null, _token);
         var dataProduct = resProduct.Data;
         if (resProduct.IsSuccess && dataProduct != null)
         {
             _products = dataProduct;
         }
-        var resProductVariant = await _productVariantService.GetAll();
+        var resProductVariant = await _productVariantService.GetAll(_token);
         var dataProductVariant = resProductVariant.Data;
         if (resProductVariant.IsSuccess && dataProductVariant != null)
         {

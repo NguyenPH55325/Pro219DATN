@@ -384,7 +384,7 @@ namespace Pro219.API.Controllers
                 {
                     return BadRequest();
                 }
-                var order = result.OrderByDescending(p => p.CreateAt).ToList().Take(8);
+                var order = result.Where(p => p.Variants != null && p.Variants.Any() && p.Variants.Sum(v => v.StockQuantity) > 0).OrderByDescending(p => p.CreateAt).ToList().Take(8);
                 return Ok(order);
             }
             catch (Exception ex)
@@ -403,7 +403,7 @@ namespace Pro219.API.Controllers
                 {
                     return BadRequest();
                 }
-                var order = result.OrderByDescending(p => p.ReviewCount).ToList().Take(8);
+                var order = result.Where(p => p.Variants != null && p.Variants.Any() && p.Variants.Sum(v => v.StockQuantity) > 0).OrderByDescending(p => p.ReviewCount).ToList().Take(8);
                 return Ok(order);
             }
             catch (Exception ex)

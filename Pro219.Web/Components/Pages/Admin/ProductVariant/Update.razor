@@ -252,7 +252,7 @@
         try
         {
             _isSubmitting = true;
-
+            _model.IsActive = _isActive == 1 ? true : false;
             var result = await _productVariantService.Update(_model, _token);
 
             if (result.IsSuccess)

@@ -162,6 +162,8 @@
     private List<DAL.Models.Size> _sizes = [];
     private DAL.Models.Category _category = new DAL.Models.Category();
 
+    private string _token = string.Empty;
+
     private int _selectColor = 0;
     private int _selectBrand = 0;
     private int _selectSize = 0;
@@ -191,6 +193,14 @@
         await LoadMaterial();
         await LoadData();
         StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+        }
     }
 
     private async Task LoadMaterial()
@@ -225,7 +235,8 @@
             _perPage,
             _selectBrand,
             _selectSize,
-            _selectColor);
+            _selectColor,
+            _token);
         var resDataCategory = await _categoryService.GetById(categoryId);
 
         if (resData.IsSuccess)

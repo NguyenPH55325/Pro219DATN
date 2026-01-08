@@ -176,7 +176,7 @@
             }
 
 
-            var resProductVariants = await _productVariantService.GetAllByProduct(data.Id);
+            var resProductVariants = await _productVariantService.GetAllByProduct(data.Id, _token);
             if(resProductVariants.IsSuccess && !resProductVariants.Data.Any())
             {
                 _isDisabledStatus = true;
@@ -191,7 +191,7 @@
 
         if (resCategory.IsSuccess && resCategory.Data != null)
         {
-            _categories = resCategory.Data;
+            _categories = resCategory.Data.Where(c => c.ParentCategoryId != null).ToList();
         }
         if (resBrand.IsSuccess && resBrand.Data != null)
         {

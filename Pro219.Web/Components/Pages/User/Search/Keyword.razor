@@ -164,6 +164,7 @@
     private List<DAL.Models.Brand> _brands = [];
     private List<DAL.Models.Size> _sizes = [];
 
+    private string _token = string.Empty;
     private int _selectColor = 0;
     private int _selectBrand = 0;
     private int _selectSize = 0;
@@ -189,6 +190,14 @@
         await LoadMaterial();
         await LoadData();
         StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+        }
     }
 
     private async Task LoadMaterial()
@@ -220,12 +229,13 @@
     {
         var resData = await _productService.GetAllByKeyword(
             _keyword, 
-            _currentPage, 
+            _currentPage,
             _perPage,
             _selectBrand,
             _selectSize,
             _selectColor,
-            ConvertSortIdToString(_selectOrder));
+            ConvertSortIdToString(_selectOrder),
+            _token);
 
         if (resData.IsSuccess)
         {

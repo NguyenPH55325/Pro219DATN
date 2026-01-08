@@ -87,7 +87,7 @@
                         </div>
                     </MudTd>
                     <MudTd DataLabel="Thao tác">
-                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => SelectProduct(context.ProductId, context.ProductVariantId, GetQuantity(context.ProductVariantId), context.UnitPrice, productName, url, context.Quantity))">Chọn</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="@(context.Quantity == 0)" OnClick="@(() => SelectProduct(context.ProductId, context.ProductVariantId, GetQuantity(context.ProductVariantId), context.UnitPrice, productName, url, context.Quantity))">Chọn</MudButton>
                     </MudTd>
                 }
             </RowTemplate>
@@ -131,6 +131,7 @@
     private List<DAL.Models.Color> _colors = [];
     private List<DAL.Models.Size> _sizes = [];
 
+    private string _token = string.Empty;
     private string _searchValue = string.Empty;
     private int _searchBrand = 0;
     private int _searchColor = 0;
@@ -141,25 +142,29 @@
 
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            await LoadData();
-        }
-        catch (Exception e)
-        {
-            _loading = false;
-        }
-        finally
-        {
-            _loading = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {   
+        if(firstRender) {
+            try
+            {
+                _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+                await LoadData();
+            }
+            catch (Exception e)
+            {
+                _loading = false;
+            }
+            finally
+            {
+                _loading = false;
+                StateHasChanged();
+            }
         }
     }
 
     async Task LoadData()
     {
-        var res = await _productService.GetAllProductOfSaleCounter(_searchValue, _searchBrand, _searchSize, _searchColor);
+        var res = await _productService.GetAllProductOfSaleCounter(_searchValue, _searchBrand, _searchSize, _searchColor, _token);
         var data = res.Data;
         if (res.IsSuccess)
         {

@@ -160,6 +160,8 @@
     private List<DAL.Models.Size> _sizes = [];
     private DAL.Models.Category _category = new DAL.Models.Category();
 
+    private string _token = string.Empty;
+
     private int _selectColor = 0;
     private int _selectBrand = 0;
     private int _selectSize = 0;
@@ -176,7 +178,7 @@
     protected override async Task OnParametersSetAsync()
     {
         int validatedPage = (_page < 0) ? Constant.Pagination.DefaultPage : _page;
-  
+
         int newOrder = ConvertSortStringToId(_sort);
 
         _currentPage = validatedPage;
@@ -185,10 +187,30 @@
         _selectColor = _colorId;
         _selectSize = _sizeId;
         _selectOrder = newOrder;
-        
+
         await LoadMaterial();
         await LoadData();
         StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+                await LoadMaterial();
+                await LoadData();
+            } catch(Exception e)
+            {
+
+            }
+            finally
+            {
+                StateHasChanged();
+            }
+        }
     }
 
     protected override async Task OnInitializedAsync()
@@ -201,9 +223,6 @@
         _selectColor = _colorId;
         _selectSize = _sizeId;
         _selectOrder = ConvertSortStringToId(_sort);
-
-        await LoadMaterial();
-        await LoadData();
     }
 
     private async Task LoadMaterial()
@@ -240,7 +259,8 @@
             _selectBrand,
             _selectSize,
             _selectColor,
-            sortOrderString
+            sortOrderString,
+            _token
         );
 
         if (resData.IsSuccess)

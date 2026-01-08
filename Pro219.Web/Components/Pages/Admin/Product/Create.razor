@@ -132,9 +132,9 @@
         var dataCategory = resCategory.Data;
         var dataBrand = resBrand.Data;
 
-        if(resCategory.IsSuccess && dataCategory != null)
+        if(resCategory.IsSuccess && dataCategory != null && dataCategory.Any())
         {
-            _categories = dataCategory;
+            _categories = dataCategory.Where(x => x.ParentCategoryId != null).ToList();
         }
         if (resBrand.IsSuccess && dataBrand != null)
         {

@@ -127,6 +127,7 @@
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Large, FullWidth = true };
+    private string _token = string.Empty;
     private bool _loading = true;
 
     private List<BreadcrumbItem> _items =
@@ -135,19 +136,24 @@
     new("Sản Phẩm Chi Tiết", href: "#", disabled: true),
     ];
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        try
+        if (firstRender)
         {
-            await LoadData();
-        }
-        catch (Exception e)
-        {
-            _loading = false;
-        }
-        finally
-        {
-            _loading = false;
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+            try
+            {
+                await LoadData();
+            }
+            catch (Exception e)
+            {
+                _loading = false;
+            }
+            finally
+            {
+                _loading = false;
+                StateHasChanged();
+            }
         }
     }
 
@@ -161,7 +167,7 @@
 
             if (_productDetail?.Id != null)
             {
-                var resProductVariant = await _productVariantService.GetAllByProduct(_productDetail.Id);
+                var resProductVariant = await _productVariantService.GetAllByProduct(_productDetail.Id, _token);
                 var dataProductVariant = resProductVariant.Data;
                 if (resProductVariant.IsSuccess && dataProductVariant != null)
                 {

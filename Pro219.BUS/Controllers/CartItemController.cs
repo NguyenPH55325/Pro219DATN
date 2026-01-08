@@ -240,8 +240,9 @@ namespace Pro219.API.Controllers
                     return Ok(Enumerable.Empty<CartItemWithProductDTO>());
                 }
 
+                string role = User.FindFirst(ClaimTypes.Role)?.Value;
                 var allProductVariants = await productVariantRepository.GetAllProductVariants();
-                var allProducts = await productRepository.GetAllProducts(null, null, null);
+                var allProducts = await productRepository.GetAllProducts(null, null, null, role);
                 var allProductImages = await productImageRepository.GetAllProductImages();
                 var allSizes = await sizeRepository.GetAllSizes(null);
                 var allColors = await colorRepository.GetAllColors(null);
@@ -297,7 +298,7 @@ namespace Pro219.API.Controllers
             try
             {
                 var allProductVariants = await productVariantRepository.GetAllProductVariants();
-                var allProducts = await productRepository.GetAllProducts(null, null, null);
+                var allProducts = await productRepository.GetAllProducts(null, null, null, null);
                 var allProductImages = await productImageRepository.GetAllProductImages();
                 var allSizes = await sizeRepository.GetAllSizes(null);
                 var allColors = await colorRepository.GetAllColors(null);
