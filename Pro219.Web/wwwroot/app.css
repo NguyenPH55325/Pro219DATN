@@ -861,6 +861,10 @@ video {
   aspect-ratio: 1 / 1;
 }
 
+.\!aspect-\[1\/1\.5\] {
+  aspect-ratio: 1/1.5 !important;
+}
+
 .\!h-10 {
   height: 2.5rem !important;
 }
@@ -952,6 +956,10 @@ video {
 
 .h-screen {
   height: 100vh;
+}
+
+.\!h-full {
+  height: 100% !important;
 }
 
 .max-h-\[1000px\] {
@@ -1135,12 +1143,34 @@ video {
   width: 100vw;
 }
 
+.w-\[110px\] {
+  width: 110px;
+}
+
+.\!w-fit {
+  width: -moz-fit-content !important;
+  width: fit-content !important;
+}
+
+.w-\[150px\] {
+  width: 150px;
+}
+
+.\!w-\[150px\] {
+  width: 150px !important;
+}
+
 .\!min-w-\[15rem\] {
   min-width: 15rem !important;
 }
 
 .min-w-60 {
   min-width: 15rem;
+}
+
+.\!min-w-fit {
+  min-width: -moz-fit-content !important;
+  min-width: fit-content !important;
 }
 
 .max-w-32 {
@@ -1237,6 +1267,18 @@ video {
 
 .max-w-screen-xl {
   max-width: 1280px;
+}
+
+.max-w-\[110px\] {
+  max-width: 110px;
+}
+
+.max-w-\[150px\] {
+  max-width: 150px;
+}
+
+.\!max-w-\[150px\] {
+  max-width: 150px !important;
 }
 
 .flex-1 {
@@ -1735,6 +1777,11 @@ video {
      object-fit: cover;
 }
 
+.\!object-cover {
+  -o-object-fit: cover !important;
+     object-fit: cover !important;
+}
+
 .\!p-0 {
   padding: 0px !important;
 }
@@ -1949,6 +1996,14 @@ video {
 
 .pt-8 {
   padding-top: 2rem;
+}
+
+.pl-1 {
+  padding-left: 0.25rem;
+}
+
+.pl-2 {
+  padding-left: 0.5rem;
 }
 
 .text-left {

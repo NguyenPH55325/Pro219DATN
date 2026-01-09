@@ -18,6 +18,7 @@ namespace Pro219.Web.DTOs
 
         [Required(ErrorMessage = Constant.MessageValid.Required)]
         [MaxLength(100, ErrorMessage = Constant.MessageValid.Max100)]
+        [RegularExpression(Constant.Regex.SKU, ErrorMessage = "Vui lòng nhập mã là chữ hoa, số, dấu -, dấu _")]
         public string SKU { get; set; } = string.Empty;
 
         [Range(1, 100000000, ErrorMessage = "Vui lòng nhập số lượng tối thiểu 1 và tối đa 100000000")]

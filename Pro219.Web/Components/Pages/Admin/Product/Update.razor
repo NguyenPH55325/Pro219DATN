@@ -75,16 +75,16 @@
                             @foreach (var item in _images)
                             {
                                 <div class="center; relative flex h-fit max-w-40 items-center justify-center overflow-hidden rounded-lg border-2 border-gray-300">
-                                    <MudImage Src="@item.ImageUrl" Alt="Ảnh đã lưu" ObjectFit="ObjectFit.Cover" Class="h-full w-full" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => HandleRemoveExistingImage(item))"
+                                    <MudImage Src="@item.ImageUrl" Alt="Ảnh đã lưu" ObjectFit="ObjectFit.Cover" Class="!aspect-[1/1.5] !h-full !w-[150px] !max-w-[150px]" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" OnClick="@(() => HandleRemoveExistingImage(item))"
                                                    Class="absolute top-1 right-1 text-white !p-0" />
                                 </div>
                             }
                             @foreach (var item in _newImages)
                             {
                                 <div class="center; relative flex h-fit max-w-40 items-center justify-center overflow-hidden rounded-lg border-2 border-gray-300">
-                                    <MudImage Src="@item.Url" Alt="@item.File.Name" ObjectFit="ObjectFit.Cover" Class="h-full w-full" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => HandleRemoveNewImage(item.File))"
+                                    <MudImage Src="@item.Url" Alt="@item.File.Name" ObjectFit="ObjectFit.Cover" Class="!aspect-[1/1.5] !h-full !w-[150px] !max-w-[150px]" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" OnClick="@(() => HandleRemoveNewImage(item.File))"
                                                    Class="absolute top-1 right-1 text-white !p-0" />
                                 </div>
                             }

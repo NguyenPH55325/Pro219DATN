@@ -60,7 +60,11 @@
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Id" hidden>@context.Id</MudTd>
-                <MudTd DataLabel="Ảnh"><MudImage Src="@_productImages.FirstOrDefault(pi => pi.ProductId == context.Id && pi.ProductVariantId == null)?.ImageUrl" Width="100" /></MudTd>
+                <MudTd DataLabel="Ảnh">
+                    <div class="aspect-[1/1.5] w-[150px] max-w-[150px]">
+                        <MudImage Src="@(_productImages.FirstOrDefault(pi => pi.ProductId == context.Id && pi.ProductVariantId == null) != null ? _productImages.FirstOrDefault(pi => pi.ProductId == context.Id && pi.ProductVariantId == null)?.ImageUrl : Constant.DefaultImages)" ObjectFit="ObjectFit.Cover" Class="!aspect-[1/1.5] !h-full !w-[150px] !max-w-[150px]" />
+                    </div>
+                </MudTd>
                 <MudTd DataLabel="Ảnh">@context.Name</MudTd>
                 <MudTd DataLabel="Giá mặc định">@context.BasePrice.ToString("C0", vietnameseCulture)</MudTd>
                 <MudTd DataLabel="Danh mục">@(context.Category?.Name ?? "")</MudTd>

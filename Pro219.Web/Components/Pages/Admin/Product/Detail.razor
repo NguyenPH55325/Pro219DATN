@@ -42,7 +42,7 @@
                         {
                             foreach(var i in _onlyProductImages)
                             {
-                                <MudImage Src="@i.ImageUrl" Alt="image" Width="200" />
+                                <MudImage Src="@i.ImageUrl" Alt="image" ObjectFit="ObjectFit.Cover" Class="!aspect-[1/1.5] !h-full !w-[150px] !max-w-[150px]" />
                             }
                         }
                     </span>
@@ -71,7 +71,9 @@
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Id" hidden>@context.Id</MudTd>
-                <MudTd DataLabel="Tên"><MudImage Src="@_productImages.FirstOrDefault(pi => pi.ProductVariantId == context.Id)?.ImageUrl" Alt="image" Width="150" /></MudTd>
+                <MudTd DataLabel="Tên">
+                        <MudImage Src="@(_productImages.FirstOrDefault(pi => pi.ProductVariantId == context.Id) != null ? _productImages.FirstOrDefault(pi => pi.ProductVariantId == context.Id)?.ImageUrl : Constant.DefaultImages)" ObjectFit="ObjectFit.Cover" Class="!aspect-[1/1.5] !h-full !w-[150px] !max-w-[150px]" />
+                </MudTd>
                 <MudTd DataLabel="SKU">@context.SKU</MudTd>
                 <MudTd DataLabel="Giá">@context.Price.ToString("C0", vietnameseCulture)</MudTd>
                 <MudTd DataLabel="Màu sắc">@_colors.FirstOrDefault(x => x.Id == context.ColorId)?.Name</MudTd>

@@ -155,11 +155,11 @@ namespace Pro219.DAL.Repository
                     .AsNoTracking()
                     .Where(x => x.Id == id
                         && x.Delete != true
-                        && x.Product.Delete != true && x.Product.Status == 1
-                        && x.Product.Brand.Delete != true && x.Product.Brand.Status == 1
-                        && x.Product.Category.Delete != true && x.Product.Category.Status == 1
-                        && (x.ColorId == null || (x.Color.Delete != true && x.Color.Status == 1))
-                        && (x.SizeId == null || (x.Size.Delete != true && x.Size.Status == 1)))
+                        && x.Product.Delete != true
+                        && x.Product.Brand.Delete != true
+                        && x.Product.Category.Delete != true
+                        && (x.ColorId != null || (x.Color.Delete != true))
+                        && (x.SizeId != null || (x.Size.Delete != true)))
                     .Select(pv => new ProductVariant
                     {
                         Id = pv.Id,
