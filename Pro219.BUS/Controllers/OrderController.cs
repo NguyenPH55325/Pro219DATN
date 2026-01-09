@@ -409,7 +409,7 @@ namespace Pro219.API.Controllers
             }
             // PaymentMethodTypeId: 1 - Thanh toán tại quầy, 2 - Thanh toán Chuyển khoản tại quầy
             discountCodeRepository = new DiscountCodeRepository();
-            PayOS payOS = new PayOS("09b8a42b-6105-4cd4-a4ee-8492e42e909c", "15cfbaf8-79a4-48a0-908f-248c30538001", "00b20c6b94e21bf27e6cb0ae2f26515637c93d70b2eeb832e7b51e299cba433d");
+            PayOS payOS = new PayOS("8208b056-d435-43f6-94e8-9415d68154ae", "5e3bf8ac-b167-4681-8caf-80cdb522ced2", "08d586f8f9157aaca716641dc39b6b63d134b573f68c91b98c31f536140ff39a");
             List<ItemData> items = new List<ItemData>();
             foreach (var product in checkoutParam.ListItemCheckout)
             {
@@ -666,7 +666,7 @@ namespace Pro219.API.Controllers
                 }
             }
 
-            PayOS payOS = new PayOS("09b8a42b-6105-4cd4-a4ee-8492e42e909c", "15cfbaf8-79a4-48a0-908f-248c30538001", "00b20c6b94e21bf27e6cb0ae2f26515637c93d70b2eeb832e7b51e299cba433d");
+            PayOS payOS = new PayOS("8208b056-d435-43f6-94e8-9415d68154ae", "5e3bf8ac-b167-4681-8caf-80cdb522ced2", "08d586f8f9157aaca716641dc39b6b63d134b573f68c91b98c31f536140ff39a");
             List<ItemData> items = new List<ItemData>();
             foreach (var product in checkoutParam.ListItemCheckout)
             {
