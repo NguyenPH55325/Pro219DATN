@@ -61,33 +61,29 @@
                     <div accesskey="@item.Id" class="w-full">
                         <div data-animation="1" class="group relative mb-10 lg:p-2.5">
                             <div class="group relative overflow-hidden px-2.5 text-center">
-                                <a href="@RouterConst.User.Home" class="block transition">
+                                <a href="@(RouterConst.User.ProductDetail + $"/{item.Id}")" class="block transition">
                                     @if (item.ImageUrls.Any())
                                     {
-                                        <picture class="flex h-full items-center justify-center transition duration-700 ease-in-out group-hover:invisible group-hover:opacity-0">
-                                            <img class="overflow-clip" src="@item.ImageUrls[0]" />
-                                        </picture>
-
                                         if (item.ImageUrls.Count > 1)
                                         {
-                                            <picture accesskey="@item.Id" class="invisible absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center opacity-0 transition duration-700 ease-in-out group-hover:visible group-hover:opacity-100">
-                                                <img class="overflow-clip" src="@item?.ImageUrls[1]" />
+                                            <picture class="aspect-[1/1.5] flex h-full items-center justify-center transition duration-700 ease-in-out group-hover:invisible group-hover:opacity-0">
+                                                <img class="h-full w-full overflow-clip object-cover" src="@item.ImageUrls[0]" />
+                                            </picture>
+                                            <picture accesskey="@item.Id" class="aspect-[1/1.5] invisible absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center opacity-0 transition duration-700 ease-in-out group-hover:visible group-hover:opacity-100">
+                                                <img class="h-full w-full overflow-clip object-cover" src="@item?.ImageUrls[1]" />
                                             </picture>
                                         }
                                         else
                                         {
-                                            <picture class="invisible absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center opacity-0 transition duration-700 ease-in-out group-hover:visible group-hover:opacity-100">
-                                                <img class="overflow-clip" src="/Assets/Images/default-image.png" />
+                                            <picture class="aspect-[1/1.5] flex h-full items-center justify-center transition duration-700 ease-in-out">
+                                                <img class="h-full w-full overflow-clip object-cover" src="@item.ImageUrls[0]" />
                                             </picture>
                                         }
                                     }
                                     else
                                     {
-                                        <picture class="flex h-full items-center justify-center transition duration-700 ease-in-out group-hover:invisible group-hover:opacity-0">
-                                            <img class="overflow-clip" src="/Assets/Images/default-image.png" />
-                                        </picture>
-                                        <picture class="invisible absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center opacity-0 transition duration-700 ease-in-out group-hover:visible group-hover:opacity-100">
-                                            <img class="overflow-clip" src="/Assets/Images/default-image.png" />
+                                        <picture class="aspect-[1/1.5] flex h-full items-center justify-center transition duration-700 ease-in-out">
+                                            <img class="h-full w-full overflow-clip object-cover" src="/Assets/Images/default-image.png" />
                                         </picture>
                                     }
                                 </a>
@@ -160,6 +156,8 @@
     private List<DAL.Models.Size> _sizes = [];
     private DAL.Models.Category _category = new DAL.Models.Category();
 
+    private string _token = string.Empty;
+
     private int _selectColor = 0;
     private int _selectBrand = 0;
     private int _selectSize = 0;
@@ -176,7 +174,7 @@
     protected override async Task OnParametersSetAsync()
     {
         int validatedPage = (_page < 0) ? Constant.Pagination.DefaultPage : _page;
-  
+
         int newOrder = ConvertSortStringToId(_sort);
 
         _currentPage = validatedPage;
@@ -185,10 +183,30 @@
         _selectColor = _colorId;
         _selectSize = _sizeId;
         _selectOrder = newOrder;
-        
+
         await LoadMaterial();
         await LoadData();
         StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+                await LoadMaterial();
+                await LoadData();
+            } catch(Exception e)
+            {
+
+            }
+            finally
+            {
+                StateHasChanged();
+            }
+        }
     }
 
     protected override async Task OnInitializedAsync()
@@ -201,9 +219,6 @@
         _selectColor = _colorId;
         _selectSize = _sizeId;
         _selectOrder = ConvertSortStringToId(_sort);
-
-        await LoadMaterial();
-        await LoadData();
     }
 
     private async Task LoadMaterial()
@@ -240,7 +255,8 @@
             _selectBrand,
             _selectSize,
             _selectColor,
-            sortOrderString
+            sortOrderString,
+            _token
         );
 
         if (resData.IsSuccess)

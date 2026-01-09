@@ -20,7 +20,7 @@ namespace Pro219.Web.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ServiceResult<List<Product>>> GetAll(string? keyword = null, int? categoryId = null, int? brandId = null)
+        public async Task<ServiceResult<List<Product>>> GetAll(string? keyword = null, int? categoryId = null, int? brandId = null, string? token = null)
         {
             var queryParams = new Dictionary<string, string?>();
 
@@ -31,6 +31,13 @@ namespace Pro219.Web.Services
             var uri = QueryHelpers.AddQueryString("/Product/GetAll", queryParams);
 
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
 
             var response = await _httpClient.SendAsync(request);
 
@@ -56,7 +63,8 @@ namespace Pro219.Web.Services
             int? brandId = null,
             int? sizeId = null,
             int? colorId = null,
-            string? sortOrder = null)
+            string? sortOrder = null,
+            string? token = null)
         {
             var url = $"/Product/GetAllProducts?page={page}&pageSize={pageSize}";
 
@@ -78,6 +86,14 @@ namespace Pro219.Web.Services
             }
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
+
             var response = await _httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
@@ -105,7 +121,8 @@ namespace Pro219.Web.Services
             string? keyword = null,
             int? brandId = null,
             int? sizeId = null,
-            int? colorId = null)
+            int? colorId = null,
+            string? token = null)
         {
             var baseUrl = "/Product/SearchCombineProduct";
             var queryParams = new Dictionary<string, string>();
@@ -118,6 +135,14 @@ namespace Pro219.Web.Services
             var url = QueryHelpers.AddQueryString(baseUrl, queryParams);
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
+
             var response = await _httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
@@ -148,7 +173,8 @@ namespace Pro219.Web.Services
             int? brandId = null,
             int? sizeId = null,
             int? colorId = null,
-            string? sortOrder = null)
+            string? sortOrder = null, 
+            string? token = null)
         {
             var url = $"/Product/GetAllProductsInCategory/{categoryId}?page={page}&pageSize={pageSize}";
 
@@ -170,6 +196,14 @@ namespace Pro219.Web.Services
             }
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
+
             var response = await _httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
@@ -200,7 +234,8 @@ namespace Pro219.Web.Services
             int? brandId = null,
             int? sizeId = null,
             int? colorId = null,
-            string? sortOrder = null)
+            string? sortOrder = null, 
+            string? token = null)
         {
             var url = $"/Product/GetAllProductByKeyWord/{keyword}?page={page}&pageSize={pageSize}";
 
@@ -222,6 +257,14 @@ namespace Pro219.Web.Services
             }
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
+
             var response = await _httpClient.SendAsync(request);
 
             if (response.IsSuccessStatusCode)

@@ -75,9 +75,9 @@
                         <div class="flex gap-4">
                             @foreach (var item in _imagesWithUrls)
                             {
-                                <div class="center; relative flex max-w-40 items-center overflow-hidden rounded-lg border-2 border-gray-300 justify-content:">
-                                    <MudImage Src="@item.Url" Alt="@item.File.Name" ObjectFit="ObjectFit.Cover" Class="h-full w-full" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => HandleRemoveImages(item.File))"
+                                <div class="relative flex max-w-40 items-center overflow-hidden rounded-lg border-2 border-gray-300">
+                                    <MudImage Src="@item.Url" Alt="@item.File.Name" ObjectFit="ObjectFit.Cover" Class="!aspect-[1/1.5] !h-full !w-[150px] !max-w-[150px]" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" OnClick="@(() => HandleRemoveImages(item.File))"
                                                    Class="absolute top-1 right-1 text-white !p-0" />
                                 </div>
                             }
@@ -132,9 +132,9 @@
         var dataCategory = resCategory.Data;
         var dataBrand = resBrand.Data;
 
-        if(resCategory.IsSuccess && dataCategory != null)
+        if(resCategory.IsSuccess && dataCategory != null && dataCategory.Any())
         {
-            _categories = dataCategory;
+            _categories = dataCategory.Where(x => x.ParentCategoryId != null).ToList();
         }
         if (resBrand.IsSuccess && dataBrand != null)
         {

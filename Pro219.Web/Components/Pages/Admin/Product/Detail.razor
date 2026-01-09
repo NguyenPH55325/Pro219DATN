@@ -42,7 +42,7 @@
                         {
                             foreach(var i in _onlyProductImages)
                             {
-                                <MudImage Src="@i.ImageUrl" Alt="image" Width="200" />
+                                <MudImage Src="@i.ImageUrl" Alt="image" ObjectFit="ObjectFit.Cover" Class="!aspect-[1/1.5] !h-full !w-[150px] !max-w-[150px]" />
                             }
                         }
                     </span>
@@ -71,7 +71,9 @@
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Id" hidden>@context.Id</MudTd>
-                <MudTd DataLabel="Tên"><MudImage Src="@_productImages.FirstOrDefault(pi => pi.ProductVariantId == context.Id)?.ImageUrl" Alt="image" Width="150" /></MudTd>
+                <MudTd DataLabel="Tên">
+                        <MudImage Src="@(_productImages.FirstOrDefault(pi => pi.ProductVariantId == context.Id) != null ? _productImages.FirstOrDefault(pi => pi.ProductVariantId == context.Id)?.ImageUrl : Constant.DefaultImages)" ObjectFit="ObjectFit.Cover" Class="!aspect-[1/1.5] !h-full !w-[150px] !max-w-[150px]" />
+                </MudTd>
                 <MudTd DataLabel="SKU">@context.SKU</MudTd>
                 <MudTd DataLabel="Giá">@context.Price.ToString("C0", vietnameseCulture)</MudTd>
                 <MudTd DataLabel="Màu sắc">@_colors.FirstOrDefault(x => x.Id == context.ColorId)?.Name</MudTd>
@@ -127,6 +129,7 @@
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
     private readonly DialogOptions _maxWidth = new() { MaxWidth = MaxWidth.Large, FullWidth = true };
+    private string _token = string.Empty;
     private bool _loading = true;
 
     private List<BreadcrumbItem> _items =
@@ -135,19 +138,24 @@
     new("Sản Phẩm Chi Tiết", href: "#", disabled: true),
     ];
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        try
+        if (firstRender)
         {
-            await LoadData();
-        }
-        catch (Exception e)
-        {
-            _loading = false;
-        }
-        finally
-        {
-            _loading = false;
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+            try
+            {
+                await LoadData();
+            }
+            catch (Exception e)
+            {
+                _loading = false;
+            }
+            finally
+            {
+                _loading = false;
+                StateHasChanged();
+            }
         }
     }
 
@@ -161,7 +169,7 @@
 
             if (_productDetail?.Id != null)
             {
-                var resProductVariant = await _productVariantService.GetAllByProduct(_productDetail.Id);
+                var resProductVariant = await _productVariantService.GetAllByProduct(_productDetail.Id, _token);
                 var dataProductVariant = resProductVariant.Data;
                 if (resProductVariant.IsSuccess && dataProductVariant != null)
                 {

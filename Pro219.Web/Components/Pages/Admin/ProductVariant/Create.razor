@@ -14,7 +14,10 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Mã sản phẩm</span>
-                <MudTextField @bind-Value="@_model.SKU" For="@(() => _model.SKU)" Placeholder="NKE-TSH-RED-M" Variant="Variant.Outlined" FullWidth Style="background-color: white" />
+                <div class="flex w-full flex-col gap-2">
+                    <MudTextField @bind-Value="@_model.SKU" For="@(() => _model.SKU)" Placeholder="TSH-NKE-RED-M-HN" Variant="Variant.Outlined" FullWidth Style="background-color: white" />
+                    <p class="pl-2 text-sm text-slate-400">TSH-NKE-RED-M-HN (Sản phẩm - Thương hiệu - Màu - Size - Chi nhánh)</p>
+                </div>
             </div>
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
@@ -77,8 +80,8 @@
                             @foreach (var item in _imagesWithUrls)
                             {
                                 <div class="center; relative flex h-fit max-w-40 items-center justify-center overflow-hidden rounded-lg border-2 border-gray-300">
-                                    <MudImage Src="@item.Url" Alt="@item.File.Name" ObjectFit="ObjectFit.Cover" Class="h-full w-full" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => HandleRemoveImages(item.File))"
+                                    <MudImage Src="@item.Url" Alt="@item.File.Name" ObjectFit="ObjectFit.Cover" Class="!aspect-[1/1.5] !h-full !w-[150px] !max-w-[150px]" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" OnClick="@(() => HandleRemoveImages(item.File))"
                                                    Class="absolute top-1 right-1 text-white !p-0" />
                                 </div>
                             }

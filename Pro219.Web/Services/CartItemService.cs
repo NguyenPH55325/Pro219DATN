@@ -14,9 +14,16 @@ namespace Pro219.Web.Services
             _httpClient = httpClient;
         }
 
-        public async Task<ServiceResult<List<CartItemWithProductDTO>>> GetAllCartItemWithDetailByCartId(int cartId)
+        public async Task<ServiceResult<List<CartItemWithProductDTO>>> GetAllCartItemWithDetailByCartId(int cartId, string? token = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"/CartItem/get-all-cart-item-with-detail/{cartId}");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                var formatToken = token.Trim('"');
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", formatToken);
+            }
 
             var response = await _httpClient.SendAsync(request);
 

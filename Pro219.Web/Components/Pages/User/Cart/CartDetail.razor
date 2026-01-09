@@ -120,7 +120,7 @@
 
             if (isSuccess)
             {
-                var result = await _cartItemService.GetAllCartItemWithDetailByCartId(_parsedCartId);
+                var result = await _cartItemService.GetAllCartItemWithDetailByCartId(_parsedCartId, _token);
 
                 if (result.IsSuccess && result.Data != null)
                 {

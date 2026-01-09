@@ -15,11 +15,13 @@
     [SupplyParameterFromQuery(Name = "order-id")]
     public int _orderId { get; set; } = 0;
     private int _parsedCartId = -1;
+    private string _token = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(firstRender)
         {
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
             await LoadData();
         }
     }
@@ -34,7 +36,7 @@
 
             if (int.TryParse(cartId, out _parsedCartId))
             {
-                var result2 = await _cartItemService.GetAllCartItemWithDetailByCartId(_parsedCartId);
+                var result2 = await _cartItemService.GetAllCartItemWithDetailByCartId(_parsedCartId, _token);
 
                 if (result2.IsSuccess && result2.Data.Count() > 0 && !string.IsNullOrEmpty(token))
                 {

@@ -32,7 +32,8 @@ namespace Pro219.API.Controllers
         {
             try
             {
-                var result = await productRepository.GetAllProducts(page, pageSize, brandId, sizeId, colorId, sortOrder);
+                string role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var result = await productRepository.GetAllProducts(page, pageSize, brandId, sizeId, colorId, sortOrder,role);
                 if (result == null)
                 {
                     return Ok(new List<DAL.Repository.ProductRepository.ProductDetailDto>());
@@ -57,7 +58,8 @@ namespace Pro219.API.Controllers
         {
             try
             {
-                var result = await productRepository.GetAllProductsInCategory(categoryId, page, pageSize, brandId, sizeId, colorId, sortOrder);
+                string role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var result = await productRepository.GetAllProductsInCategory(categoryId, page, pageSize, brandId, sizeId, colorId, sortOrder,role);
                 if (result == null)
                 {
                     return Ok(new List<DAL.Repository.ProductRepository.ProductDetailDto>());
@@ -82,7 +84,8 @@ namespace Pro219.API.Controllers
         {
             try
             {
-                var result = await productRepository.GetAllProductByKeyWord(keyWord, page, pageSize, brandId, sizeId, colorId, sortOrder);
+                string role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var result = await productRepository.GetAllProductByKeyWord(keyWord, page, pageSize, brandId, sizeId, colorId, sortOrder,role);
                 if (result == null)
                 {
                     return Ok(new List<DAL.Repository.ProductRepository.ProductDetailDto>());
@@ -108,7 +111,8 @@ namespace Pro219.API.Controllers
         {
             try
             {
-                var result = await productRepository.SearchCombineProduct(keyword, page, pageSize, brandId, sizeId, colorId, sortOrder, getDeleted);
+                string role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var result = await productRepository.SearchCombineProduct(keyword, page, pageSize, brandId, sizeId, colorId, sortOrder, getDeleted,role);
                 if (result == null)
                 {
                     return Ok(new List<SearchCombineProductDto>());
@@ -126,7 +130,8 @@ namespace Pro219.API.Controllers
         {
             try
             {
-                var result = await productRepository.GetAllProducts(keyword, categoryId, brandId);
+                string role = User.FindFirst(ClaimTypes.Role)?.Value;
+                var result = await productRepository.GetAllProducts(keyword, categoryId, brandId,role);
                 if (result == null)
                 {
                     return Ok(new List<Product>());
@@ -379,7 +384,7 @@ namespace Pro219.API.Controllers
                 {
                     return BadRequest();
                 }
-                var order = result.OrderByDescending(p => p.CreateAt).ToList().Take(8);
+                var order = result.Where(p => p.Variants != null && p.Variants.Any() && p.Variants.Sum(v => v.StockQuantity) > 0).OrderByDescending(p => p.CreateAt).ToList().Take(8);
                 return Ok(order);
             }
             catch (Exception ex)
@@ -398,7 +403,7 @@ namespace Pro219.API.Controllers
                 {
                     return BadRequest();
                 }
-                var order = result.OrderByDescending(p => p.ReviewCount).ToList().Take(8);
+                var order = result.Where(p => p.Variants != null && p.Variants.Any() && p.Variants.Sum(v => v.StockQuantity) > 0).OrderByDescending(p => p.ReviewCount).ToList().Take(8);
                 return Ok(order);
             }
             catch (Exception ex)

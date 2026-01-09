@@ -30,16 +30,33 @@ namespace Pro219.DAL.Repository
             int? brandId = null,
             int? sizeId = null,
             int? colorId = null,
-            string? sortOrder = null)
+            string? sortOrder = null,
+            string role = null)
         {
             try
             {
                 var query = _context.Products
                     .Include(p => p.Brand)
                     .Include(p => p.Category)
-                    .Where(p => p.Delete == false
+                    .AsQueryable();
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(p => p.Delete == false && p.Status == 1
                         && p.Brand.Delete == false && p.Brand.Status == 1
                         && p.Category.Delete == false && p.Category.Status == 1);
+                }
+                else if (role == "Admin" || role == "Manager" || role == "Staff")
+                {
+                    query = query.Where(p => p.Delete == false
+                        && p.Brand.Delete == false
+                        && p.Category.Delete == false);
+                }
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
+                }
 
                 if (brandId.HasValue && brandId.Value > 0)
                 {
@@ -48,12 +65,26 @@ namespace Pro219.DAL.Repository
 
                 if (colorId.HasValue && colorId.Value > 0)
                 {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.ColorId == colorId.Value));
+                    if (role == "Customer" || role == null)
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.ColorId == colorId.Value && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
+                    }
+                    else if (role == "Admin" || role == "Manager" || role == "Staff")
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.ColorId == colorId.Value));
+                    }
                 }
 
                 if (sizeId.HasValue && sizeId.Value > 0)
                 {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.SizeId == sizeId.Value));
+                    if (role == "Customer" || role == null)
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.SizeId == sizeId.Value && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
+                    }
+                    else if (role == "Admin" || role == "Manager" || role == "Staff")
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.SizeId == sizeId.Value));
+                    }
                 }
 
                 switch (sortOrder?.ToLower())
@@ -92,7 +123,19 @@ namespace Pro219.DAL.Repository
                     CreateAt = p.CreatedAt,
 
 
-                    AvailableColors = p.ProductVariants
+                    AvailableColors = (role == "Customer" || role == null)
+                        ? p.ProductVariants
+                            .Where(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
+                            .Select(pv => pv.Color)
+                            .Distinct()
+                            .Select(c => new ColorDto
+                            {
+                                Id = c.Id,
+                                Name = c.Name,
+                                HexCode = c.HexCode
+                            })
+                            .ToList()
+                        : p.ProductVariants
                             .Where(pv => pv.Delete == false)
                             .Select(pv => pv.Color)
                             .Distinct()
@@ -104,7 +147,18 @@ namespace Pro219.DAL.Repository
                             })
                             .ToList(),
 
-                    AvailableSizes = p.ProductVariants
+                    AvailableSizes = (role == "Customer" || role == null)
+                        ? p.ProductVariants
+                            .Where(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
+                            .Select(pv => pv.Size)
+                            .Distinct()
+                            .Select(s => new SizeDto
+                            {
+                                Id = s.Id,
+                                Name = s.Name
+                            })
+                            .ToList()
+                        : p.ProductVariants
                             .Where(pv => pv.Delete == false)
                             .Select(pv => pv.Size)
                             .Distinct()
@@ -119,7 +173,29 @@ namespace Pro219.DAL.Repository
                             .Select(pi => pi.ImageUrl)
                             .ToList(),
 
-                    Variants = p.ProductVariants
+                    Variants = (role == "Customer" || role == null)
+                        ? p.ProductVariants
+                            .Where(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && (!colorId.HasValue || colorId.Value <= 0 || pv.ColorId == colorId.Value) && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
+                            .Select(pv => new ProductVariantDto
+                            {
+                                Id = pv.Id,
+                                SKU = pv.SKU,
+                                Price = pv.Price,
+                                StockQuantity = pv.StockQuantity,
+
+                                ColorId = pv.Color.Id,
+                                ColorName = pv.Color.Name,
+                                ColorHexCode = pv.Color.HexCode,
+
+                                SizeId = pv.Size.Id,
+                                SizeName = pv.Size.Name,
+
+                                VariantImageUrls = p.ProductImages
+                                    .Where(pi => pi.Delete == false && pi.ProductVariantId == pv.Id)
+                                    .Select(pi => pi.ImageUrl)
+                                    .ToList()
+                            }).ToList()
+                        : p.ProductVariants
                             .Where(pv => pv.Delete == false && (!colorId.HasValue || colorId.Value <= 0 || pv.ColorId == colorId.Value))
                             .Select(pv => new ProductVariantDto
                             {
@@ -172,16 +248,47 @@ namespace Pro219.DAL.Repository
             int? brandId = null,
             int? sizeId = null,
             int? colorId = null,
-            string? sortOrder = null)
+            string? sortOrder = null,
+            string role = null)
         {
             try
             {
+                var categoryIds = new List<int> { categoryId };
+                var childIds = _context.Categories
+                    .Where(c => c.ParentCategoryId == categoryId)
+                    .Select(c => c.Id)
+                    .ToList();
+                while (childIds.Any())
+                {
+                    categoryIds.AddRange(childIds);
+                    childIds = _context.Categories
+                        .Where(c => childIds.Contains(c.ParentCategoryId ?? 0))
+                        .Select(c => c.Id)
+                        .ToList();
+                }
+                var lstIds = categoryIds;
                 var query = _context.Products
                     .Include(p => p.Brand)
                     .Include(p => p.Category)
-                    .Where(p => p.Delete == false && p.CategoryId == categoryId
+                    .AsQueryable();
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(p => p.Delete == false && p.Status == 1 && lstIds.Contains(p.CategoryId)
                         && p.Brand.Delete == false && p.Brand.Status == 1
                         && p.Category.Delete == false && p.Category.Status == 1);
+                }
+                else if (role == "Admin" || role == "Manager" || role == "Staff")
+                {
+                    query = query.Where(p => p.Delete == false && lstIds.Contains(p.CategoryId)
+                        && p.Brand.Delete == false
+                        && p.Category.Delete == false);
+                }
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
+                }
 
                 if (brandId.HasValue && brandId.Value > 0)
                 {
@@ -190,12 +297,26 @@ namespace Pro219.DAL.Repository
 
                 if (colorId.HasValue && colorId.Value > 0)
                 {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.ColorId == colorId.Value));
+                    if (role == "Customer" || role == null)
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.ColorId == colorId.Value && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
+                    }
+                    else if (role == "Admin" || role == "Manager" || role == "Staff")
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.ColorId == colorId.Value));
+                    }
                 }
 
                 if (sizeId.HasValue && sizeId.Value > 0)
                 {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.SizeId == sizeId.Value));
+                    if (role == "Customer" || role == null)
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.SizeId == sizeId.Value && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
+                    }
+                    else if (role == "Admin" || role == "Manager" || role == "Staff")
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.SizeId == sizeId.Value));
+                    }
                 }
 
                 switch (sortOrder?.ToLower())
@@ -234,7 +355,19 @@ namespace Pro219.DAL.Repository
                     CreateAt = p.CreatedAt,
 
 
-                    AvailableColors = p.ProductVariants
+                    AvailableColors = (role == "Customer" || role == null)
+                        ? p.ProductVariants
+                            .Where(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
+                            .Select(pv => pv.Color)
+                            .Distinct()
+                            .Select(c => new ColorDto
+                            {
+                                Id = c.Id,
+                                Name = c.Name,
+                                HexCode = c.HexCode
+                            })
+                            .ToList()
+                        : p.ProductVariants
                             .Where(pv => pv.Delete == false)
                             .Select(pv => pv.Color)
                             .Distinct()
@@ -246,7 +379,18 @@ namespace Pro219.DAL.Repository
                             })
                             .ToList(),
 
-                    AvailableSizes = p.ProductVariants
+                    AvailableSizes = (role == "Customer" || role == null)
+                        ? p.ProductVariants
+                            .Where(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
+                            .Select(pv => pv.Size)
+                            .Distinct()
+                            .Select(s => new SizeDto
+                            {
+                                Id = s.Id,
+                                Name = s.Name
+                            })
+                            .ToList()
+                        : p.ProductVariants
                             .Where(pv => pv.Delete == false)
                             .Select(pv => pv.Size)
                             .Distinct()
@@ -261,7 +405,29 @@ namespace Pro219.DAL.Repository
                             .Select(pi => pi.ImageUrl)
                             .ToList(),
 
-                    Variants = p.ProductVariants
+                    Variants = (role == "Customer" || role == null)
+                        ? p.ProductVariants
+                            .Where(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && (!colorId.HasValue || colorId.Value <= 0 || pv.ColorId == colorId.Value) && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
+                            .Select(pv => new ProductVariantDto
+                            {
+                                Id = pv.Id,
+                                SKU = pv.SKU,
+                                Price = pv.Price,
+                                StockQuantity = pv.StockQuantity,
+
+                                ColorId = pv.Color.Id,
+                                ColorName = pv.Color.Name,
+                                ColorHexCode = pv.Color.HexCode,
+
+                                SizeId = pv.Size.Id,
+                                SizeName = pv.Size.Name,
+
+                                VariantImageUrls = p.ProductImages
+                                    .Where(pi => pi.Delete == false && pi.ProductVariantId == pv.Id)
+                                    .Select(pi => pi.ImageUrl)
+                                    .ToList()
+                            }).ToList()
+                        : p.ProductVariants
                             .Where(pv => pv.Delete == false && (!colorId.HasValue || colorId.Value <= 0 || pv.ColorId == colorId.Value))
                             .Select(pv => new ProductVariantDto
                             {
@@ -314,16 +480,33 @@ namespace Pro219.DAL.Repository
             int? brandId = null,
             int? sizeId = null,
             int? colorId = null,
-            string? sortOrder = null)
+            string? sortOrder = null,
+            string role = null)
         {
             try
             {
                 var query = _context.Products
                     .Include(p => p.Brand)
                     .Include(p => p.Category)
-                    .Where(p => p.Delete == false && p.Name.ToLower().Contains(keyWord.ToLower())
+                    .AsQueryable();
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(p => p.Delete == false && p.Status == 1 && p.Name.ToLower().Contains(keyWord.ToLower())
                         && p.Brand.Delete == false && p.Brand.Status == 1
                         && p.Category.Delete == false && p.Category.Status == 1);
+                }
+                else if (role == "Admin" || role == "Manager" || role == "Staff")
+                {
+                    query = query.Where(p => p.Delete == false && p.Name.ToLower().Contains(keyWord.ToLower())
+                        && p.Brand.Delete == false
+                        && p.Category.Delete == false);
+                }
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
+                }
 
                 if (brandId.HasValue && brandId.Value > 0)
                 {
@@ -332,12 +515,26 @@ namespace Pro219.DAL.Repository
 
                 if (colorId.HasValue && colorId.Value > 0)
                 {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.ColorId == colorId.Value));
+                    if (role == "Customer" || role == null)
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.ColorId == colorId.Value && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
+                    }
+                    else if (role == "Admin" || role == "Manager" || role == "Staff")
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.ColorId == colorId.Value));
+                    }
                 }
 
                 if (sizeId.HasValue && sizeId.Value > 0)
                 {
-                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.SizeId == sizeId.Value));
+                    if (role == "Customer" || role == null)
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.SizeId == sizeId.Value && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0));
+                    }
+                    else if (role == "Admin" || role == "Manager" || role == "Staff")
+                    {
+                        query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.SizeId == sizeId.Value));
+                    }
                 }
 
                 switch (sortOrder?.ToLower())
@@ -376,7 +573,19 @@ namespace Pro219.DAL.Repository
                     CreateAt = p.CreatedAt,
 
 
-                    AvailableColors = p.ProductVariants
+                    AvailableColors = (role == "Customer" || role == null)
+                        ? p.ProductVariants
+                            .Where(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
+                            .Select(pv => pv.Color)
+                            .Distinct()
+                            .Select(c => new ColorDto
+                            {
+                                Id = c.Id,
+                                Name = c.Name,
+                                HexCode = c.HexCode
+                            })
+                            .ToList()
+                        : p.ProductVariants
                             .Where(pv => pv.Delete == false)
                             .Select(pv => pv.Color)
                             .Distinct()
@@ -388,7 +597,18 @@ namespace Pro219.DAL.Repository
                             })
                             .ToList(),
 
-                    AvailableSizes = p.ProductVariants
+                    AvailableSizes = (role == "Customer" || role == null)
+                        ? p.ProductVariants
+                            .Where(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
+                            .Select(pv => pv.Size)
+                            .Distinct()
+                            .Select(s => new SizeDto
+                            {
+                                Id = s.Id,
+                                Name = s.Name
+                            })
+                            .ToList()
+                        : p.ProductVariants
                             .Where(pv => pv.Delete == false)
                             .Select(pv => pv.Size)
                             .Distinct()
@@ -403,7 +623,29 @@ namespace Pro219.DAL.Repository
                             .Select(pi => pi.ImageUrl)
                             .ToList(),
 
-                    Variants = p.ProductVariants
+                    Variants = (role == "Customer" || role == null)
+                        ? p.ProductVariants
+                            .Where(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true && (!colorId.HasValue || colorId.Value <= 0 || pv.ColorId == colorId.Value) && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
+                            .Select(pv => new ProductVariantDto
+                            {
+                                Id = pv.Id,
+                                SKU = pv.SKU,
+                                Price = pv.Price,
+                                StockQuantity = pv.StockQuantity,
+
+                                ColorId = pv.Color.Id,
+                                ColorName = pv.Color.Name,
+                                ColorHexCode = pv.Color.HexCode,
+
+                                SizeId = pv.Size.Id,
+                                SizeName = pv.Size.Name,
+
+                                VariantImageUrls = p.ProductImages
+                                    .Where(pi => pi.Delete == false && pi.ProductVariantId == pv.Id)
+                                    .Select(pi => pi.ImageUrl)
+                                    .ToList()
+                            }).ToList()
+                        : p.ProductVariants
                             .Where(pv => pv.Delete == false && (!colorId.HasValue || colorId.Value <= 0 || pv.ColorId == colorId.Value))
                             .Select(pv => new ProductVariantDto
                             {
@@ -448,16 +690,32 @@ namespace Pro219.DAL.Repository
             }
         }
 
-        public async Task<List<Product>> GetAllProducts(string? keyword = null, int? categoryId = null, int? brandId = null)
+        public async Task<List<Product>> GetAllProducts(string? keyword = null, int? categoryId = null, int? brandId = null, string role = null)
         {
             try
             {
                 var query = _context.Products
                             .Include(p => p.Brand)
                             .Include(p => p.Category)
-                            .Where(p => p.Delete == false
-                                && p.Brand.Delete == false && p.Brand.Status == 1
-                                && p.Category.Delete == false && p.Category.Status == 1);
+                            .AsQueryable();
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(p => p.Delete == false && p.Status == 1
+                        && p.Brand.Delete == false && p.Brand.Status == 1
+                        && p.Category.Delete == false && p.Category.Status == 1);
+                }
+                else if (role == "Admin" || role == "Manager" || role == "Staff")
+                {
+                    query = query.Where(p => p.Delete == false
+                        && p.Brand.Delete == false
+                        && p.Category.Delete == false);
+                }
+
+                if (role == "Customer" || role == null)
+                {
+                    query = query.Where(p => p.ProductVariants.Any(pv => pv.Delete == false && pv.Status == 1 && pv.IsActive == true));
+                }
 
                 if(!string.IsNullOrEmpty(keyword))
                 {
@@ -608,15 +866,11 @@ namespace Pro219.DAL.Repository
 
                 if (existingProduct == null || existingProduct.Delete == true) return null;
 
-
-                if (existingProduct.Category == null
-                   || existingProduct.Category.Delete == true)
+                if (existingProduct.Category == null || existingProduct.Category.Delete == true)
                 {
                     return null;
                 }
-
-                if (existingProduct.Brand == null 
-                    || existingProduct.Brand.Delete == true)
+                if (existingProduct.Brand == null || existingProduct.Brand.Delete == true)
                 {
                     return null;
                 }
@@ -631,9 +885,25 @@ namespace Pro219.DAL.Repository
                 existingProduct.UpdateBy = product.UpdateBy;
                 existingProduct.UpdateAt = DateTime.Now;
 
-                var updatedProduct = _context.Products.Update(existingProduct).Entity;
+                _context.Products.Update(existingProduct);
                 await _context.SaveChangesAsync();
-                return updatedProduct;
+
+                return new Product
+                {
+                    Id = existingProduct.Id,
+                    Name = existingProduct.Name,
+                    BasePrice = existingProduct.BasePrice,
+                    Description = existingProduct.Description,
+                    Status = existingProduct.Status,
+                    Delete = existingProduct.Delete,
+                    CreatedAt = existingProduct.CreatedAt,  
+                    UpdateAt = existingProduct.UpdateAt,
+                    DeleteAt = existingProduct.DeleteAt,
+                    UpdateBy = existingProduct.UpdateBy,
+                    CategoryId = existingProduct.CategoryId,
+                    BrandId = existingProduct.BrandId,
+                    SaleId = existingProduct.SaleId,
+                };
             }
             catch (Exception)
             {
@@ -1045,7 +1315,7 @@ namespace Pro219.DAL.Repository
 
                     // 🌟 TỔNG HỢP MÀU DUY NHẤT (trả về ColorDto) 🌟
                     AvailableColors = p.ProductVariants
-                        .Where(pv => pv.Delete == false)
+                        .Where(pv => pv.Delete == false && pv.Color.Delete == false && pv.Color.Status == 1 && pv.StockQuantity > 0)
                         .Select(pv => pv.Color) // Chọn đối tượng Color
                         .Distinct() // Lọc đối tượng Color duy nhất (EF Core sẽ làm việc này dựa trên ID)
                         .Select(c => new ColorDto // Ánh xạ sang ColorDto
@@ -1058,7 +1328,7 @@ namespace Pro219.DAL.Repository
 
                     // 🌟 TỔNG HỢP KÍCH THƯỚC DUY NHẤT (trả về SizeDto) 🌟
                     AvailableSizes = p.ProductVariants
-                        .Where(pv => pv.Delete == false)
+                        .Where(pv => pv.Delete == false && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
                         .Select(pv => pv.Size) // Chọn đối tượng Size
                         .Distinct() // Lọc đối tượng Size duy nhất
                         .Select(s => new SizeDto // Ánh xạ sang SizeDto
@@ -1076,7 +1346,7 @@ namespace Pro219.DAL.Repository
 
                     // Xử lý BIẾN THỂ (Cập nhật ánh xạ Color/Size chi tiết)
                     Variants = p.ProductVariants
-                        .Where(pv => pv.Delete == false)
+                        .Where(pv => pv.Delete == false && pv.IsActive == true && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
                         .Select(pv => new ProductVariantDto
                         {
                             Id = pv.Id,
@@ -1133,7 +1403,7 @@ namespace Pro219.DAL.Repository
 
                     // 🌟 TỔNG HỢP MÀU DUY NHẤT (trả về ColorDto) 🌟
                     AvailableColors = p.ProductVariants
-                        .Where(pv => pv.Delete == false)
+                        .Where(pv => pv.Delete == false && pv.Color.Delete == false && pv.Color.Status == 1 && pv.StockQuantity > 0)
                         .Select(pv => pv.Color) // Chọn đối tượng Color
                         .Distinct() // Lọc đối tượng Color duy nhất (EF Core sẽ làm việc này dựa trên ID)
                         .Select(c => new ColorDto // Ánh xạ sang ColorDto
@@ -1146,7 +1416,7 @@ namespace Pro219.DAL.Repository
 
                     // 🌟 TỔNG HỢP KÍCH THƯỚC DUY NHẤT (trả về SizeDto) 🌟
                     AvailableSizes = p.ProductVariants
-                        .Where(pv => pv.Delete == false)
+                        .Where(pv => pv.Delete == false && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
                         .Select(pv => pv.Size) // Chọn đối tượng Size
                         .Distinct() // Lọc đối tượng Size duy nhất
                         .Select(s => new SizeDto // Ánh xạ sang SizeDto
@@ -1164,7 +1434,7 @@ namespace Pro219.DAL.Repository
 
                     // Xử lý BIẾN THỂ (Cập nhật ánh xạ Color/Size chi tiết)
                     Variants = p.ProductVariants
-                        .Where(pv => pv.Delete == false)
+                        .Where(pv => pv.Delete == false && pv.Color.Delete == false && pv.Color.Status == 1 && pv.Size.Delete == false && pv.Size.Status == 1 && pv.StockQuantity > 0)
                         .Select(pv => new ProductVariantDto
                         {
                             Id = pv.Id,
@@ -1205,7 +1475,8 @@ namespace Pro219.DAL.Repository
             int? sizeId = null,
             int? colorId = null,
             string? sortOrder = null,
-            bool? getDeleted = null)
+            bool? getDeleted = null,
+            string role = null)
         {
             try
             {
@@ -1219,20 +1490,26 @@ namespace Pro219.DAL.Repository
                     .Include(pv => pv.Size)
                     .AsQueryable();
 
-                
-                if (getDeleted.HasValue)
+                // Apply role-based filtering for ProductVariant, Product, Brand, Category, Color, Size
+                if (role == "Customer" || role == null)
                 {
-                    if (getDeleted.Value == false)
-                    {
-                        
-                        query = query.Where(pv => pv.Delete != true
-                            && pv.Product.Delete != true && pv.Product.Status == 1
-                            && pv.Product.Brand.Delete != true && pv.Product.Brand.Status == 1
-                            && pv.Product.Category.Delete != true && pv.Product.Category.Status == 1
-                            && (pv.ColorId == null || (pv.Color.Delete != true && pv.Color.Status == 1))
-                            && (pv.SizeId == null || (pv.Size.Delete != true && pv.Size.Status == 1)));
-                    }
-                   
+                    query = query.Where(pv => pv.Delete != true && pv.Status == 1 && pv.IsActive == true
+                        && pv.Product.Delete != true && pv.Product.Status == 1
+                        && pv.Product.Brand.Delete != true && pv.Product.Brand.Status == 1
+                        && pv.Product.Category.Delete != true && pv.Product.Category.Status == 1
+                        && (pv.ColorId == null || (pv.Color.Delete != true && pv.Color.Status == 1))
+                        && pv.StockQuantity > 0
+                        && (pv.SizeId == null || (pv.Size.Delete != true && pv.Size.Status == 1)));
+                }
+                else if (role == "Admin" || role == "Manager" || role == "Staff")
+                {
+                    query = query.Where(pv => pv.Delete != true
+                        && pv.Product.Delete != true
+                        && pv.Product.Brand.Delete != true
+                        && pv.Product.Category.Delete != true
+                        && (pv.ColorId == null || pv.Color.Delete != true)
+                        && pv.StockQuantity > 0
+                        && (pv.SizeId == null || pv.Size.Delete != true));
                 }
 
                 if(keyword!=null && keyword.Trim().Length > 0)

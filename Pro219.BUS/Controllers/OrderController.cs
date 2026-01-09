@@ -97,6 +97,15 @@ namespace Pro219.API.Controllers
                     {
                         await productVariantRepository.IncreaseProductVariantQuantity(item.ProductVariantId, item.Quantity);
                     }
+                    if(order.DiscountId.HasValue && order.DiscountAmount>0)
+                    {
+                        var discountCode = await discountCodeRepository.GetDiscountCodeById(order.DiscountId.Value);
+                        if (discountCode != null)
+                        {
+                            discountCode.UsageCount++;
+                            await discountCodeRepository.UpdateDiscountCode(discountCode);
+                        }
+                    }    
                 }
                 return Ok(result);
             }
