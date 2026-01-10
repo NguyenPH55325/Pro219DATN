@@ -48,7 +48,7 @@
 
             <div class="flex w-full items-center justify-end gap-2">
                 <MudButton Color="MudBlazor.Color.Surface" ButtonType="ButtonType.Button" Variant="Variant.Outlined" OnClick="Cancel">Đóng</MudButton>
-                <MudButton Color="MudBlazor.Color.Dark" ButtonType="ButtonType.Submit" Variant="Variant.Filled">Sửa</MudButton>
+                <MudButton Color="MudBlazor.Color.Dark" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Disabled="@_isLoading">Sửa</MudButton>
             </div>
         </EditForm>
     </DialogContent>
@@ -68,19 +68,30 @@
     private string _selectedProvince = "0";
     private string _selectedDistrict = "0";
     private string _selectedWard = string.Empty;
+    private bool _isLoading = false;
     private AddressModel _model = new AddressModel();
 
     protected override async Task OnInitializedAsync()
     {
-        _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
-        var resProvince = await _addressService.GetAllProvince();
-
-        if (resProvince.IsSuccess && resProvince.Data != null)
+        try
         {
-            _provinces = resProvince.Data;
-        }
+            _isLoading = true;
+            _token = await localStorage.GetItemAsStringAsync(Constant.TokenNameLocalStorage);
+            var resProvince = await _addressService.GetAllProvince();
 
-        await PrefillAddressAsync();
+            if (resProvince.IsSuccess && resProvince.Data != null)
+            {
+                _provinces = resProvince.Data;
+            }
+
+            await PrefillAddressAsync();
+        }
+        catch (Exception e) { }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private async Task OnProvinceChanged(string provinceId)
@@ -108,30 +119,38 @@
 
     private async Task Onsubmit()
     {
-        if (_selectedProvince == "0" || _selectedDistrict == "0" || string.IsNullOrEmpty(_selectedWard))
+        try
         {
-            _snackbar.Add("Vui lòng nhập và chọn đầy đủ thông tin", Severity.Warning);
-            return;
-        }
+            _isLoading = true;
 
-        _model.City = _selectedProvince.ToString();
-        _model.District = _selectedDistrict.ToString();
-        _model.Street = _selectedWard.ToString();
-        _model.CityName = _provinces.FirstOrDefault(p => p.ProvinceID.ToString() == _selectedProvince)?.ProvinceName ?? "";
-        _model.DistrictName = _districts.FirstOrDefault(p => p.DistrictID.ToString() == _selectedDistrict)?.DistrictName ?? "";
-        _model.StreetName = _wards.FirstOrDefault(p => p.WardCode == _selectedWard.ToString())?.WardName ?? "";
+            if (_selectedProvince == "0" || _selectedDistrict == "0" || string.IsNullOrEmpty(_selectedWard))
+            {
+                _snackbar.Add("Vui lòng nhập và chọn đầy đủ thông tin", Severity.Warning);
+                return;
+            }
 
-        var result = await _addressService.Update(_model, _token);
+            _model.City = _selectedProvince.ToString();
+            _model.District = _selectedDistrict.ToString();
+            _model.Street = _selectedWard.ToString();
+            _model.CityName = _provinces.FirstOrDefault(p => p.ProvinceID.ToString() == _selectedProvince)?.ProvinceName ?? "";
+            _model.DistrictName = _districts.FirstOrDefault(p => p.DistrictID.ToString() == _selectedDistrict)?.DistrictName ?? "";
+            _model.StreetName = _wards.FirstOrDefault(p => p.WardCode == _selectedWard.ToString())?.WardName ?? "";
 
-        if (result.IsSuccess)
+            var result = await _addressService.Update(_model, _token);
+
+            if (result.IsSuccess)
+            {
+                _snackbar.Add("Cập nhật địa chỉ thành công", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+
+                _snackbar.Add("Cập nhật địa chỉ thất bại", Severity.Error);
+            }
+        } finally
         {
-            _snackbar.Add("Cập nhật địa chỉ thành công", Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        else
-        {
-
-            _snackbar.Add("Cập nhật địa chỉ thất bại", Severity.Error);
+            _isLoading = false;
         }
     }
 

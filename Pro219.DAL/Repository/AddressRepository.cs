@@ -62,7 +62,6 @@ namespace Pro219.DAL.Repository
             try
             {
                 var existingAddress = await _context.Addresses.FindAsync(address.Id);
-
                 if (existingAddress == null || existingAddress.Delete == true) return null;
 
                 existingAddress.CustomerId = address.CustomerId;
@@ -75,54 +74,49 @@ namespace Pro219.DAL.Repository
                 existingAddress.CityName = address.CityName;
                 existingAddress.StreetName = address.StreetName;
                 existingAddress.OtherInfo = address.OtherInfo;
-                existingAddress.IsDefault = address.IsDefault;
                 existingAddress.Status = address.Status;
                 existingAddress.UpdateAt = DateTime.Now;
-                if (!string.IsNullOrEmpty(address.UpdateBy))
-                {
-                    existingAddress.UpdateBy = address.UpdateBy;
-                }
+                if (!string.IsNullOrEmpty(address.UpdateBy)) existingAddress.UpdateBy = address.UpdateBy;
+
+                var allAddresses = await _context.Addresses
+                    .Where(a => a.CustomerId == address.CustomerId && a.Id != address.Id && a.Delete != true)
+                    .ToListAsync();
 
                 if (address.IsDefault)
                 {
-                    var allAddressByCustomer = _context.Addresses.Where(a => a.CustomerId == address.CustomerId).ToList();
-
-                    if (allAddressByCustomer != null && allAddressByCustomer.Any())
+                    foreach (var item in allAddresses)
                     {
-                        var hasAddressIsDefault = allAddressByCustomer.FirstOrDefault(a => a.IsDefault == true);
-
-                        if (hasAddressIsDefault != null)
-                        {
-                            hasAddressIsDefault.IsDefault = false;
-
-                            var obj = _context.Addresses.Update(hasAddressIsDefault).Entity;
-                        }
+                        item.IsDefault = false;
                     }
+                    existingAddress.IsDefault = true;
                 }
                 else
                 {
-                    var allAddressByCustomer = _context.Addresses.Where(a => a.CustomerId == address.CustomerId).ToList();
+                    var hasOtherDefault = allAddresses.Any(a => a.IsDefault);
 
-                    if (allAddressByCustomer == null || (allAddressByCustomer != null && !allAddressByCustomer.Any()))
+                    if (!hasOtherDefault)
                     {
-                        existingAddress.IsDefault = true;
-                    } else
-                    {
-                        var hasDefault = allAddressByCustomer.Any(x => x.IsDefault);
-
-                        if(!hasDefault)
+                        var latestAddress = allAddresses.OrderByDescending(x => x.CreateAt).FirstOrDefault();
+                        if (latestAddress != null)
+                        {
+                            latestAddress.IsDefault = true;
+                            existingAddress.IsDefault = false;
+                        }
+                        else
                         {
                             existingAddress.IsDefault = true;
                         }
                     }
+                    else
+                    {
+                        existingAddress.IsDefault = false;
+                    }
                 }
 
-
-                var updatedAddress = _context.Addresses.Update(existingAddress).Entity;
                 await _context.SaveChangesAsync();
-                return updatedAddress;
+                return existingAddress;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return null;
             }

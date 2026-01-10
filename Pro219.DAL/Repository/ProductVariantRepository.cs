@@ -158,8 +158,8 @@ namespace Pro219.DAL.Repository
                         && x.Product.Delete != true
                         && x.Product.Brand.Delete != true
                         && x.Product.Category.Delete != true
-                        && (x.ColorId != null || (x.Color.Delete != true))
-                        && (x.SizeId != null || (x.Size.Delete != true)))
+                        && (x.Color.Delete != true)
+                        && (x.Size.Delete != true))
                     .Select(pv => new ProductVariant
                     {
                         Id = pv.Id,
