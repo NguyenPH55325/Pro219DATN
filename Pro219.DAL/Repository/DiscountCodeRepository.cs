@@ -165,6 +165,7 @@ namespace Pro219.DAL.Repository
                 existingDiscountCode.MinOrderValue = discountCode.MinOrderValue;
                 existingDiscountCode.StartDate = discountCode.StartDate;
                 existingDiscountCode.EndDate = discountCode.EndDate;
+                existingDiscountCode.IsReusable = discountCode.IsReusable;
                 existingDiscountCode.IsActive = discountCode.IsActive;
                 existingDiscountCode.Status = discountCode.Status;
                 existingDiscountCode.UpdateBy = discountCode.UpdateBy;

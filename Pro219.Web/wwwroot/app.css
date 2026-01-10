@@ -845,6 +845,10 @@ video {
   display: none;
 }
 
+.\!aspect-\[1\/1\.5\] {
+  aspect-ratio: 1/1.5 !important;
+}
+
 .\!aspect-square {
   aspect-ratio: 1 / 1 !important;
 }
@@ -859,10 +863,6 @@ video {
 
 .aspect-square {
   aspect-ratio: 1 / 1;
-}
-
-.\!aspect-\[1\/1\.5\] {
-  aspect-ratio: 1/1.5 !important;
 }
 
 .\!h-10 {
@@ -883,6 +883,10 @@ video {
 
 .\!h-\[1\.875rem\] {
   height: 1.875rem !important;
+}
+
+.\!h-full {
+  height: 100% !important;
 }
 
 .h-10 {
@@ -958,10 +962,6 @@ video {
   height: 100vh;
 }
 
-.\!h-full {
-  height: 100% !important;
-}
-
 .max-h-\[1000px\] {
   max-height: 1000px;
 }
@@ -1028,6 +1028,10 @@ video {
 
 .\!w-\[1\.875rem\] {
   width: 1.875rem !important;
+}
+
+.\!w-\[150px\] {
+  width: 150px !important;
 }
 
 .\!w-full {
@@ -1098,6 +1102,10 @@ video {
   width: 11rem;
 }
 
+.w-\[150px\] {
+  width: 150px;
+}
+
 .w-\[18\.75rem\] {
   width: 18.75rem;
 }
@@ -1143,23 +1151,6 @@ video {
   width: 100vw;
 }
 
-.w-\[110px\] {
-  width: 110px;
-}
-
-.\!w-fit {
-  width: -moz-fit-content !important;
-  width: fit-content !important;
-}
-
-.w-\[150px\] {
-  width: 150px;
-}
-
-.\!w-\[150px\] {
-  width: 150px !important;
-}
-
 .\!min-w-\[15rem\] {
   min-width: 15rem !important;
 }
@@ -1168,9 +1159,8 @@ video {
   min-width: 15rem;
 }
 
-.\!min-w-fit {
-  min-width: -moz-fit-content !important;
-  min-width: fit-content !important;
+.\!max-w-\[150px\] {
+  max-width: 150px !important;
 }
 
 .max-w-32 {
@@ -1195,6 +1185,10 @@ video {
 
 .max-w-\[1440px\] {
   max-width: 1440px;
+}
+
+.max-w-\[150px\] {
+  max-width: 150px;
 }
 
 .max-w-\[170px\] {
@@ -1267,18 +1261,6 @@ video {
 
 .max-w-screen-xl {
   max-width: 1280px;
-}
-
-.max-w-\[110px\] {
-  max-width: 110px;
-}
-
-.max-w-\[150px\] {
-  max-width: 150px;
-}
-
-.\!max-w-\[150px\] {
-  max-width: 150px !important;
 }
 
 .flex-1 {
@@ -1777,11 +1759,6 @@ video {
      object-fit: cover;
 }
 
-.\!object-cover {
-  -o-object-fit: cover !important;
-     object-fit: cover !important;
-}
-
 .\!p-0 {
   padding: 0px !important;
 }
@@ -1962,6 +1939,10 @@ video {
   padding-bottom: 1.25rem;
 }
 
+.pl-2 {
+  padding-left: 0.5rem;
+}
+
 .pl-4 {
   padding-left: 1rem;
 }
@@ -1996,14 +1977,6 @@ video {
 
 .pt-8 {
   padding-top: 2rem;
-}
-
-.pl-1 {
-  padding-left: 0.25rem;
-}
-
-.pl-2 {
-  padding-left: 0.5rem;
 }
 
 .text-left {
