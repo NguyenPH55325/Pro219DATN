@@ -22,21 +22,21 @@ namespace Pro219.DAL.Models
         
         //WardCode
         [Required]
-        [MaxLength(200)]
-        public string Street { get; set; } = string.Empty;
+        [MaxLength(200)]        
+        public string Ward { get; set; } = string.Empty;
 
         //ProvinceCode
         [Required]
         [MaxLength(100)]
-        public string City { get; set; } = string.Empty;
+        public string Province { get; set; } = string.Empty;
 
         //DistrictCode
         [Required]
         [MaxLength(100)]
         public string District { get; set; } = string.Empty;
 
-        public string StreetName { get; set; } = string.Empty;
-        public string CityName { get; set; } = string.Empty;
+        public string WardName { get; set; } = string.Empty;
+        public string ProvinceName { get; set; } = string.Empty;
         public string DistrictName { get; set; } = string.Empty;
 
         [MaxLength(500)]

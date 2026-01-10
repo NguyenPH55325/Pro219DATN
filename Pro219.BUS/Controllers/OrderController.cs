@@ -215,8 +215,8 @@ namespace Pro219.API.Controllers
                     {
                         Name = order.ShippingAddress.FullName,
                         Phone = order.ShippingAddress.Phone,
-                        Street = order.ShippingAddress.StreetName,
-                        City = order.ShippingAddress.CityName,
+                        Street = order.ShippingAddress.WardName,
+                        City = order.ShippingAddress.ProvinceName,
                         District = order.ShippingAddress.DistrictName,
                         OtherInfo = order.ShippingAddress.OtherInfo ?? ""
                     },
@@ -279,8 +279,8 @@ namespace Pro219.API.Controllers
                     {
                         Name = order.ShippingAddress.FullName,
                         Phone = order.ShippingAddress.Phone,
-                        Street = order.ShippingAddress.StreetName,
-                        City = order.ShippingAddress.CityName,
+                        Street = order.ShippingAddress.WardName,
+                        City = order.ShippingAddress.ProvinceName,
                         District = order.ShippingAddress.DistrictName,
                         OtherInfo = order.ShippingAddress.OtherInfo ?? ""
                     },
@@ -386,12 +386,12 @@ namespace Pro219.API.Controllers
                     CustomerId = checkoutParam.AddressDTO.CustomerId,
                     FullName = checkoutParam.AddressDTO.FullName,
                     Phone = checkoutParam.AddressDTO.Phone,
-                    Street = checkoutParam.AddressDTO.Street,
-                    City = checkoutParam.AddressDTO.City,
+                    Ward = checkoutParam.AddressDTO.Street,
+                    Province = checkoutParam.AddressDTO.City,
                     District = checkoutParam.AddressDTO.District,
-                    CityName = checkoutParam.AddressDTO.CityName,
+                    ProvinceName = checkoutParam.AddressDTO.CityName,
                     DistrictName = checkoutParam.AddressDTO.DistrictName,
-                    StreetName = checkoutParam.AddressDTO.StreetName,
+                    WardName = checkoutParam.AddressDTO.StreetName,
                     OtherInfo = checkoutParam.AddressDTO.OtherInfo,
                     IsDefault = checkoutParam.AddressDTO.IsDefault,
                     CreateAt = DateTime.Now,
@@ -693,12 +693,12 @@ namespace Pro219.API.Controllers
                 address.CustomerId = -1;
                 address.FullName = checkoutParam.AddressDTO.FullName;
                 address.Phone = checkoutParam.AddressDTO.Phone;
-                address.Street = checkoutParam.AddressDTO.Street;
-                address.City = checkoutParam.AddressDTO.City;
+                address.Ward = checkoutParam.AddressDTO.Street;
+                address.Province = checkoutParam.AddressDTO.City;
                 address.District = checkoutParam.AddressDTO.District;
-                address.CityName = checkoutParam.AddressDTO.CityName;
+                address.ProvinceName = checkoutParam.AddressDTO.CityName;
                 address.DistrictName = checkoutParam.AddressDTO.DistrictName;
-                address.StreetName = checkoutParam.AddressDTO.StreetName;
+                address.WardName = checkoutParam.AddressDTO.StreetName;
                 address.OtherInfo = checkoutParam.AddressDTO.OtherInfo;
                 address.IsDefault = checkoutParam.AddressDTO.IsDefault;
                 address.CreateAt = DateTime.Now;
@@ -1226,8 +1226,8 @@ namespace Pro219.API.Controllers
                     {
                         FullName = order.ShippingAddress.FullName,
                         Phone = order.ShippingAddress.Phone,
-                        Street = order.ShippingAddress.Street,
-                        City = order.ShippingAddress.City,
+                        Street = order.ShippingAddress.Ward,
+                        City = order.ShippingAddress.Province,
                         District = order.ShippingAddress.District,
                         OtherInfo = order.ShippingAddress.OtherInfo
                     };
@@ -1337,8 +1337,8 @@ namespace Pro219.API.Controllers
                     {
                         FullName = order.ShippingAddress.FullName,
                         Phone = order.ShippingAddress.Phone,
-                        Street = order.ShippingAddress.Street,
-                        City = order.ShippingAddress.City,
+                        Street = order.ShippingAddress.Ward,
+                        City = order.ShippingAddress.Province,
                         District = order.ShippingAddress.District,
                         OtherInfo = order.ShippingAddress.OtherInfo
                     };

@@ -368,7 +368,7 @@
                         _defaultAddress = obj;
                         _isDisabledAddressUse = false;
 
-                        var province = _provinces.FirstOrDefault(x => x.ProvinceID.ToString() == obj.City);
+                        var province = _provinces.FirstOrDefault(x => x.ProvinceID.ToString() == obj.Province);
                         if (province != null)
                         {
                             _selectedProvince = province.ProvinceID;
@@ -380,7 +380,7 @@
                                 _selectedDistrict = district.DistrictID;
                                 await LoadWards(_selectedDistrict);
 
-                                var ward = _wards.FirstOrDefault(x => x.WardCode == obj.Street);
+                                var ward = _wards.FirstOrDefault(x => x.WardCode == obj.Ward);
                                 if (ward != null)
                                 {
                                     _selectedWard = ward.WardCode;
@@ -403,13 +403,13 @@
     {
         ClearErrors();
         _selectedProvince = provinceId;
-        _defaultAddress.City = provinceId.ToString();
-        _defaultAddress.CityName = _provinces.FirstOrDefault(x => x.ProvinceID == provinceId)?.ProvinceName ?? "";
+        _defaultAddress.Province = provinceId.ToString();
+        _defaultAddress.ProvinceName = _provinces.FirstOrDefault(x => x.ProvinceID == provinceId)?.ProvinceName ?? "";
 
         _selectedDistrict = 0;
         _defaultAddress.District = string.Empty;
         _selectedWard = string.Empty;
-        _defaultAddress.Street = string.Empty;
+        _defaultAddress.Ward = string.Empty;
         _wards = new();
 
         await LoadDistricts(provinceId);
@@ -422,15 +422,15 @@
         _defaultAddress.District = districtId.ToString();
         _defaultAddress.DistrictName = _districts.FirstOrDefault(x => x.DistrictID == districtId)?.DistrictName ?? "";
         _selectedWard = string.Empty;
-        _defaultAddress.Street = string.Empty;
+        _defaultAddress.Ward = string.Empty;
         await LoadWards(districtId);
     }
 
     private async Task OnWardChanged(string wardId)
     {
         _selectedWard = wardId;
-        _defaultAddress.Street = wardId;
-        _defaultAddress.StreetName = _wards.FirstOrDefault(x => x.WardCode == wardId)?.WardName ?? "";
+        _defaultAddress.Ward = wardId;
+        _defaultAddress.WardName = _wards.FirstOrDefault(x => x.WardCode == wardId)?.WardName ?? "";
         await GetShippingFeeAsync();
         StateHasChanged();
     }
@@ -704,7 +704,7 @@
 
         if (_defaultAddress == null ||
             string.IsNullOrEmpty(_defaultAddress.District) ||
-            string.IsNullOrEmpty(_defaultAddress.Street))
+            string.IsNullOrEmpty(_defaultAddress.Ward))
         {
             _shippingAmount = 0;
             return;
@@ -721,7 +721,7 @@
             var requestData = new CalculateFeeRequestModel
                 {
                     ToDistrictId = districtId,
-                    ToWardCode = _defaultAddress.Street,
+                    ToWardCode = _defaultAddress.Ward,
                     Items = _orderItems.Select(item => new FeeItemModel
                     {
                         Quantity = item.Quantity,
@@ -847,12 +847,12 @@
                 address.CustomerId = Order.CustomerId ?? -1;
                 address.Phone = _defaultAddress.Phone;
                 address.FullName = _defaultAddress.FullName;
-                address.City = _defaultAddress.City;
-                address.CityName = _defaultAddress.CityName;
+                address.City = _defaultAddress.Province;
+                address.CityName = _defaultAddress.ProvinceName;
                 address.District = _defaultAddress.District;
                 address.DistrictName = _defaultAddress.DistrictName;
-                address.Street = _defaultAddress.Street;
-                address.StreetName = _defaultAddress.StreetName;
+                address.Street = _defaultAddress.Ward;
+                address.StreetName = _defaultAddress.WardName;
                 address.OtherInfo = _defaultAddress.OtherInfo;
 
                 if (_isUseCurrentAddress == 1)

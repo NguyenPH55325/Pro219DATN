@@ -189,14 +189,14 @@
         if (!string.IsNullOrEmpty(address.OtherInfo))
             parts.Add(address.OtherInfo);
 
-        if (!string.IsNullOrEmpty(address.StreetName))
-            parts.Add(address.StreetName);
+        if (!string.IsNullOrEmpty(address.WardName))
+            parts.Add(address.WardName);
 
         if (!string.IsNullOrEmpty(address.DistrictName))
             parts.Add(address.DistrictName);
 
-        if (!string.IsNullOrEmpty(address.CityName))
-            parts.Add(address.CityName);
+        if (!string.IsNullOrEmpty(address.ProvinceName))
+            parts.Add(address.ProvinceName);
 
         return string.Join(", ", parts);
     }

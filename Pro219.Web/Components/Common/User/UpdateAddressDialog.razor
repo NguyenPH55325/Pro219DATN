@@ -152,18 +152,18 @@
             FullName = addr.FullName,
             Phone = addr.Phone,
             OtherInfo = addr.OtherInfo,
-            City = addr.City,
+            City = addr.Province,
             District = addr.District,
-            Street = addr.Street,
-            CityName = addr.CityName,
+            Street = addr.Ward,
+            CityName = addr.ProvinceName,
             DistrictName = addr.DistrictName,
-            StreetName = addr.StreetName,
+            StreetName = addr.WardName,
             IsDefault = addr.IsDefault
         };
 
-        _selectedProvince = string.IsNullOrWhiteSpace(addr.City) ? "0" : addr.City;
+        _selectedProvince = string.IsNullOrWhiteSpace(addr.Province) ? "0" : addr.Province;
         _selectedDistrict = string.IsNullOrWhiteSpace(addr.District) ? "0" : addr.District;
-        _selectedWard = addr.Street ?? string.Empty;
+        _selectedWard = addr.Ward ?? string.Empty;
 
         if (int.TryParse(_selectedProvince, out var provinceId) && provinceId > 0)
         {

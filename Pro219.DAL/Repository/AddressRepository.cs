@@ -68,12 +68,12 @@ namespace Pro219.DAL.Repository
                 existingAddress.CustomerId = address.CustomerId;
                 existingAddress.FullName = address.FullName;
                 existingAddress.Phone = address.Phone;
-                existingAddress.Street = address.Street;
-                existingAddress.City = address.City;
+                existingAddress.Ward = address.Ward;
+                existingAddress.Province = address.Province;
                 existingAddress.District = address.District;
                 existingAddress.DistrictName = address.DistrictName;
-                existingAddress.CityName = address.CityName;
-                existingAddress.StreetName = address.StreetName;
+                existingAddress.ProvinceName = address.ProvinceName;
+                existingAddress.WardName = address.WardName;
                 existingAddress.OtherInfo = address.OtherInfo;
                 existingAddress.IsDefault = address.IsDefault;
                 existingAddress.Status = address.Status;

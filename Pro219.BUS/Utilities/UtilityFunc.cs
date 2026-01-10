@@ -32,7 +32,7 @@ namespace Pro219.API.Utilities
             {
                 Resource = Send.Resource,
             }
-               .Property(Send.FromEmail, "hlk9@proton.me")
+               .Property(Send.FromEmail, "nguyenhihi2005@gmail.com")
                .Property(Send.FromName, "Adam Store")
                .Property(Send.Subject, subject)
                .Property(Send.TextPart, body)

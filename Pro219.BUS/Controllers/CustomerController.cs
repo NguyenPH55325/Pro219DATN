@@ -91,12 +91,12 @@ namespace Pro219.API.Controllers
                 address.CustomerId = resultCustomer.Id;
                 address.FullName = cusAndAddr.CustomerAddressName;
                 address.Phone = cusAndAddr.CustomerAddressPhone;
-                address.City = cusAndAddr.CityId;
+                address.Province = cusAndAddr.CityId;
                 address.District = cusAndAddr.DistrictId;
-                address.Street = cusAndAddr.WardId;
-                address.CityName = cusAndAddr.CityName;
+                address.Ward = cusAndAddr.WardId;
+                address.ProvinceName = cusAndAddr.CityName;
                 address.DistrictName = cusAndAddr.DistrictName;
-                address.StreetName = cusAndAddr.WardName;
+                address.WardName = cusAndAddr.WardName;
                 address.OtherInfo = cusAndAddr.OtherAddressInfo;
                 address.IsDefault = cusAndAddr.IsDefault;
 

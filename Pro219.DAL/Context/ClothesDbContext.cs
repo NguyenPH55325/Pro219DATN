@@ -330,11 +330,11 @@ namespace Pro219.DAL.Context
 
             // Addresses
             modelBuilder.Entity<Address>().HasData(
-                new Address { Id = 1, CustomerId = 1, FullName = "Nguyễn Văn An", Phone = "0912345678", Street = "13007", City = "201", District = "3440", StreetName="Phương Canh", CityName="Hà Nội", DistrictName="Nam Từ Liêm", OtherInfo = "Chung cư ABC, căn hộ 4B", IsDefault = true, Status = 1, Delete = false, CreateAt = seedDate },
-                new Address { Id = 2, CustomerId = 2, FullName = "Trần Thị Bình", Phone = "0987654321", Street = "13007", City = "201", District = "3440", StreetName="Phương Canh", CityName="Hà Nội", DistrictName="Nam Từ Liêm",  IsDefault = true, Status = 1, Delete = false, CreateAt = seedDate },
-                new Address { Id = 3, CustomerId = 1, FullName = "Nguyễn Văn An", Phone = "0912345678", Street = "13007", City = "201", District = "3440", StreetName="Phương Canh", CityName="Hà Nội", DistrictName="Nam Từ Liêm",  OtherInfo = "Nhà riêng", IsDefault = false, Status = 1, Delete = false, CreateAt = seedDate },
-                new Address { Id = 4, CustomerId = 3, FullName = "Lê Minh Cường", Phone = "0901234567", Street = "13007", City = "201", District = "3440", StreetName = "Phương Canh", CityName = "Hà Nội", DistrictName = "Nam Từ Liêm", IsDefault = true, Status = 1, Delete = false, CreateAt = seedDate },
-                new Address { Id = -99, CustomerId = -1, FullName = "AdamStore", Phone = "113", Street = "13007", City = "201", District = "3440", StreetName = "Phương Canh", CityName = "Hà Nội", DistrictName = "Nam Từ Liêm", IsDefault = true, Status = 1, Delete = false, CreateAt = seedDate }
+                new Address { Id = 1, CustomerId = 1, FullName = "Nguyễn Văn An", Phone = "0912345678", Ward = "13007", Province = "201", District = "3440", WardName="Phương Canh", ProvinceName="Hà Nội", DistrictName="Nam Từ Liêm", OtherInfo = "Chung cư ABC, căn hộ 4B", IsDefault = true, Status = 1, Delete = false, CreateAt = seedDate },
+                new Address { Id = 2, CustomerId = 2, FullName = "Trần Thị Bình", Phone = "0987654321", Ward = "13007", Province = "201", District = "3440", WardName="Phương Canh", ProvinceName="Hà Nội", DistrictName="Nam Từ Liêm",  IsDefault = true, Status = 1, Delete = false, CreateAt = seedDate },
+                new Address { Id = 3, CustomerId = 1, FullName = "Nguyễn Văn An", Phone = "0912345678", Ward = "13007", Province = "201", District = "3440", WardName="Phương Canh", ProvinceName="Hà Nội", DistrictName="Nam Từ Liêm",  OtherInfo = "Nhà riêng", IsDefault = false, Status = 1, Delete = false, CreateAt = seedDate },
+                new Address { Id = 4, CustomerId = 3, FullName = "Lê Minh Cường", Phone = "0901234567", Ward = "13007", Province = "201", District = "3440", WardName = "Phương Canh", ProvinceName = "Hà Nội", DistrictName = "Nam Từ Liêm", IsDefault = true, Status = 1, Delete = false, CreateAt = seedDate },
+                new Address { Id = -99, CustomerId = -1, FullName = "AdamStore", Phone = "113", Ward = "13007", Province = "201", District = "3440", WardName = "Phương Canh", ProvinceName = "Hà Nội", DistrictName = "Nam Từ Liêm", IsDefault = true, Status = 1, Delete = false, CreateAt = seedDate }
 
             );
 

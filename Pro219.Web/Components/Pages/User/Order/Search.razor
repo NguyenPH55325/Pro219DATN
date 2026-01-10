@@ -38,10 +38,10 @@
                                     <div>
                                         <p class="text-sm font-medium">@address?.FullName <span class="text-slate-500">@((!string.IsNullOrEmpty(address?.Phone) ? " - " : ""))@address?.Phone</span></p>
                                         <p class="text-sm font-medium">
-                                            @address?.OtherInfo@((!string.IsNullOrEmpty(address?.OtherInfo) && (!string.IsNullOrEmpty(address?.StreetName) || !string.IsNullOrEmpty(address?.DistrictName) || !string.IsNullOrEmpty(address?.CityName)) ? ", " : ""))
-                                            @address?.StreetName@((!string.IsNullOrEmpty(address?.StreetName) && (!string.IsNullOrEmpty(address?.DistrictName) || !string.IsNullOrEmpty(address?.CityName)) ? ", " : ""))
-                                            @address?.DistrictName@((!string.IsNullOrEmpty(address?.DistrictName) && !string.IsNullOrEmpty(address?.CityName) ? ", " : ""))
-                                            @address?.CityName
+                                            @address?.OtherInfo@((!string.IsNullOrEmpty(address?.OtherInfo) && (!string.IsNullOrEmpty(address?.WardName) || !string.IsNullOrEmpty(address?.DistrictName) || !string.IsNullOrEmpty(address?.ProvinceName)) ? ", " : ""))
+                                            @address?.WardName@((!string.IsNullOrEmpty(address?.WardName) && (!string.IsNullOrEmpty(address?.DistrictName) || !string.IsNullOrEmpty(address?.ProvinceName)) ? ", " : ""))
+                                            @address?.DistrictName@((!string.IsNullOrEmpty(address?.DistrictName) && !string.IsNullOrEmpty(address?.ProvinceName) ? ", " : ""))
+                                            @address?.ProvinceName
                                         </p>
                                     </div>
                                 }
