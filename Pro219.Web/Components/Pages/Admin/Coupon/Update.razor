@@ -84,7 +84,7 @@
 
             <div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
                 <span Class="w-44 flex-shrink-0 pt-4 text-base font-medium text-gray-900">Tái sử dụng</span>
-                <MudCheckBox T="bool" @bind-Checked="@_model.IsReusable" Color="Color.Primary" Label="Cho phép tái sử dụng"></MudCheckBox>
+                <MudCheckBox T="bool?" @bind-Value="_model.IsReusable" Color="Color.Primary" Label="Cho phép tái sử dụng"></MudCheckBox>
             </div>
 
             @*<div class="mx-auto flex w-full max-w-[64.5rem] gap-6 rounded-lg bg-slate-100 px-6 py-4">
