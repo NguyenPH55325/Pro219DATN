@@ -39,18 +39,19 @@
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Kích Thước", href: RouterConst.Admin.Size),
-        new("Tạo Kích Thước", href: "#", disabled: true),
+    new("Kích Thước", href: RouterConst.Admin.Size),
+    new("Tạo Kích Thước", href: "#", disabled: true),
     ];
 
     async Task OnSubmit()
     {
         if (_isSubmitting) return;
-        
+
         try
         {
             _isSubmitting = true;
             _model.Status = (byte)_isActive;
+            _model.Name = _model.Name.Trim();
             var result = await _sizeService.Create(_model, "");
 
             if (result.IsSuccess)
