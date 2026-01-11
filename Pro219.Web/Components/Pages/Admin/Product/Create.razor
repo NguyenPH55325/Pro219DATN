@@ -189,6 +189,8 @@
         {
             _isSubmitting = true;
             _model.Status = (byte)0;
+            _model.Name = _model.Name.Trim();
+            _model.Description = _model.Description?.Trim();
             var result = await _productService.Create(_model);
 
             if (result.IsSuccess && result.Data != null && result.Data.Id > 0)

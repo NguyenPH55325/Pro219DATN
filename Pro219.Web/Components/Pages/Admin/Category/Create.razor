@@ -56,6 +56,8 @@
         {
             _isSubmitting = true;
             _model.Status = (byte)_isActive;
+            _model.Name = _model.Name.Trim();
+            _model.Description = _model.Description?.Trim();
             var result = await _categoryService.Create(_model);
 
             if (result.IsSuccess)

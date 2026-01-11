@@ -81,6 +81,7 @@
         {
             _isSubmitting = true;
             _model.Status = (byte)_isActive;
+            _model.Name = _model.Name.Trim();
             var result = await _sizeService.Edit(_model, _token);
 
             if (result.IsSuccess)

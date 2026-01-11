@@ -203,6 +203,7 @@
             _model.ProductId = productId;
             _model.IsActive = _isActive == 1 ? true : false;
             _model.Status = (byte)1;
+            _model.SKU = _model.SKU.Trim();
             var result = await _productVariantService.Create(_model);
 
             if (result.IsSuccess && result.Data != null && result.Data.Id > 0)

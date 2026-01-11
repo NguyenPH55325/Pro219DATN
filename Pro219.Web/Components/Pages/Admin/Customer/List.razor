@@ -104,14 +104,14 @@
         var data = res.Data;
         if (res.IsSuccess && data != null)
         {
-            _customers = data;
+            _customers = data.Where(x => x.Id != -1).ToList();
         }
         StateHasChanged();
     }
 
     private void onChangeSearch(string value)
     {
-        _searchValue = value;
+        _searchValue = value.Trim();
     }
 
     private async Task OnSearch()

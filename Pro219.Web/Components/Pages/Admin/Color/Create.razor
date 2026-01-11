@@ -58,6 +58,7 @@
         {
             _isSubmitting = true;
             _model.Status = (byte)_isActive;
+            _model.Name = _model.Name.Trim();
             var result = await _colorService.Create(_model);
 
             if (result.IsSuccess)

@@ -45,8 +45,8 @@
     private List<BreadcrumbItem> _items =
     [
         new("Trang Chủ", href: RouterConst.Admin.Home),
-        new("Thương Hiệu", href: RouterConst.Admin.Brand),
-        new("Tạo Thương Hiệu", href: "#", disabled: true),
+    new("Thương Hiệu", href: RouterConst.Admin.Brand),
+    new("Tạo Thương Hiệu", href: "#", disabled: true),
     ];
 
     async Task OnSubmit()
@@ -57,6 +57,8 @@
         {
             _isSubmitting = true;
             _model.Status = (byte)_isActive;
+            _model.Name = _model.Name.Trim();
+            _model.Description = _model.Description.Trim();
             var result = await _brandService.Create(_model);
 
             if (result.IsSuccess)

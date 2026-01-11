@@ -45,6 +45,7 @@ namespace Pro219.Web.DTOs
         [Required(ErrorMessage = Constant.MessageValid.Required)]
         public string CustomerAddressPhone { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = Constant.MessageValid.Required)]
         public string? OtherAddressInfo { get; set; } = string.Empty;
 
         public bool IsDefault { get; set; } = true;

@@ -110,7 +110,7 @@
 
     private async Task onChangeSearch(string value)
     {
-        _searchValue = value;
+        _searchValue = value.Trim();
     }
 
     private async Task OnSearch()

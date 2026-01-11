@@ -104,7 +104,7 @@
 
                     <div class="flex w-full flex-col gap-2">
                         <span Class="text-base font-medium text-gray-900">Chi tiết địa chỉ</span>
-                        <MudTextField @bind-Value="@_model.OtherAddressInfo" For="@(() => _model.OtherAddressInfo)" Placeholder="0xxxxxxxxx" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
+                        <MudTextField @bind-Value="@_model.OtherAddressInfo" For="@(() => _model.OtherAddressInfo)" Placeholder="số 1, ngõ 1" Variant="Variant.Outlined" Style="background-color: white" FullWidth />
                     </div>
                 </div>
             </div>
@@ -233,7 +233,13 @@
             _model.CityId = _selectedProvince.ToString();
             _model.DistrictId = _selectedDistrict.ToString();
             _model.WardId = _selectedWard;
-
+            _model.CustomerName = _model.CustomerName;
+            _model.CustomerEmail = _model.CustomerEmail;
+            _model.CustomerPhone = _model.CustomerPhone;
+            _model.CustomerAddressName = _model.CustomerAddressName;
+            _model.CustomerAddressPhone = _model.CustomerAddressPhone;
+            _model.OtherAddressInfo = _model.OtherAddressInfo?.Trim();
+            _model.Password = _model.Password;
             var result = await _customerService.Create(_model);
 
             if (result.IsSuccess)

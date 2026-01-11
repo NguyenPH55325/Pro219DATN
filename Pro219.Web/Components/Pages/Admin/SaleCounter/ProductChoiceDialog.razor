@@ -164,7 +164,7 @@
 
     async Task LoadData()
     {
-        var res = await _productService.GetAllProductOfSaleCounter(_searchValue, _searchBrand, _searchSize, _searchColor, _token);
+        var res = await _productService.GetAllProductOfSaleCounter(_searchValue.Trim(), _searchBrand, _searchSize, _searchColor, _token);
         var data = res.Data;
         if (res.IsSuccess)
         {

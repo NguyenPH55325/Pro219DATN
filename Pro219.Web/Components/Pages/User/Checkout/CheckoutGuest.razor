@@ -335,25 +335,25 @@
     {
         if (_isSubmitting) return;
 
-        if (string.IsNullOrEmpty(_model.FullName) || string.IsNullOrEmpty(_model.Phone) || string.IsNullOrEmpty(_selectedWard) || _selectedProvince <= 0 || _selectedDistrict <= 0 || string.IsNullOrEmpty(_model.OtherInfo))
+        if (string.IsNullOrEmpty(_model.FullName.Trim()) || string.IsNullOrEmpty(_model.Phone.Trim()) || string.IsNullOrEmpty(_selectedWard) || _selectedProvince <= 0 || _selectedDistrict <= 0 || string.IsNullOrEmpty(_model.OtherInfo?.Trim()))
         {
             _snackbar.Add("Vui lòng điền đầy đủ thông tin.", Severity.Warning);
             return;
         }
 
-        if (_model.FullName.Length > 200)
+        if (_model.FullName.Trim().Length > 200)
         {
             _snackbar.Add("Tên tối đa 200 kí tự.", Severity.Warning);
             return;
         }
 
-        if (!Regex.IsMatch(_model.Phone, Constant.Regex.PhoneNumber))
+        if (!Regex.IsMatch(_model.Phone.Trim(), Constant.Regex.PhoneNumber))
         {
             _snackbar.Add("Số điện thoại không hợp lệ.", Severity.Warning);
             return;
         }
 
-        if (_model.OtherInfo.Length > 500)
+        if (_model.OtherInfo.Trim().Length > 500)
         {
             _snackbar.Add("Tên tối đa 500 kí tự.", Severity.Warning);
             return;
@@ -419,21 +419,21 @@
                     AddressDTO = new CheckoutAddressModel
                     {
                         CustomerId = -1,
-                        FullName = _model.FullName,
-                        Phone = _model.Phone,
+                        FullName = _model.FullName.Trim(),
+                        Phone = _model.Phone.Trim(),
                         Street = _selectedWard,
                         City = _selectedProvince.ToString(),
                         District = _selectedDistrict.ToString(),
                         CityName = _model.CityName,
                         DistrictName = _model.DistrictName,
                         StreetName = _model.StreetName,
-                        OtherInfo = _model.OtherInfo,
+                        OtherInfo = _model.OtherInfo.Trim(),
                         IsDefault = false,
                     },
                 },
                 discountAmount: 0,
                 shippingFee: _shippingPrice,
-                note: _note ?? string.Empty,
+                note: _note.Trim() ?? string.Empty,
                 shippingAddressId: -99,
                 paymentMethodTypeId: _model.PaymentMethod,
                 discountId: null

@@ -104,6 +104,8 @@
             _isSubmitting = true;
 
             _model.Status = (byte)_isActive;
+            _model.FullName = _model.FullName.Trim();
+            _model.Email = _model.Email?.Trim();
             var result = await _customerService.Edit(_model, _token);
 
             if (result.IsSuccess)
