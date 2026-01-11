@@ -214,12 +214,12 @@ namespace Pro219.API.Controllers
                     },
                     Address = order.ShippingAddress == null ? null : new OrderDetailAddressDTO
                     {
-                        Name = order.ShippingAddress.FullName,
-                        Phone = order.ShippingAddress.Phone,
-                        Street = order.ShippingAddress.WardName,
-                        City = order.ShippingAddress.ProvinceName,
-                        District = order.ShippingAddress.DistrictName,
-                        OtherInfo = order.ShippingAddress.OtherInfo ?? ""
+                        Name = order.CustomerName ?? "",
+                        Phone = order.Phone ?? "",
+                        Street = order.WardName ?? "",
+                        City = order.ProvinceName ?? "",
+                        District = order.DistrictName ?? "",
+                        OtherInfo = order.Address ?? ""
                     },
                     Items = order.OrderItems.Select(oi => new OrderDetailItemDTO
                     {
