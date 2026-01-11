@@ -18,7 +18,7 @@
                                 {
                                     <div class="flex w-full flex-col items-center justify-between gap-4">
                                         <a href="@(RouterConst.User.ProductDetail + $"/{product.Id}")">
-                                            <img src="@url" alt="product" />
+                                            <img src="@url" alt="product" class="aspect-[1/1.5] h-full w-full object-cover" />
                                         </a>
                                         <h2>@name</h2>
                                         <button class="w-full border border-solid border-red-500 py-3 text-red-500" @onclick="@(() => DeleteWishlist(item.Id))">

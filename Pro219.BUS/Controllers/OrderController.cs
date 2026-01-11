@@ -12,6 +12,7 @@ using QuestPDF.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -213,12 +214,12 @@ namespace Pro219.API.Controllers
                     },
                     Address = order.ShippingAddress == null ? null : new OrderDetailAddressDTO
                     {
-                        Name = order.ShippingAddress.FullName,
-                        Phone = order.ShippingAddress.Phone,
-                        Street = order.ShippingAddress.WardName,
-                        City = order.ShippingAddress.ProvinceName,
-                        District = order.ShippingAddress.DistrictName,
-                        OtherInfo = order.ShippingAddress.OtherInfo ?? ""
+                        Name = order.CustomerName ?? "",
+                        Phone = order.Phone ?? "",
+                        Street = order.WardName ?? "",
+                        City = order.ProvinceName ?? "",
+                        District = order.DistrictName ?? "",
+                        OtherInfo = order.Address ?? ""
                     },
                     Items = order.OrderItems.Select(oi => new OrderDetailItemDTO
                     {
@@ -398,6 +399,12 @@ namespace Pro219.API.Controllers
                     Delete = false,
                     Status = 1
                 };
+                order.ProvinceName= address.ProvinceName;
+                order.DistrictName= address.DistrictName;
+                order.WardName= address.WardName;
+                order.Address = address.OtherInfo;
+                order.CustomerName = address.FullName;
+                order.Phone = address.Phone;
                 var re = await addressRepo.AddAddress(address);
                 if (re == null)
                 {
@@ -460,7 +467,6 @@ namespace Pro219.API.Controllers
                     });
                     order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
                 }
-
                 order.OrderCode = "DH" + ordCode.ToString();
                 order.TotalAmount = totalPrice;
                 order.DiscountAmount = discountAmount;
@@ -482,16 +488,30 @@ namespace Pro219.API.Controllers
                 order.ShippingAddressId = null;
                 order.DiscountId = discountId == null ? null : (int)discountId;
                 order.PaymentMethodId = PaymentMethodTypeId;
-                order.CustomerType = currentCustomer.FullName == null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;
+                order.CustomerType = currentCustomer.FullName == null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;              
                 if (newAddressFromUser != null && checkoutParam.isNewAddress == true)
                 {
                     order.ShippingAddressId = newAddressFromUser.Id;
                     order.ShippingFee = shippingFee;
+                    order.ProvinceName = newAddressFromUser.ProvinceName;
+                    order.DistrictName = newAddressFromUser.DistrictName;
+                    order.WardName = newAddressFromUser.WardName;
+                    order.Address = newAddressFromUser.OtherInfo;
+                    order.CustomerName = newAddressFromUser.FullName;
+                    order.Phone = newAddressFromUser.Phone;
                 }
                 else if (checkoutParam.isNewAddress == false && checkoutParam.shippingAddressId != -1)
                 {
+                    AddressRepository addressRepo = new AddressRepository();
+                    var addressTemp = addressRepo.GetById(int.Parse(checkoutParam.shippingAddressId.ToString())).Result;
                     order.ShippingAddressId = checkoutParam.shippingAddressId;
                     order.ShippingFee = shippingFee;
+                    order.ProvinceName = addressTemp.ProvinceName;
+                    order.DistrictName = addressTemp.DistrictName;
+                    order.WardName = addressTemp.WardName;
+                    order.Address = addressTemp.OtherInfo;
+                    order.CustomerName = addressTemp.FullName;
+                    order.Phone = addressTemp.Phone;
                 }
 
                 if (orderId == null)
@@ -685,11 +705,11 @@ namespace Pro219.API.Controllers
 
             decimal totalPrice = checkoutParam.ListItemCheckout.Sum(p => p.UnitPrice * p.Quantity);
             decimal finalAmount = 0;
+            Address address = new Address();
             if (checkoutParam.AddressDTO != null)
             {
                 AddressRepository addressRepository = new AddressRepository();
                 // create address from DTO to get id
-                Address address = new Address();
                 address.CustomerId = -1;
                 address.FullName = checkoutParam.AddressDTO.FullName;
                 address.Phone = checkoutParam.AddressDTO.Phone;
@@ -773,6 +793,16 @@ namespace Pro219.API.Controllers
                 order.DiscountId = discountId == null ? null : (int)discountId;
                 order.PaymentMethodId = PaymentMethodTypeId;
                 order.CustomerType = checkoutParam.AddressDTO != null ? Constant.CustomerType.GuestOrder : Constant.CustomerType.RegisteredOrder;
+                if (addressId!=-99)
+                {
+                    address = await (new AddressRepository()).GetById(addressId);
+                }
+                order.ProvinceName = address.ProvinceName;
+                order.DistrictName = address.DistrictName;
+                order.WardName = address.WardName;
+                order.Address = address.OtherInfo;
+                order.CustomerName = address.FullName;
+                order.Phone = address.Phone;
                 var result = await orderRepository.AddOrder(order);
 
 
@@ -1335,12 +1365,12 @@ namespace Pro219.API.Controllers
                 {
                     invoice.ShippingAddress = new ShippingAddressDTO
                     {
-                        FullName = order.ShippingAddress.FullName,
-                        Phone = order.ShippingAddress.Phone,
-                        Street = order.ShippingAddress.Ward,
-                        City = order.ShippingAddress.Province,
-                        District = order.ShippingAddress.District,
-                        OtherInfo = order.ShippingAddress.OtherInfo
+                        FullName = order.CustomerName,
+                        Phone = order.Phone,
+                        Street = order.WardName,
+                        City = order.ProvinceName,
+                        District = order.DistrictName,
+                        OtherInfo = order.Address
                     };
                 }
 

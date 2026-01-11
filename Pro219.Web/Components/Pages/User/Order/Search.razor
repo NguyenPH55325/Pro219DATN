@@ -30,22 +30,15 @@
                         <MudTd DataLabel="Mã hóa đơn">@context.OrderCode</MudTd>
                         <MudTd DataLabel="Địa chỉ nhận hàng">@context.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</MudTd>
                         <MudTd DataLabel="Ngày đặt hàng">
-                            @{
-                                var address = _addresses.FirstOrDefault(a => a.Id == context.ShippingAddressId);
-
-                                if (address != null)
-                                {
-                                    <div>
-                                        <p class="text-sm font-medium">@address?.FullName <span class="text-slate-500">@((!string.IsNullOrEmpty(address?.Phone) ? " - " : ""))@address?.Phone</span></p>
-                                        <p class="text-sm font-medium">
-                                            @address?.OtherInfo@((!string.IsNullOrEmpty(address?.OtherInfo) && (!string.IsNullOrEmpty(address?.WardName) || !string.IsNullOrEmpty(address?.DistrictName) || !string.IsNullOrEmpty(address?.ProvinceName)) ? ", " : ""))
-                                            @address?.WardName@((!string.IsNullOrEmpty(address?.WardName) && (!string.IsNullOrEmpty(address?.DistrictName) || !string.IsNullOrEmpty(address?.ProvinceName)) ? ", " : ""))
-                                            @address?.DistrictName@((!string.IsNullOrEmpty(address?.DistrictName) && !string.IsNullOrEmpty(address?.ProvinceName) ? ", " : ""))
-                                            @address?.ProvinceName
-                                        </p>
-                                    </div>
-                                }
-                            }
+                            <div>
+                                <p class="text-sm font-medium">@context?.CustomerName <span class="text-slate-500">@((!string.IsNullOrEmpty(context?.Phone) ? " - " : ""))@context?.Phone</span></p>
+                                <p class="text-sm font-medium">
+                                    @context?.Address@((!string.IsNullOrEmpty(context?.Address) && (!string.IsNullOrEmpty(context?.WardName) || !string.IsNullOrEmpty(context?.DistrictName) || !string.IsNullOrEmpty(context?.ProvinceName)) ? ", " : ""))
+                                    @context?.WardName@((!string.IsNullOrEmpty(context?.WardName) && (!string.IsNullOrEmpty(context?.DistrictName) || !string.IsNullOrEmpty(context?.ProvinceName)) ? ", " : ""))
+                                    @context?.DistrictName@((!string.IsNullOrEmpty(context?.DistrictName) && !string.IsNullOrEmpty(context?.ProvinceName) ? ", " : ""))
+                                    @context?.ProvinceName
+                                </p>
+                            </div>
                         </MudTd>
                         <MudTd DataLabel="Phương thức thanh toán">@(context.PaymentMethodId == Constant.PaymentMethod.CashBack ? "Tiền mặt" : "Chuyển khoản")</MudTd>
                         <MudTd DataLabel="Trạng thái thanh toán">@context.PaymentStatus</MudTd>
@@ -94,7 +87,6 @@
 
 @code {
     private List<DAL.Models.Order> _orders = [];
-    private List<DAL.Models.Address> _addresses = [];
     private GetMeResponseDTO _me = new GetMeResponseDTO();
 
     private string _searchOrder = string.Empty;
@@ -122,11 +114,6 @@
         if (resOrder.IsSuccess && resOrder.Data.Count() > 0)
         {
             _orders = resOrder.Data;
-        }
-
-        if (resAsddress.IsSuccess && resAsddress.Data.Count() > 0)
-        {
-            _addresses = resAsddress.Data;
         }
     }
 
