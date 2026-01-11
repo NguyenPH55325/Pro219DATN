@@ -297,6 +297,7 @@
             _isSubmitting = true;
             _model.IsActive = true;
             _model.Value = _valueDiscount;
+            _model.Code = _model.Code.Trim();
             _model.DiscountType = _discountType == 1 ? Constant.DiscountTypePercent : Constant.DiscountTypeFixed;
             _model.Status = _discountType == 1 ? (byte)1 : (byte)2;
             var result = await _couponService.Update(_model, _token);

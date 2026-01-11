@@ -149,7 +149,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _isLoading = true;
+        _isSubmitting = true;
 
         // 1. Tải dữ liệu chính (Sản phẩm, Danh mục, Thương hiệu)
         var resProduct = await _productService.GetById(id);
@@ -198,7 +198,7 @@
             _brands = resBrand.Data;
         }
 
-        _isLoading = false;
+        _isSubmitting = false;
         StateHasChanged();
     }
 
@@ -261,6 +261,8 @@
         {
             _isSubmitting = true;
             _model.Status = (byte)_isActive;
+            _model.Name = _model.Name.Trim();
+            _model.Description = _model.Description?.Trim();
             var result = await _productService.Update(_model, _token);
 
             if (result.IsSuccess)

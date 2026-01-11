@@ -135,6 +135,9 @@
             _model.CityName = _provinces.FirstOrDefault(p => p.ProvinceID.ToString() == _selectedProvince)?.ProvinceName ?? "";
             _model.DistrictName = _districts.FirstOrDefault(p => p.DistrictID.ToString() == _selectedDistrict)?.DistrictName ?? "";
             _model.StreetName = _wards.FirstOrDefault(p => p.WardCode == _selectedWard.ToString())?.WardName ?? "";
+            _model.FullName = _model.FullName.Trim();
+            _model.Phone = _model.Phone.Trim();
+            _model.OtherInfo = _model.OtherInfo?.Trim();
 
             var result = await _addressService.Update(_model, _token);
 

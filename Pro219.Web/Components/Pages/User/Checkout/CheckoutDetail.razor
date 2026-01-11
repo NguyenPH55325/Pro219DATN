@@ -405,7 +405,7 @@
             }
             else
             {
-                _snackbar.Add($"Áp dụng mã {_coupon} thất bại: {result.ErrorMessage}", Severity.Warning);
+                _snackbar.Add($"Áp dụng mã {_coupon.Trim()} thất bại: {result.ErrorMessage}", Severity.Warning);
                 if(_discountDetail != null)
                 {
                     _coupon = _discountDetail.Code;
@@ -513,7 +513,7 @@
                 },
                 discountAmount: _discountAmount + _discountShippingFee,
                 shippingFee: _shippingPrice,
-                note: _note ?? string.Empty,
+                note: _note.Trim() ?? string.Empty,
                 shippingAddressId: _addressDefault.Id,
                 paymentMethodTypeId: _selectPaymentMethod,
                 discountId: discountId

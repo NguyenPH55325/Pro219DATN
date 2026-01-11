@@ -845,15 +845,15 @@
                 }
 
                 address.CustomerId = Order.CustomerId ?? -1;
-                address.Phone = _defaultAddress.Phone;
-                address.FullName = _defaultAddress.FullName;
+                address.Phone = _defaultAddress.Phone.Trim();
+                address.FullName = _defaultAddress.FullName.Trim();
                 address.City = _defaultAddress.Province;
                 address.CityName = _defaultAddress.ProvinceName;
                 address.District = _defaultAddress.District;
                 address.DistrictName = _defaultAddress.DistrictName;
                 address.Street = _defaultAddress.Ward;
                 address.StreetName = _defaultAddress.WardName;
-                address.OtherInfo = _defaultAddress.OtherInfo;
+                address.OtherInfo = _defaultAddress.OtherInfo.Trim();
 
                 if (_isUseCurrentAddress == 1)
                 {   
@@ -877,7 +877,7 @@
                 AddressDTO =  _isShipping ? address : null,
                 DiscountAmount = _discountAmount,
                 DiscountId = _discountCodeId,
-                Note = _note,
+                Note = _note.Trim(),
                 PaymentMethodTypeId = _paymentMethod,
                 PhoneNumber = phoneNumber,
             };

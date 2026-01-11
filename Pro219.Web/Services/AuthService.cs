@@ -122,10 +122,10 @@ namespace Pro219.Web.Services
             var request = new RegisterModel()
             {
                 DateOfBirth = payload.DateOfBirth,
-                PasswordHash = HashPassword(payload.PasswordHash),
-                Email = payload.Email,
-                FullName = payload.FullName,
-                PhoneNumber = payload.PhoneNumber,
+                PasswordHash = HashPassword(payload.PasswordHash.Trim()),
+                Email = payload.Email.Trim(),
+                FullName = payload.FullName.Trim(),
+                PhoneNumber = payload.PhoneNumber.Trim(),
             };
 
             var response = await _httpClient.PostAsJsonAsync("/Access/Register", request);
@@ -178,8 +178,8 @@ namespace Pro219.Web.Services
 
             var payload = new ChangePasswordModel()
             {
-                CurrentPassword = HashPassword(request.CurrentPassword),
-                NewHashPassword = HashPassword(request.NewHashPassword)
+                CurrentPassword = HashPassword(request.CurrentPassword.Trim()),
+                NewHashPassword = HashPassword(request.NewHashPassword.Trim())
             };
 
             var r = new HttpRequestMessage(HttpMethod.Post, "/Access/ChangePassword");

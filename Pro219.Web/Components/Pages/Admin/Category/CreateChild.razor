@@ -117,6 +117,8 @@ else
         if (_isLoading) return;
         _model.Status = (byte)_isActive;
         _model.ParentCategoryId = id;
+        _model.Name = _model.Name.Trim();
+        _model.Description = _model.Description?.Trim();
         _model.VirtualId = GenerateFixed6CharId();
 
         _NewSubCategories.Add(_model);
