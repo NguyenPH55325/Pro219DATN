@@ -14,6 +14,13 @@ namespace Pro219.DAL.Models
 
         public int? ShippingAddressId { get; set; }
 
+        public string? CustomerName { get; set; }
+        public string? Phone { get; set; }
+        public string? ProvinceName { get; set; }
+        public string? DistrictName { get; set; }
+        public string? WardName { get; set; }
+        public string? Address { get; set; } = string.Empty;
+
         public int? DiscountId { get; set; }
 
         public int? PaymentMethodId { get; set; }
