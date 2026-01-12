@@ -820,7 +820,7 @@
 
                 if (string.IsNullOrEmpty(_defaultAddress.FullName) ||
                     string.IsNullOrEmpty(_defaultAddress.Phone) ||
-                    _selectedProvince == 0 || _selectedDistrict == 0 || _selectedWard == string.Empty || string.IsNullOrEmpty(_defaultAddress.OtherInfo))
+                    _selectedProvince == 0 || _selectedDistrict == 0 || _selectedWard == string.Empty || string.IsNullOrEmpty(_defaultAddress.OtherInfo) || string.IsNullOrWhiteSpace(_defaultAddress.OtherInfo) || string.IsNullOrWhiteSpace(_defaultAddress.FullName))
                 {
                     _snackbar.Add("Vui lòng điền đầy đủ thông tin nhận hàng.", Severity.Warning);
                     return;

@@ -335,7 +335,7 @@
     {
         if (_isSubmitting) return;
 
-        if (string.IsNullOrEmpty(_model.FullName.Trim()) || string.IsNullOrEmpty(_model.Phone.Trim()) || string.IsNullOrEmpty(_selectedWard) || _selectedProvince <= 0 || _selectedDistrict <= 0 || string.IsNullOrEmpty(_model.OtherInfo?.Trim()))
+        if (string.IsNullOrEmpty(_model.FullName) || string.IsNullOrEmpty(_model.Phone) || string.IsNullOrEmpty(_selectedWard) || _selectedProvince <= 0 || _selectedDistrict <= 0 || string.IsNullOrEmpty(_model.OtherInfo) || string.IsNullOrWhiteSpace(_model.OtherInfo) || string.IsNullOrWhiteSpace(_model.FullName))
         {
             _snackbar.Add("Vui lòng điền đầy đủ thông tin.", Severity.Warning);
             return;
