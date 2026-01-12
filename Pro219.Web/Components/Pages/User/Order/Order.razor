@@ -134,9 +134,16 @@
         else if (resOrder.IsSuccess && resOrder.Data.Count() == 0)
         {
             _orders = [];
-        } else
+        }
+        else if (resOrder.IsSuccess == false && resOrder.StatusCode == "NotFound")
         {
-            
+            _snackbar.Add("Không tìm thấy trang này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.User.Home);
         }
     }
 

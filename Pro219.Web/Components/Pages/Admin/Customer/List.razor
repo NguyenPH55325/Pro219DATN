@@ -106,6 +106,16 @@
         {
             _customers = data.Where(x => x.Id != -1).ToList();
         }
+        else if (res.IsSuccess == false && res.StatusCode == "NotFound")
+        {
+            _snackbar.Add("Không tìm thấy trang này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.Admin.Home);
+        }
         StateHasChanged();
     }
 

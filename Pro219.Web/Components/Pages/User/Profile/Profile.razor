@@ -112,6 +112,11 @@
             if (me != null)
             {
                 _me = me;
+            } else
+            {
+                _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+                navigation.NavigateTo(RouterConst.User.Home);
+                
             }
         }
     }

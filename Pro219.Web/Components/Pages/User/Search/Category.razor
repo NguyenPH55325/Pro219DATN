@@ -239,6 +239,16 @@
         {
             _products = resData.Data;
         }
+        else if (resData.IsSuccess == false && resData.StatusCode == "NotFound")
+        {
+            _snackbar.Add("Không tìm thấy danh mục này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.User.Home);
+        }
 
         if (resDataCategory.IsSuccess && resDataCategory.Data != null)
         {

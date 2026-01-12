@@ -67,6 +67,16 @@
             _model.Status = data.Status;
             _isActive = data.Status != null ? (int)data.Status : -1;
         }
+        else if (size.IsSuccess == false && size.StatusCode == "NotFound")
+        {
+            _snackbar.Add("Không tìm thấy kích cỡ này này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.Admin.Size);
+        }
     }
 
     async Task OnSubmit()

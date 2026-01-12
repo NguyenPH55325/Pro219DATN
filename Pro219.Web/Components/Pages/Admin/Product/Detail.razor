@@ -221,6 +221,16 @@
                 _onlyProductImages = dataProductImage.Where(pi => pi.ProductId == _productDetail?.Id && pi.ProductVariantId == null).ToList();
             }
         }
+        else if (resProductDetail.IsSuccess == false && resProductDetail.StatusCode == "NotFound")
+        {
+            _snackbar.Add("Không tìm thấy sản phẩm này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.Admin.Home);
+        }
     }
 
     void HandleRedirect(int id, bool isProductVariant)
