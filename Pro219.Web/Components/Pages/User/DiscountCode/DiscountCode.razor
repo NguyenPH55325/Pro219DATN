@@ -51,7 +51,6 @@
 
 @code {
     private List<DAL.Models.DiscountCode> _billCoupon = [];
-    private List<DAL.Models.DiscountCode> _shippingCoupon = [];
     CultureInfo vietnameseCulture = new CultureInfo("vi-VN");
 
     protected override async Task OnInitializedAsync()
@@ -67,7 +66,11 @@
         if(resCoupon.IsSuccess && resCoupon.Data.Count() > 0)
         {
             _billCoupon = resCoupon.Data.Where(x => x.Type == 1).ToList();
-            _shippingCoupon = resCoupon.Data.Where(x => x.Type == 2).ToList();
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.User.Home);
         }
     }
 

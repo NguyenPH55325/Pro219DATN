@@ -215,6 +215,16 @@
         {
             _orderDetail = resOrderDetail.Data;
         }
+        else if (resOrderDetail.IsSuccess == false && resOrderDetail.StatusCode == "NotFound")
+        {
+            _snackbar.Add("Không tìm thấy hóa đơn này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.User.Orders);
+        }
         var resProductImages = await _productImageService.GetAll();
         if (resProductImages.IsSuccess && resProductImages.Data.Count() > 0)
         {

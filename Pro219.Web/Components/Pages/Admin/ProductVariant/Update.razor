@@ -183,11 +183,15 @@
                 _images = resImages.Data;
             }
         }
+        else if (resProductVariant.IsSuccess == false && resProductVariant.StatusCode == "NotFound")
+        {
+            _snackbar.Add("Không tìm thấy sản phẩm chi tiết này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
         else
         {
-            _snackbar.Add("Không tìm thấy sản phẩm này", Severity.Error);
-            navigation.NavigateTo(RouterConst.Admin.Product);
-            return;
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.Admin.ProductDetail.Replace(":id", _model.ProductId.ToString()));
         }
 
         _isLoading = false;

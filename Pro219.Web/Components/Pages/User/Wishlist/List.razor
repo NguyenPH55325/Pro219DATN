@@ -72,6 +72,11 @@
                 {
                     _wishlists = resWishlist.Data;
                 }
+                else
+                {
+                    _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+                    navigation.NavigateTo(RouterConst.User.Home);
+                }
 
                 var resProduct = await _productService.GetAllWithDetail();
                 if (resProduct.IsSuccess && resProduct.Data.Count() > 0)

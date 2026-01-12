@@ -126,6 +126,16 @@
                 {
                     _data = result.Data;
                 }
+                else if (result.IsSuccess == false && result.StatusCode == "NotFound")
+                {
+                    _snackbar.Add("Không tìm thấy giỏ hàng.", Severity.Error);
+                    navigation.NavigateTo(RouterConst.NotFound);
+                }
+                else
+                {
+                    _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+                    navigation.NavigateTo(RouterConst.User.Home);
+                }
             }
         }
     }

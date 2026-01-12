@@ -154,9 +154,22 @@
     {
         var res = await _couponService.GetAll(_searchValue, _searchDiscountTpe, _searchDiscountAmountType, _startDate, _endDate);
         var data = res.Data;
-        if (res.IsSuccess && data.Count > 0)
+        if (res.IsSuccess && data.Count() > 0)
         {
             _discountCodes = data;
+        }else if(res.IsSuccess && data.Count() == 0)
+        {
+            _discountCodes = [];
+        }
+        else if (res.IsSuccess == false && res.StatusCode == "NotFound")
+        {
+            _snackbar.Add("Không tìm thấy hóa đơn này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.Admin.Home);
         }
         StateHasChanged();
     }

@@ -157,6 +157,16 @@
         {
             _products = dataProduct;
         }
+        else if (resProduct.IsSuccess == false && resProduct.StatusCode == "NotFound")
+        {
+            _snackbar.Add("Không tìm thấy trang này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.Admin.Home);
+        }
 
         var resCatgegory = await _categoryService.GetAll(null);
         var dataCatgegory = resCatgegory.Data;

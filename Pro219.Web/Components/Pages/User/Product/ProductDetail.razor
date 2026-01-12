@@ -246,9 +246,15 @@ else
             {
                 await CheckWishlistStatus();
             }
-        } else
+        }
+        else if (res.IsSuccess == false && res.StatusCode == "NotFound")
         {
-            _snackbar.Add(res.ErrorMessage, Severity.Error);
+            _snackbar.Add("Không tìm thấy sản phẩm này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
             navigation.NavigateTo(RouterConst.User.Home);
         }
     }

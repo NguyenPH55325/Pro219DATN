@@ -88,6 +88,16 @@
             _model = resCustomer.Data;
             _isActive = resCustomer.Data.Status != null ? (int)resCustomer.Data.Status : -1;
         }
+        else if (resCustomer.IsSuccess == false && resCustomer.StatusCode == "NotFound")
+        {
+            _snackbar.Add("Không tìm thấy khách hàng này.", Severity.Error);
+            navigation.NavigateTo(RouterConst.NotFound);
+        }
+        else
+        {
+            _snackbar.Add("Đã có lỗi xảy ra. Vui lòng báo cho quản trị viên.", Severity.Error);
+            navigation.NavigateTo(RouterConst.Admin.Customer);
+        }
     }
 
     private async Task OnSubmit()
