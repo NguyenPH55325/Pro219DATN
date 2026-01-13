@@ -3,10 +3,10 @@
 
 <PageTitle>@Constant.PageTitleUser Đơn Mua</PageTitle>
 
-<section class="mx-auto max-w-[1440px] p-8">
+<section class="mx-auto max-w-[1440px] p-0 py-6 md:p-6 lg:p-8">
     <h1 class="text-xl font-bold uppercase md:text-2xl lg:text-3xl">Đơn hàng của bạn</h1>
 
-    <div class="my-6 grid w-full grid-cols-3 gap-x-6 gap-y-4">
+    <div class="my-6 grid w-full grid-cols-1 gap-x-6 gap-y-4 md:grid-cols-3 lg:grid-cols-3">
         <div>
             <MudTextField T="string" Placeholder="Tìm kiếm" Adornment="Adornment.Start" Value="@_searchValue"
                             AdornmentIcon="@Icons.Material.Filled.Search" Variant="Variant.Outlined" IconSize="Size.Medium" Class="mt-0" ValueChanged="onChangeSearch" Immediate=true></MudTextField>
