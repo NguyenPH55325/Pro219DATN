@@ -90,14 +90,23 @@
                         {
                             <div class="flex items-center gap-2">
                                 <div class="h-full w-full max-w-[5rem] flex-shrink-0">
-                                    <a>
-                                        <img src="@item.ImageUrl" alt="product" />
-                                    </a>
+                                    <img src="@item.ImageUrl" alt="product" class="aspect-[1/1.5] h-full w-full object-cover" />
                                 </div>
 
                                 <div class="flex flex-col">
                                     <p class="whitespace-pre-wrap text-sm">@item.productName - @item.ColorName - @item.SizeName</p>
                                     <span class="whitespace-pre-wrap text-sm font-medium">@FormatCurrency(item.UnitPrice ?? 0) x @item.Quantity</span>
+                                    <div class="my-2 flex items-center">
+                                        <div class="flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center border-y border-l">
+                                            <MudIcon Class="!h-4 !w-4" Icon="@Icons.Material.Filled.Remove" Size="Size.Small" @onclick="@(() => UpdateQuantity(item, false))" />
+                                        </div>
+
+                                        <span class="flex h-[1.875rem] w-10 items-baseline justify-center border bg-gray-50 p-1">@item.Quantity</span>
+
+                                        <div class="flex h-[1.875rem] w-[1.875rem] cursor-pointer items-center justify-center border-y border-r">
+                                            <MudIcon Class="!h-4 !w-4" Icon="@Icons.Material.Filled.Add" Size="Size.Small" @onclick="@(() => UpdateQuantity(item, true))" />
+                                        </div>
+                                    </div>
                                     <button disabled="@_isSubmitting" class="w-fit p-2 text-xs text-slate-500 hover:text-red-500" @onclick="@(() => Delete(item.VariantId))">Xóa</button>
                                 </div>
                             </div>
@@ -329,6 +338,58 @@
         {
             _isSubmitting = false;
         }
+    }
+
+    private async Task UpdateQuantity(CartItemWithProductDTO item, bool isIncrease)
+    {
+        if (item.Quantity <= 1 && !isIncrease) return;
+        try {
+            _isSubmitting = true;
+
+            if(isIncrease) {
+                var checkQuantity = await _productVariantService.GetById(item.VariantId);
+
+                if(checkQuantity.IsSuccess && checkQuantity.Data != null)
+                {
+
+                    if(item.Quantity + 1 > checkQuantity.Data.StockQuantity)
+                    {
+                        _snackbar.Add("Số lượng đạt tối đa.", Severity.Warning);
+                        return;
+                    }
+                } else
+                {
+                    _snackbar.Add("Đã có lỗi xảy ra. Vui lòng thử lại.", Severity.Warning);
+                    return;
+                }
+            }
+
+
+            var hasProductCurrent = _cartItemLocal.FirstOrDefault(x => x.VariantId == item.VariantId);
+
+            if (hasProductCurrent != null)
+            {
+                hasProductCurrent.Quantity = isIncrease ? item.Quantity + 1 : item.Quantity - 1;
+                await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(_cartItemLocal));
+            }
+            else
+            {
+                _cartItemLocal.Add(new AddCartModel
+                {
+                    VariantId = item.VariantId,
+                    Quantity = item.Quantity,
+                });
+                await localStorage.SetItemAsStringAsync(Constant.CartItemKey, JsonSerializer.Serialize(_cartItemLocal));
+            }
+
+            await _cartStateService.LoadCartDetailsAsync();
+            await GetShippingFeeAsync();
+            await LoadDataAsync();
+        } finally
+        {
+            _isSubmitting = false;
+        }
+        StateHasChanged();
     }
 
     private async Task OnCheckout()
