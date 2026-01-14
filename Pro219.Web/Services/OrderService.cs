@@ -327,7 +327,7 @@ namespace Pro219.Web.Services
                     var result = await response.Content.ReadAsStringAsync();
                     var errorMess = Constant.Errors.ContainsKey(result ?? "") 
                         ? Constant.Errors[result ?? ""] 
-                        : $"Lỗi không xác định: {response.ReasonPhrase} (Status: {response.StatusCode})";
+                        : result;
                     return ServiceResult<DAL.Models.Order>.Failure(result, errorMess, response.StatusCode.ToString());
                 }
             }
