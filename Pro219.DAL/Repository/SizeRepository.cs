@@ -62,6 +62,12 @@ namespace Pro219.DAL.Repository
         {
             try
             {
+                var sameNameSize = await _context.Sizes
+                    .FirstOrDefaultAsync(s => s.Name == size.Name && s.Delete != true);
+                if (sameNameSize != null)
+                {
+                    return null;
+                }
                 size.CreateAt = DateTime.Now;
                 size.Delete = false;
                 var addedSize = _context.Sizes.Add(size).Entity;
@@ -80,7 +86,10 @@ namespace Pro219.DAL.Repository
             {
                 var existingSize = await _context.Sizes.FindAsync(size.Id);
 
-                if (existingSize == null || existingSize.Delete == true) return null;
+                var sameNameSize = await _context.Sizes
+                    .FirstOrDefaultAsync(s => s.Name == size.Name && s.Id != size.Id && s.Delete != true);
+
+                if (existingSize == null || existingSize.Delete == true || sameNameSize!=null) return null;
 
                 existingSize.Name = size.Name;
                 existingSize.Status = size.Status;
@@ -108,7 +117,7 @@ namespace Pro219.DAL.Repository
                 var hasActiveOrder = await _context.OrderItems
                    .Include(oi => oi.Order)
                    .Include(oi => oi.ProductVariant)
-                   .Where(oi =>  oi.ProductVariant.SizeId == id
+                   .Where(oi => oi.ProductVariant.SizeId == id
                        && oi.Order.Status.HasValue
                        && (oi.Order.Status.Value == 0
                            || oi.Order.Status.Value == 1

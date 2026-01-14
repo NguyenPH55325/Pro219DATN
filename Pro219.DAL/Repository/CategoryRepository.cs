@@ -58,6 +58,12 @@ namespace Pro219.DAL.Repository
         {
             try
             {
+
+                var sameNameCategory = _context.Categories.FirstOrDefault(c => c.Name == cate.Name && c.Delete != true);
+                if (sameNameCategory != null)
+                {
+                    return null;
+                }
                 cate.Delete = false;
                 cate.CreateAt = DateTime.Now;
                 var addedCate = _context.Categories.Add(cate).Entity;
@@ -85,7 +91,9 @@ namespace Pro219.DAL.Repository
             {
                 var existingCategory = await _context.Categories.FindAsync(category.Id);
 
-                if (existingCategory == null || existingCategory.Delete == true) return null;
+                var sameNameCategory = _context.Categories.FirstOrDefault(c => c.Name == category.Name && c.Id != category.Id && c.Delete != true);
+
+                if (existingCategory == null || existingCategory.Delete == true || sameNameCategory!=null) return null;
 
                 existingCategory.Name = category.Name;
                 existingCategory.Description = category.Description;

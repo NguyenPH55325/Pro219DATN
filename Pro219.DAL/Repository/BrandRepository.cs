@@ -63,6 +63,13 @@ namespace Pro219.DAL.Repository
             {
                 brand.CreateAt = DateTime.Now;
                 brand.Delete = false;
+                var sameNameBrand = await _context.Brands
+                    .Where(b => b.Name == brand.Name && b.Delete != true)
+                    .FirstOrDefaultAsync();
+                if (sameNameBrand != null)
+                {
+                    return null;
+                }    
                 var addedBrand = _context.Brands.Add(brand).Entity;
                 await _context.SaveChangesAsync();
                 return addedBrand;
@@ -79,7 +86,10 @@ namespace Pro219.DAL.Repository
             {
                 var existingBrand = await _context.Brands.FindAsync(brand.Id);
 
-                if (existingBrand == null || existingBrand.Delete == true) return null;
+                var sameNameBrand = await _context.Brands
+                    .Where(b => b.Name == brand.Name && b.Id != brand.Id && b.Delete != true)
+                    .FirstOrDefaultAsync();
+                if (existingBrand == null || existingBrand.Delete == true || sameNameBrand!=null) return null;
 
                 existingBrand.Name = brand.Name;
                 existingBrand.Description = brand.Description;
