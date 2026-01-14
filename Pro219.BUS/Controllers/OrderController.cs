@@ -108,6 +108,14 @@ namespace Pro219.API.Controllers
                         }
                     }    
                 }
+                if(updateDto.Status == Constant.OrderStatus.StatusConfirm)
+                {
+                    var listOrderItem = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
+                    foreach (var item in listOrderItem)
+                    {
+                        await productVariantRepository.DecreaseProductVariantQuantity(item.ProductVariantId, item.Quantity);
+                    }
+                }    
                 return Ok(result);
             }
             catch (Exception ex)
@@ -895,16 +903,17 @@ namespace Pro219.API.Controllers
             else if (PaymentMethodTypeId == 1)
             {
                 checkoutDTO.URLPayment = null;
-                List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
-                if (orderItemsList != null && orderItemsList.Any())
-                {
-                    foreach (var orderItem in orderItemsList)
-                    {
-                        var re = await productVariantRepository.DecreaseProductVariantQuantity(orderItem.ProductVariantId, orderItem.Quantity);
-                        if (re == false)
-                            return BadRequest("Số lượng kho không đủ");
-                    }
-                }
+                //Trừ số lượng sản phẩm khi đặt
+                //List<OrderItem> orderItemsList = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
+                //if (orderItemsList != null && orderItemsList.Any())
+                //{
+                //    foreach (var orderItem in orderItemsList)
+                //    {
+                //        var re = await productVariantRepository.DecreaseProductVariantQuantity(orderItem.ProductVariantId, orderItem.Quantity);
+                //        if (re == false)
+                //            return BadRequest("Số lượng kho không đủ");
+                //    }
+                //}
                 return Ok(checkoutDTO);
             }
 
@@ -949,16 +958,16 @@ namespace Pro219.API.Controllers
                     statusHistory.Add(new StatusHistoryEntry
                     {
                         Index = statusHistory.Count + 1,
-                        Status = Constant.OrderStatus.StatusPending,
-                        OrderStatus = Constant.OrderStatus.OrderStatusPending,
+                        Status = Constant.OrderStatus.StatusConfirm,
+                        OrderStatus = Constant.OrderStatus.OrderStatusConfirm,
                         PaymentStatus = Constant.OrderStatus.PaymentCompleted,
                         DateTime = DateTime.Now.ToString("HH:mm dd/MM/yyyy")
                     });
 
                     order.StatusHistory = JsonSerializer.Serialize(statusHistory, _camelCaseJsonOptions);
                     order.PaymentStatus = Constant.OrderStatus.PaymentCompleted;
-                    order.OrderStatus = Constant.OrderStatus.OrderStatusPending;
-                    order.Status = Constant.OrderStatus.StatusPending;
+                    order.OrderStatus = Constant.OrderStatus.OrderStatusConfirm;
+                    order.Status = Constant.OrderStatus.StatusConfirm;
                     order.LastUpdate = DateTime.Now;
                     order.UpdateBy = "System";
                 }
