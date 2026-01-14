@@ -70,6 +70,20 @@ namespace Pro219.API.Controllers
                     return NotFound(Constant.ErrorCode.DataNotFound);
                 }
 
+                if (updateDto.Status == Constant.OrderStatus.StatusConfirm)
+                {
+                    var listOrderItem = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
+                    foreach (var item in listOrderItem)
+                    {
+                        var variant = await productVariantRepository.GetProductVariantById(item.ProductVariantId);
+                        var p = await productRepository.GetProductById(variant.ProductId);
+                        if (variant.StockQuantity < item.Quantity)
+                        {
+                            return BadRequest("Số lượng trong của hàng không đủ, sản phẩm: " + p.Name);
+                        }
+                    }
+                }
+
                 var statusHistory = ParseStatusHistory(order.StatusHistory);
                 statusHistory.Add(new StatusHistoryEntry
                 {
@@ -91,7 +105,7 @@ namespace Pro219.API.Controllers
                 {
                     return StatusCode(500, Constant.ErrorCode.DatabaseError);
                 }
-                if(updateDto.Status == Constant.OrderStatus.StatusCanceledByUser || updateDto.Status == Constant.OrderStatus.StatusShippingFailed)
+                if(updateDto.Status == Constant.OrderStatus.StatusShippingFailed)
                 {
                     var listOrderItem = await orderItemRepository.GetOrderItemsByOrderId(order.OrderId);
                     foreach (var item in listOrderItem)
@@ -791,7 +805,6 @@ namespace Pro219.API.Controllers
                 order.PaymentStatus = Constant.OrderStatus.PaymentPending;
                 order.OrderStatus = "Đặt hàng"; // status = 1;
                 order.DiscountId = discountId;
-                order.Notes = User.FindFirst(ClaimTypes.SerialNumber)?.Value == null ? "Khách hàng không đăng nhập" : "";
                 order.CreateAt = DateTime.Now;
                 order.LastUpdate = DateTime.Now;
                 order.UpdateBy = "System";
